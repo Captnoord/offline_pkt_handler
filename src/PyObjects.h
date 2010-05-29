@@ -69,34 +69,6 @@ typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 
 #pragma pack(push,1)
 
-/**
- * \class PyBaseNone
- *
- * @brief a initial class for a nothing object
- *
- * nothing special.
- *
- * @author Captnoord.
- * @date January 2009
- */
-class PyBaseNone
-{
-public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyBaseNone::*mHash)();
-public:
-	PyBaseNone();
-	~PyBaseNone();
-	uint32 _hash();
-};
-
 // a single global static declaration of the PyNone object
 //static PyBaseNone PyNone;
 
@@ -112,14 +84,30 @@ public:
 	void IncRef();
 	void DecRef();
     size_t GetRef();
-	uint32 hash();
+	virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
 private:
-	uint8 mType;
+    uint8 mType;
 	size_t mRefcnt;
-	uint32 (PyObject::*mHash)();
 public:
-	PyObject();
-	~PyObject();
+	PyObject(PyType type);
+	virtual ~PyObject() = NULL;
+};
+
+/**
+* \class PyBaseNone
+*
+* @brief a initial class for a nothing object
+*
+* nothing special.
+*
+* @author Captnoord.
+* @date January 2009
+*/
+class PyBaseNone : public PyObject
+{
+public:
+    PyBaseNone();
+    uint32 hash();
 };
 
 /**
@@ -132,77 +120,44 @@ public:
  * @author Captnoord.
  * @date January 2009
  */
-class PyInt
+class PyInt : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	
-	/** simple hash function, atm this one is pretty weak.
-	 */
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyInt::*mHash)();
-public:
-	explicit PyInt(int32 num );
+	PyInt(int32 num );
 	PyInt &operator = (const int num);
-	~PyInt();
 	int32 GetValue();
+
+    /** simple hash function, atm this one is pretty weak.
+     */
+    uint32 hash();
 private:
 	int32 mNumber;
-	uint32 _hash();
 };
 
-class PyLong
+class PyLong : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyLong::*mHash)();
-public:
-	explicit PyLong(int64 & num);
-	explicit PyLong(uint64 & num);
-	~PyLong();
+	PyLong(int64 & num);
+	PyLong(uint64 & num);
 	int64 GetValue();
+    uint32 hash();
 private:
 	int64 mNumber;
-	uint32 _hash();
 };
 
-class PyFloat
+class PyFloat : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyFloat::*mHash)();
-public:
-	explicit PyFloat();
-	explicit PyFloat(float num);
-	explicit PyFloat(double & num);
-	~PyFloat();
+    PyFloat();
+	PyFloat(float num);
+	PyFloat(double num);
 	double GetValue();
+    uint32 hash();
 private:
 	double mNumber;
-	uint32 _hash();
 };
 
-class PyBool
+class PyBool : public PyObject
 {
 public:
 	uint8 gettype();
@@ -235,7 +190,7 @@ private:
  * @author Captnoord
  * @date March 2009
  */
-class PyTuple
+class PyTuple : public PyObject
 {
 /* limit the tuple to 1000 items */
 #define PY_TUPLE_ELEMENT_MAX 1000
@@ -298,7 +253,7 @@ private:
 	uint32 _hash();
 };
 
-class PyList
+class PyList : public PyObject
 {
 public:
 	uint8 gettype();
@@ -376,7 +331,7 @@ private:
 	uint32 _hash();
 }; */
 
-class PyDict
+class PyDict : public PyObject
 {
 public:
     uint8 gettype();
@@ -489,7 +444,7 @@ private:
  */
 
 static int SubStreamCounter = 0;
-class PySubStream
+class PySubStream : public PyObject
 {
 public:
 	uint8 gettype();
@@ -524,7 +479,7 @@ private:
  * @author Captnoord
  * @date February 2009
  */
-class __declspec(novtable) PyClass
+class PyClass : public PyObject
 {
 public:
 	uint8 gettype();
@@ -534,8 +489,8 @@ public:
 	uint32 hash();
 private:
 protected:
-	volatile uint8 mType;
-	volatile size_t mRefcnt;
+	uint8 mType;
+	size_t mRefcnt;
 	uint32 (PyClass::*mHash)();
 public:
 	PyClass();
@@ -582,7 +537,7 @@ protected:
 * @author Captnoord
 * @date March 2009
 */
-class PyInstance
+class PyInstance : public PyObject
 {
 public:
 	uint8 gettype();
@@ -614,7 +569,7 @@ private:
  * @author Captnoord
  * @date March 2009
  */
-class PyModule
+class PyModule : public PyObject
 {
 public:
 	uint8 gettype();
@@ -644,7 +599,7 @@ private:
  * @author Captnoord
  * @date February 2009
  */
-class PyPackedRow
+class PyPackedRow : public PyObject
 {
 public:
 	uint8 gettype();
@@ -697,7 +652,7 @@ public:
 	uint32 _hash();
 };
 
-class PySubStruct
+class PySubStruct : public PyObject
 {
 public:
 	uint8 gettype();

@@ -37,49 +37,16 @@
 /************************************************************************/
 /* PyInt                                                                */
 /************************************************************************/
-PyInt::PyInt( int32 num ) : mType(PyTypeInt), mRefcnt(1)
-{
-	mHash = &PyInt::_hash;
-	
-	mNumber = num;
-}
+PyInt::PyInt( int32 num ) : PyObject(PyTypeInt), mNumber(num) {}
 
 PyInt & PyInt::operator=( const int num )
 {
 	mNumber = num;
-	mType = PyTypeInt;
 	return *this;
 }
 
-PyInt::~PyInt()
-{
-	mType = PyTypeDeleted;
-	mHash = NULL;
-}
-
-void PyInt::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyInt::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
-uint8 PyInt::gettype()
-{
-	return mType;
-}
-
+// its a weak hash I know...... take a look at this... can't remember the python stuff
 uint32 PyInt::hash()
-{
-	return (this->*mHash)();
-}
-
-uint32 PyInt::_hash()
 {
 	return mNumber;
 }
@@ -89,54 +56,17 @@ int32 PyInt::GetValue()
 	return mNumber;
 }
 
-size_t PyInt::GetRef()
-{
-    return mRefcnt;
-}
 /************************************************************************/
 /* PyLong                                                               */
 /************************************************************************/
-PyLong::PyLong( int64 & num ) : mNumber(num), mType(PyTypeLong), mRefcnt(1)
-{
-	mHash = &PyLong::_hash;
-}
+PyLong::PyLong( int64 & num ) : PyObject(PyTypeInt), mNumber(num) {}
 
 /* @todo solve the signed/unsigned problem */
-PyLong::PyLong( uint64 & num ) : mNumber(num), mType(PyTypeLong), mRefcnt(1)
-{
-	mHash = &PyLong::_hash;
-}
-
-PyLong::~PyLong()
-{
-	mType = PyTypeDeleted;
-}
-
-uint8 PyLong::gettype()
-{
-	return mType;
-}
+PyLong::PyLong( uint64 & num ) : PyObject(PyTypeInt), mNumber(num) {}
 
 int64 PyLong::GetValue()
 {
 	return mNumber;
-}
-
-void PyLong::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyLong::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
-uint32 PyLong::hash()
-{
-	return (this->*mHash)();
 }
 
 typedef uint16 digit;
@@ -144,7 +74,7 @@ typedef uint16 digit;
 #define PyLong_BASE     ((digit)1 << PyLong_SHIFT)
 #define PyLong_MASK     ((int)(PyLong_BASE - 1))
 
-uint32 PyLong::_hash()
+uint32 PyLong::hash()
 {
 	uint32 x;
 	int64 i;
@@ -182,99 +112,28 @@ uint32 PyLong::_hash()
 	return x;
 }
 
-size_t PyLong::GetRef()
-{
-    return mRefcnt;
-}
-
 /************************************************************************/
 /* PyFloat                                                              */
 /************************************************************************/
-PyFloat::PyFloat() : mType(PyTypeReal), mNumber(0.0), mRefcnt(1)
-{
-	mHash = &PyFloat::_hash;
-}
-PyFloat::PyFloat( float num ) : mType(PyTypeReal), mNumber(num), mRefcnt(1)
-{
-	mHash = &PyFloat::_hash;
-}
-
-PyFloat::PyFloat( double & num ) : mType(PyTypeReal), mNumber(num), mRefcnt(1)
-{
-	mHash = &PyFloat::_hash;
-}
-
-PyFloat::~PyFloat()
-{
-	mType = PyTypeDeleted;
-}
-
-uint8 PyFloat::gettype()
-{
-	return mType;
-}
-
-void PyFloat::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyFloat::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
+PyFloat::PyFloat() : PyObject(PyTypeReal), mNumber(0.0) {}
+PyFloat::PyFloat( float num ) : PyObject(PyTypeReal), mNumber(num) {}
+PyFloat::PyFloat( double num ) : PyObject(PyTypeReal), mNumber(num) {}
 
 double PyFloat::GetValue()
 {
 	return mNumber;
 }
 
+// hashing a float? lol....
 uint32 PyFloat::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PyFloat::_hash()
-{
 	ASCENT_HARDWARE_BREAKPOINT;
-}
-
-size_t PyFloat::GetRef()
-{
-    return mRefcnt;
 }
 
 /************************************************************************/
 /* PyBool                                                               */
 /************************************************************************/
-PyBool::PyBool( bool check ) : mType(PyTypeBool), mCheck(check), mRefcnt(1)
-{
-	mHash = &PyBool::_hash;
-}
-
-PyBool::~PyBool()
-{
-	mType = PyTypeDeleted;
-}
-
-uint8 PyBool::gettype()
-{
-	return mType;
-}
-
-void PyBool::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyBool::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
+PyBool::PyBool( bool check ) : PyObject(PyTypeBool),  mCheck(check) {}
 
 bool PyBool::operator==( const bool check )
 {
@@ -283,30 +142,16 @@ bool PyBool::operator==( const bool check )
 
 uint32 PyBool::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PyBool::_hash()
-{
-	ASCENT_HARDWARE_BREAKPOINT;
-}
-
-size_t PyBool::GetRef()
-{
-    return mRefcnt;
+    ASCENT_HARDWARE_BREAKPOINT;
 }
 
 /************************************************************************/
 /* PyTuple                                                              */
 /************************************************************************/
-PyTuple::PyTuple() : mType(PyTypeTuple), mRefcnt(1)
-{
-	mHash = &PyTuple::_hash;
-}
+PyTuple::PyTuple() : PyObject(PyTypeTuple) {}
 
-PyTuple::PyTuple( size_t elementCount ) : mType(PyTypeTuple), mRefcnt(1)
+PyTuple::PyTuple( size_t elementCount ) : PyObject(PyTypeTuple)
 {
-	mHash = &PyTuple::_hash;
 	if (elementCount > PY_TUPLE_ELEMENT_MAX)
 	{
 		Log.Error("PyTuple", "constructor is requested to allocate a stupid amount of elements: %d", elementCount);
@@ -320,7 +165,6 @@ PyTuple::PyTuple( size_t elementCount ) : mType(PyTypeTuple), mRefcnt(1)
 PyTuple::~PyTuple()
 {
 	clear();
-	mType = PyTypeDeleted;
 }
 
 /* this is kinda slow because we are resizing a vector */
@@ -350,38 +194,16 @@ void PyTuple::clear()
 	mTuple.clear();
 }
 
-uint8 PyTuple::gettype()
-{
-	return mType;
-}
-
-void PyTuple::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyTuple::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
 uint32 PyTuple::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PyTuple::_hash()
-{
-	PyTuple & tuple = *(PyTuple*)this;
-	uint32 hash = 5381;
-	for (int i = 0; i < (int)tuple.size(); i++)
-	{
-		uint32 hashChunk = PyObject_Hash(tuple[i].getPyObject());
-		hash = (hash << 3) + hashChunk;
-	}
-	return hash;
+    PyTuple & tuple = *(PyTuple*)this;
+    uint32 hash = 5381;
+    for (int i = 0; i < (int)tuple.size(); i++)
+    {
+        uint32 hashChunk = PyObject_Hash(tuple[i].getPyObject());
+        hash = (hash << 3) + hashChunk;
+    }
+    return hash;
 }
 
 /* quite tricky */
@@ -550,21 +372,12 @@ bool PyTuple::set_item( const int index, PyObject *object )
 	return true;
 }
 
-size_t PyTuple::GetRef()
-{
-    return mRefcnt;
-}
-
 /************************************************************************/
 /* PyList                                                               */
 /************************************************************************/
-PyList::PyList() : mType(PyTypeList), mRefcnt(1)
+PyList::PyList() : PyObject(PyTypeList) {}
+PyList::PyList( int elementCount ) : PyObject(PyTypeList)
 {
-	mHash = &PyList::_hash;
-}
-PyList::PyList( int elementCount ) : mType(PyTypeList), mRefcnt(1)
-{
-	mHash = &PyList::_hash;
 	mList.resize(elementCount);
 }
 
@@ -577,7 +390,6 @@ PyList::~PyList()
 	}
 	
 	mList.clear();
-	mType = PyTypeDeleted;
 }
 
 PyChameleon & PyList::operator[]( const int index )
@@ -592,23 +404,6 @@ PyChameleon & PyList::operator[]( const int index )
 		mList[index] = new PyChameleon();
 
 	return *mList[index];
-}
-
-uint8 PyList::gettype()
-{
-	return mType;
-}
-
-void PyList::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyList::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
 }
 
 size_t PyList::size()
@@ -630,21 +425,16 @@ bool PyList::add( PyObject* obj )
 
 uint32 PyList::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PyList::_hash()
-{
-	uint32 hsh = 0;
-	PyList::iterator itr = mList.begin();
-	for (; itr != mList.end(); itr++)
-	{
-		PyObject* obj = (*itr)->getPyObject();
-		assert(obj);
-		hsh|= PyObject_Hash(obj);
-		hsh = hsh << 3;
-	}
-	return hsh;
+    uint32 hsh = 0;
+    PyList::iterator itr = mList.begin();
+    for (; itr != mList.end(); itr++)
+    {
+        PyObject* obj = (*itr)->getPyObject();
+        assert(obj);
+        hsh|= PyObject_Hash(obj);
+        hsh = hsh << 3;
+    }
+    return hsh;
 }
 
 PyList::iterator PyList::begin()
@@ -657,251 +447,10 @@ PyList::iterator PyList::end()
 	return mList.end();
 }
 
-size_t PyList::GetRef()
-{
-    return mRefcnt;
-}
-
 /************************************************************************/
 /* PyDict                                                               */
 /************************************************************************/
-/*PyDict::PyDict() : mType(PyTypeDict), mMappingMode(true), mMappingIndex(0), mRefcnt(1)
-{
-	mHash = &PyDict::_hash;
-}
-PyDict::~PyDict()
-{
-	iterator itr = mDict.begin();
-	for (; itr != mDict.end(); itr++)
-	{
-		PyDictEntry * entry = itr->second;
-		assert(entry);
-		assert(entry->key);
-		assert(entry->obj);
-
-		entry->key->DecRef();
-		entry->obj->DecRef();
-		SafeDelete(entry);
-	}
-
-	mDict.clear();
-	mType = PyTypeDeleted;
-}
-
-uint8 PyDict::gettype()
-{
-	return mType;
-}
-
-PyChameleon PyDict::operator[]( const char* keyName )
-{
-	ASCENT_HARDWARE_BREAKPOINT;
-	if (keyName == NULL || *keyName == '\0')
-		return PyErrorIterator;
-
-	uint32 hsh = Utils::Hash::sdbm_hash(keyName);
-
-	PyDictEntry * entry = mDict[hsh];
-	if (entry == NULL)
-	{
-		entry = new PyDictEntry;
-		entry->key = (PyObject*)new PyString(keyName);
-		entry->obj = NULL;
-		mDict[hsh] = entry;
-	}
-
-	return entry;
-}
-
-PyObject* PyDict::get_item(const char* key_name)
-{
-    if (key_name == NULL || *key_name == '\0')
-    {
-        // when this happens.... break....
-        ASCENT_HARDWARE_BREAKPOINT;
-        return NULL;
-    }
-
-    if (mMappingMode == true)
-    {
-        // evil hacking...
-        DictMapItr itr = mDict.begin();
-        for (; itr != mDict.end(); itr++)
-        {
-            PyString * key = (PyString *)itr->second->key;
-            if (*key == key_name)
-            {
-                return itr->second->obj;
-            }
-        }
-    }
-    else
-    {
-        uint32 hsh = Utils::Hash::sdbm_hash(key_name);
-
-        PyDictEntry * entry = mDict[hsh];
-        if (entry == NULL)
-        {
-            // when this happen... break the hell on it..
-            ASCENT_HARDWARE_BREAKPOINT;
-            entry = new PyDictEntry;
-            entry->key = (PyObject*)new PyString(key_name);
-            entry->obj = NULL;
-            mDict[hsh] = entry;
-        }
-        return entry->obj;
-    }
-
-    ASCENT_HARDWARE_BREAKPOINT;
-    return NULL;
-}
-
-void PyDict::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyDict::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
-size_t PyDict::size()
-{
-	return mDict.size();
-}
-
-bool PyDict::set_item( PyObject* key, PyObject* obj )
-{
-	if (key == NULL || obj == NULL)
-	{
-		ASCENT_HARDWARE_BREAKPOINT;
-		return false;
-	}
-
-	if (mMappingMode == true)
-	{
-		// create a new dictionary entry
-		PyDictEntry * entry = new PyDictEntry;
-		entry->key = key;
-		entry->obj = obj;
-		mDict.insert(std::make_pair(mMappingIndex++, entry));
-		key->IncRef();
-		obj->IncRef();
-	}
-	else
-	{
-		ASCENT_HARDWARE_BREAKPOINT;
-		uint32 hsh = PyObject_Hash(key);
-
-		iterator itr = mDict.find(hsh);
-
-		// check if we are updating a dictionary entry or creating a new one 
-		if (itr == mDict.end())
-		{
-			// create a new dictionary entry 
-			PyDictEntry * entry = new PyDictEntry;
-			entry->key = key;
-			entry->obj = obj;
-			mDict.insert(std::make_pair(hsh, entry));
-			key->IncRef();	// we seem to reuse a object that is already in the system so increase its mojo
-			obj->IncRef();
-		}
-		else
-		{
-			// update/replace a already existing entry ( bit tricky ) 
-			PyDictEntry * entry = itr->second;
-			entry->obj->DecRef();
-			entry->obj = obj;
-			obj->IncRef();
-		}
-	}
-		
-	return true;
-}
-
-bool PyDict::set_item( const char* key_name, PyObject* obj )
-{
-	if (key_name == NULL || obj == NULL)
-	{
-		ASCENT_HARDWARE_BREAKPOINT;
-		return false;
-	}
-
-	if (mMappingMode == true)
-	{
-		// create a new dictionary entry 
-		PyDictEntry * entry = new PyDictEntry;
-		entry->key = (PyObject*)new PyString(key_name);
-		entry->obj = obj;
-		mDict.insert(std::make_pair(mMappingIndex++, entry));
-		obj->IncRef();
-	}
-	else
-	{
-		// do the same as the set_item function that takes a PyObject as a key, but do some tricks with it 
-
-		size_t str_len = strlen(key_name);
-
-		// test this and check these
-		uint32 hsh = Utils::Hash::sdbm_hash(key_name, (int)str_len);
-		uint32 hsh1 = Utils::Hash::sdbm_hash(key_name);
-	}
-
-	return true;
-}
-
-PyObject* PyDict::get_item( PyObject* key )
-{
-	ASCENT_HARDWARE_BREAKPOINT;
-	if (key == NULL)
-		return NULL;
-	return NULL;
-}
-
-uint32 PyDict::hash()
-{
-	return (this->*mHash)();
-}
-
-uint32 PyDict::_hash()
-{
-	uint32 hsh = 0;
-	iterator itr = mDict.begin();
-	for (; itr != mDict.end(); itr++)
-	{
-		PyDictEntry * entry = itr->second;
-		hsh|= PyObject_Hash(entry->key);
-		hsh = hsh << 3;
-		hsh|= PyObject_Hash(entry->obj);
-	}
-
-	return hsh;
-}
-
-PyDict::iterator PyDict::begin()
-{
-	return mDict.begin();
-}
-
-PyDict::iterator PyDict::end()
-{
-	return mDict.end();
-}
-
-size_t PyDict::GetRef()
-{
-    return mRefcnt;
-}*/
-
-/************************************************************************/
-/* PyDict                                                               */
-/************************************************************************/
-PyDict::PyDict() : mType(PyTypeDict), mRefcnt(1), mHash(&PyDict::_hash), mMappingMode(true), mMappingIndex(0)
-{
-}
+PyDict::PyDict() : PyObject(PyTypeDict), mMappingMode(true), mMappingIndex(0) {}
 
 PyDict::~PyDict()
 {
@@ -921,14 +470,9 @@ PyDict::~PyDict()
     }
 
     mDict.clear();
-    mType = PyTypeDeleted;
 }
 
-uint8 PyDict::gettype()
-{
-    return mType;
-}
-
+// this one needs to die...
 PyChameleon PyDict::operator[]( const char* keyName )
 {
     ASCENT_HARDWARE_BREAKPOINT;
@@ -949,23 +493,12 @@ PyChameleon PyDict::operator[]( const char* keyName )
     return entry;
 }
 
-void PyDict::IncRef()
-{
-    mRefcnt++;
-}
-
-void PyDict::DecRef()
-{
-    mRefcnt--;
-    if (mRefcnt <= 0)
-        PyDelete(this);
-}
-
 size_t PyDict::size()
 {
     return mDict.size();
 }
 
+// fix mapping mode.... to update on get_item..
 bool PyDict::set_item( PyObject* key, PyObject* obj )
 {
     if (key == NULL || obj == NULL)
@@ -1077,11 +610,6 @@ PyObject* PyDict::get_item(const char* key_name, PyObject* default_obj)
 }
 
 uint32 PyDict::hash()
-{
-    return (this->*mHash)();
-}
-
-uint32 PyDict::_hash()
 {
     uint32 hsh = 0;
     iterator itr = mDict.begin();
@@ -1228,20 +756,13 @@ bool PyDict::set_bool( const char * keyName, bool check )
     return set_item(keyName, (PyObject *)new PyBool(check));
 }
 
-
-
 /************************************************************************/
 /* PySubStream                                                          */
 /************************************************************************/
-PySubStream::PySubStream() : mType(PyTypeSubStream), mData(NULL), mLen(0), mRefcnt(1)
-{
-	mHash = &PySubStream::_hash;
-}
+PySubStream::PySubStream() : PyObject(PyTypeSubStream), mData(NULL), mLen(0) {}
 
-PySubStream::PySubStream( uint8* data, size_t len ) : mType(PyTypeSubStream), mData(NULL), mLen(0), mRefcnt(1)
+PySubStream::PySubStream( uint8* data, size_t len ) : PyObject(PyTypeSubStream), mData(NULL), mLen(0)
 {
-	mHash = &PySubStream::_hash;
-
 	if (data == NULL || len == 0)
 		return;
 
@@ -1255,12 +776,6 @@ PySubStream::~PySubStream()
 	SafeFree(mData);
 
 	mLen = 0;
-	mType = PyTypeDeleted;
-}
-
-uint8 PySubStream::gettype()
-{
-	return mType;
 }
 
 uint8* PySubStream::content()
@@ -1287,17 +802,6 @@ bool PySubStream::set( uint8 * data, size_t len )
 	return true;
 }
 
-void PySubStream::IncRef()
-{
-	mRefcnt++;
-}
-
-void PySubStream::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
 
 size_t PySubStream::size()
 {
@@ -1306,25 +810,15 @@ size_t PySubStream::size()
 
 uint32 PySubStream::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PySubStream::_hash()
-{
 	return Utils::Hash::sdbm_hash((char*)mData, (int)mLen);
-}
-
-size_t PySubStream::GetRef()
-{
-    return mRefcnt;
 }
 
 /************************************************************************/
 /* PyClass                                                              */
 /************************************************************************/
-PyClass::PyClass() : mType(PyTypeClass), mDict(NULL), mName(NULL), mBases(NULL), mWeakRefList(NULL), mInDict(NULL), mRefcnt(1)
+PyClass::PyClass() : PyObject(PyTypeClass), mDict(NULL), mName(NULL), mBases(NULL), mWeakRefList(NULL), mInDict(NULL)
 {
-	mHash = &PyClass::_hash;
+    // needed... this is what python called 'self'
     mDict = new PyDict();
 }
 
@@ -1358,13 +852,6 @@ PyClass::~PyClass()
 		mInDict->DecRef();
 		mInDict = NULL;
 	}
-
-	mType = PyTypeDeleted;
-}
-
-uint8 PyClass::gettype()
-{
-	return mType;
 }
 
 bool PyClass::setname( PyString* name )
@@ -1434,18 +921,6 @@ bool PyClass::setDirDict( PyDict * dict )
 	return true;
 }
 
-void PyClass::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyClass::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
 PyString* PyClass::getname()
 {
 	return mName;
@@ -1471,15 +946,10 @@ PyDict * PyClass::getDirDict()
 	return mInDict;
 }
 
-uint32 PyClass::hash()
-{
-	return (this->*mHash)();
-}
-
 /**
  * @note this hash is fucked up.
  */
-uint32 PyClass::_hash()
+uint32 PyClass::hash()
 {
 	uint32 hsh = 0;
 	if (mName)
@@ -1515,106 +985,52 @@ uint32 PyClass::_hash()
 	return hsh;
 }
 
-size_t PyClass::GetRef()
-{
-    return mRefcnt;
-}
-
-createFileSingleton( PyBaseNone );
-
-void PyBaseNone::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyBaseNone::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-	{
-		printf("PyNone delete: 0x%p\n", this);
-		PyDelete(this);
-	}
-}
-
-uint8 PyBaseNone::gettype()
-{
-	return mType;
-}
-
-PyBaseNone::PyBaseNone() : mType(PyTypeNone), mRefcnt(1)
-{
-	mHash = &PyBaseNone::_hash;
-}
-
-PyBaseNone::~PyBaseNone()
-{
-	mType = PyTypeDeleted;
-}
-
-uint32 PyBaseNone::hash()
-{
-	return (this->*mHash)();
-}
-
-uint32 PyBaseNone::_hash()
-{
-	return Utils::Hash::sdbm_hash("PyNone");
-}
-
-size_t PyBaseNone::GetRef()
-{
-    return mRefcnt;
-}
-
 void PyObject::IncRef()
 {
-	mRefcnt++;
+    mRefcnt++;
 }
 
 void PyObject::DecRef()
 {
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
+    mRefcnt--;
+    if (mRefcnt <= 0)
+        PyDelete(this);
 }
 
 uint8 PyObject::gettype()
 {
-	return mType;
+    return mType;
 }
 
 PyObject::~PyObject()
 {
-	/* WTF mode this should never ever happen */
-	ASCENT_HARDWARE_BREAKPOINT;
-	ASCENT_ASSERT(false);
+    /* WTF mode this should never ever happen */
+    ASCENT_HARDWARE_BREAKPOINT;
+    ASCENT_ASSERT(false);
 }
 
-PyObject::PyObject()
-{
-	/* make sure this class is never allocated */
-	ASCENT_HARDWARE_BREAKPOINT;
-	ASCENT_ASSERT(false);
-}
-
-uint32 PyObject::hash()
-{
-	return (this->*mHash)();
-}
+PyObject::PyObject(PyType type) : mType(type), mRefcnt(1) {}
 
 size_t PyObject::GetRef()
 {
     return mRefcnt;
 }
 
+createFileSingleton( PyBaseNone );
+
+PyBaseNone::PyBaseNone() : PyObject(PyTypeNone) {}
+
+// hash a none object? your seriouse?
+uint32 PyBaseNone::hash()
+{
+    ASCENT_HARDWARE_BREAKPOINT;
+	return Utils::Hash::sdbm_hash("PyNone");
+}
+
 /************************************************************************/
 /* PyPackedRow                                                          */
 /************************************************************************/
-PyPackedRow::PyPackedRow() : mType(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0), mRefcnt(1)
-{
-	mHash = &PyPackedRow::_hash;
-}
+PyPackedRow::PyPackedRow() : PyObject(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0) {}
 
 PyPackedRow::~PyPackedRow()
 {
@@ -1636,23 +1052,6 @@ PyPackedRow::~PyPackedRow()
 		SafeFree(mRawFieldData);
 }
 
-uint8 PyPackedRow::gettype()
-{
-	return mType;
-}
-
-void PyPackedRow::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyPackedRow::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
 bool PyPackedRow::addleaf( PyObject* leaf )
 {
 	assert(leaf != NULL);
@@ -1668,11 +1067,6 @@ bool PyPackedRow::addleaf( PyObject* leaf )
 }
 
 uint32 PyPackedRow::hash()
-{
-	return (this->*mHash)();
-}
-
-uint32 PyPackedRow::_hash()
 {
 	uint32 hsh = 0;
 
@@ -1771,40 +1165,15 @@ PyObject* PyPackedRow::GetLeaf( int i )
 	return flowers[i]->getPyObject();
 }
 
-size_t PyPackedRow::GetRef()
-{
-    return mRefcnt;
-}
-
 /************************************************************************/
 /* substruct                                                            */
 /************************************************************************/
-PySubStruct::PySubStruct() : mType(PyTypeSubStruct), payload(NULL), mRefcnt(1)
-{
-	mHash = &PySubStruct::_hash;
-}
+PySubStruct::PySubStruct() : PyObject(PyTypeSubStruct), payload(NULL) {}
 
 PySubStruct::~PySubStruct()
 {
 	if (payload)
 		payload->DecRef();
-}
-
-uint8 PySubStruct::gettype()
-{
-	return mType;
-}
-
-void PySubStruct::IncRef()
-{
-	mRefcnt++;
-}
-
-void PySubStruct::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
 }
 
 PyObject * PySubStruct::getPyObject()
@@ -1823,35 +1192,18 @@ bool PySubStruct::setPyObject( PyObject* obj )
 	return true;
 }
 
-// generic caller
+// class related hash function
 uint32 PySubStruct::hash()
 {
-	return (this->*mHash)();
-}
-
-// class related hash function
-uint32 PySubStruct::_hash()
-{
 	ASCENT_HARDWARE_BREAKPOINT;
-}
-
-size_t PySubStruct::GetRef()
-{
-    return mRefcnt;
 }
 
 /************************************************************************/
 /* PyModule                                                             */
 /************************************************************************/
-PyModule::PyModule() : mType(PyTypeModule), mModuleName(NULL), mRefcnt(1)
-{
-	mHash = &PyModule::_hash;
-}
+PyModule::PyModule() : PyObject(PyTypeModule), mModuleName(NULL) {}
 
-PyModule::~PyModule()
-{
-
-}
+PyModule::~PyModule() {}
 
 uint8 PyModule::gettype()
 {
