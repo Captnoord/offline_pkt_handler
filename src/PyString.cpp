@@ -30,27 +30,23 @@
 /************************************************************************/
 /* PyString code                                                        */
 /************************************************************************/
-PyString::PyString() : mType(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0), mRefcnt(1)
+PyString::PyString() : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	mHash = &PyString::_hash;
 }
 
-PyString::PyString(const char* str) : mType(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0) , mRefcnt(1)
+PyString::PyString(const char* str) : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	mHash = &PyString::_hash;
 	size_t len = strlen(str);
 	set(str, len);
 }
 
-PyString::PyString(const char* str, size_t len) : mType(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0), mRefcnt(1)
+PyString::PyString(const char* str, size_t len) : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	mHash = &PyString::_hash;
 	set(str, len);
 }
 
-PyString::PyString(std::string& str) : mType(PyTypeString), mStr(NULL),  mStrLen(0), mHashValue(0), mRefcnt(1)
+PyString::PyString(std::string& str) : PyObject(PyTypeString), mStr(NULL),  mStrLen(0), mHashValue(0)
 {
-	mHash = &PyString::_hash;
 	set(str.c_str(), str.size());
 }
 
@@ -58,9 +54,8 @@ PyString::~PyString()
 {
 	SafeFree(mStr);
 
-	mType = PyTypeDeleted;
+
 	mStrLen = 0;
-	mHash = NULL;
 }
 
 bool PyString::set(const char* str, size_t len)
@@ -86,23 +81,6 @@ bool PyString::set(const char* str, size_t len)
 const char* PyString::content()
 {
 	return mStr;
-}
-
-uint8 PyString::gettype()
-{
-	return mType;
-}
-
-void PyString::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyString::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
 }
 
 const size_t PyString::length()
@@ -200,18 +178,13 @@ PyString & PyString::operator=( const char *str )
 
 uint32 PyString::hash()
 {
-	return (this->*mHash)();
-}
+    if (mHashValue == 0)
+    {
+        mHashValue = Utils::Hash::sdbm_hash(mStr, (int)mStrLen);
+        return mHashValue;
 
-uint32 PyString::_hash()
-{
-	if (mHashValue == 0)
-	{
-		mHashValue = Utils::Hash::sdbm_hash(mStr, (int)mStrLen);
-		return mHashValue;
-
-	}
-	return mHashValue;
+    }
+    return mHashValue;
 }
 
 char &PyString::operator[]( const int index )

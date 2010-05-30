@@ -140,10 +140,17 @@ bool PyBool::operator==( const bool check )
 	return (mCheck == check);
 }
 
+PyBool::~PyBool()
+{
+
+}
+
 uint32 PyBool::hash()
 {
     ASCENT_HARDWARE_BREAKPOINT;
 }
+
+
 
 /************************************************************************/
 /* PyTuple                                                              */
@@ -1004,9 +1011,6 @@ uint8 PyObject::gettype()
 
 PyObject::~PyObject()
 {
-    /* WTF mode this should never ever happen */
-    ASCENT_HARDWARE_BREAKPOINT;
-    ASCENT_ASSERT(false);
 }
 
 PyObject::PyObject(PyType type) : mType(type), mRefcnt(1) {}
@@ -1205,47 +1209,16 @@ PyModule::PyModule() : PyObject(PyTypeModule), mModuleName(NULL) {}
 
 PyModule::~PyModule() {}
 
-uint8 PyModule::gettype()
-{
-	return mType;
-}
-
-void PyModule::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyModule::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
 
 uint32 PyModule::hash()
 {
-	return (this->*mHash)();
-}
-
-uint32 PyModule::_hash()
-{
 	ASCENT_HARDWARE_BREAKPOINT;
-	return 0;
-}
-
-size_t PyModule::GetRef()
-{
-    return mRefcnt;
+    return 0;
 }
 
 uint32 PyObject_Hash( PyObject* obj )
 {
 	return obj->hash();
-}
-
-size_t PyInstance::GetRef()
-{
-    return mRefcnt;
 }
 
 PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )

@@ -80,17 +80,18 @@ typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 class PyObject
 {
 public:
+    PyObject(PyType type);
+    virtual ~PyObject();
+    virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
+
 	uint8 gettype();
 	void IncRef();
 	void DecRef();
     size_t GetRef();
-	virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
+	
 private:
     uint8 mType;
 	size_t mRefcnt;
-public:
-	PyObject(PyType type);
-	virtual ~PyObject() = NULL;
 };
 
 /**
@@ -103,10 +104,12 @@ public:
 * @author Captnoord.
 * @date January 2009
 */
-class PyBaseNone : public PyObject
+class PyBaseNone : public virtual PyObject
 {
 public:
     PyBaseNone();
+    // bleh..
+    ~PyBaseNone(){}
     uint32 hash();
 };
 
@@ -124,6 +127,8 @@ class PyInt : public PyObject
 {
 public:
 	PyInt(int32 num );
+    //bleh..
+    ~PyInt(){}
 	PyInt &operator = (const int num);
 	int32 GetValue();
 
@@ -160,22 +165,12 @@ private:
 class PyBool : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyBool::*mHash)();
-public:
-	explicit PyBool(bool check);
+	PyBool(bool check);
 	~PyBool();
 	bool operator==(const bool check);
+    uint32 hash();
 private:
 	bool mCheck;
-	uint32 _hash();
 };
 
 /**
@@ -195,19 +190,12 @@ class PyTuple : public PyObject
 /* limit the tuple to 1000 items */
 #define PY_TUPLE_ELEMENT_MAX 1000
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyTuple::*mHash)();
-public:
 	explicit PyTuple();
 	explicit PyTuple(size_t elementCount);
 	~PyTuple();
+
+    // tuple hash function
+    uint32 hash();
 
 	/**
 	 * \brief operator overload for easy object access and storage
@@ -248,23 +236,10 @@ public:
 	iterator end() {return mTuple.end();}
 private:
 	TupleVector mTuple;
-
-	// tuple hash function
-	uint32 _hash();
 };
 
 class PyList : public PyObject
 {
-public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyList::*mHash)();
 public:
 	explicit PyList();
 	explicit PyList(int elementCount);
@@ -272,9 +247,9 @@ public:
 	PyChameleon &operator[](const int index);
 	size_t size();
 	bool add(PyObject* obj);
+    uint32 hash();
 private:
 	std::vector<PyChameleon*> mList;
-	uint32 _hash();
 public:
 	typedef std::vector<PyChameleon*>::iterator iterator;
 	iterator begin();
@@ -334,19 +309,9 @@ private:
 class PyDict : public PyObject
 {
 public:
-    uint8 gettype();
-    void IncRef();
-    void DecRef();
-    size_t GetRef();
-    uint32 hash();
-private:
-    uint8 mType;
-    size_t mRefcnt;
-    uint32 (PyDict::*mHash)();
-
-public:
     PyDict();
     ~PyDict();
+    uint32 hash();
 
     bool    mMappingMode;
     uint32  mMappingIndex;
@@ -428,7 +393,6 @@ public:
     iterator end();
 private:
     DictMap mDict;
-    uint32 _hash();
 };
 
 /**
@@ -447,26 +411,16 @@ static int SubStreamCounter = 0;
 class PySubStream : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PySubStream::*mHash)();
-public:
 	PySubStream();
 	PySubStream(uint8* data, size_t len);
 	~PySubStream();
+    uint32 hash();
 	uint8* content();
 	size_t size();
 	bool set(uint8 * data, size_t len);
 private:
 	void* mData;
 	size_t mLen;
-	uint32 _hash();
 };
 
 /**
@@ -482,24 +436,16 @@ private:
 class PyClass : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-protected:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyClass::*mHash)();
-public:
 	PyClass();
 	virtual ~PyClass();
+    uint32 hash();
+
 	bool setname(PyString* name);
 	bool setbases(PyTuple* tuple);
 	bool setdict(PyDict* dict);
 	bool setDirList(PyList * list);
 	bool setDirDict(PyDict * dict);
+    
 
 	PyString* getname();
 	PyTuple* getbases();
@@ -522,7 +468,6 @@ protected:
 	// instance object info...
 	PyDict		*mInDict;
     PyList		*mWeakRefList;
-	uint32 _hash();
 
     ternaryfunc tp_call;
 };
@@ -540,23 +485,12 @@ protected:
 class PyInstance : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyInstance::*mHash)();
-public:
 	PyInstance();
 	~PyInstance();
+    uint32 hash();
 private:
 	PyClass* mClass;
 	PyDict* mDict;
-	/* PyList weak reference list */
-	uint32 _hash();
 };
 
 /**
@@ -572,21 +506,11 @@ private:
 class PyModule : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyModule::*mHash)();
-public:
 	PyModule();
 	~PyModule();
+    uint32 hash();
 	PyString* mModuleName;
 private:
-	uint32 _hash();
 };
 
 
@@ -602,19 +526,9 @@ private:
 class PyPackedRow : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyPackedRow::*mHash)();
-
-public:
 	PyPackedRow();
 	~PyPackedRow();
+    uint32 hash();
 
 	/* raw data containing the normal field data fields */
 	uint8* mRawFieldData;			/* also known as 'blob' */
@@ -647,31 +561,17 @@ public:
 
 	// generic field stuff
 	PyObject* GetFieldObject(int index);
-
-	// local hash function
-	uint32 _hash();
 };
 
 class PySubStruct : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PySubStruct::*mHash)();
-public:
 	PySubStruct();
 	~PySubStruct();
+    uint32 hash();
 
 	PyObject * getPyObject();
 	bool setPyObject(PyObject* obj);
-	uint32 _hash();
-
 private:
 	PyObject* payload;
 };

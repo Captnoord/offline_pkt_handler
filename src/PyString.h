@@ -3,23 +3,15 @@
 
 #pragma pack(push,1)
 
-class PyString
+class PyString : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyString::*mHash)();
-public:
-	explicit PyString();
-	explicit PyString(const char* str);
-	explicit PyString(const char* str, size_t len);
-	explicit PyString(std::string& str);
+	PyString();
+	PyString(const char* str);
+	PyString(const char* str, size_t len);
+	PyString(std::string& str);
 	~PyString();
+    uint32 hash();
 	bool set(const char* str, size_t len);
 	const char* content();
 	const size_t length();
@@ -52,7 +44,7 @@ private:
 	char* mStr;
 	size_t mStrLen;
 	uint32 mHashValue;
-	uint32 _hash();
+	
 };
 
 #pragma pack(pop)

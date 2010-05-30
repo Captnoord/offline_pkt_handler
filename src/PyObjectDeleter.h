@@ -30,7 +30,8 @@
 template<typename T>
 static bool PyDelete(T * obj)
 {
-	uint8 testcase = obj->gettype();
+    delete obj;
+	/*uint8 testcase = obj->gettype();
 	switch(testcase)
 	{
 	case PyTypeNone:
@@ -91,7 +92,9 @@ static bool PyDelete(T * obj)
 	default:
 		ASCENT_HARDWARE_BREAKPOINT;
 		return false;
-	}
+	}*/
+
+    return true;
 }
 
 #endif // _PYOBJECTDELETER_H

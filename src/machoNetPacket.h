@@ -3,13 +3,13 @@
 
 #pragma pack(push,1)
 
-class __declspec(novtable) MachoPacket : public PyClass
+class MachoPacket : public PyClass
 {
 protected:
 public:
     MachoPacket() : PyClass() {}
     
-    //virtual ~MachoPacket() = 0;
+    ~MachoPacket(){};
     virtual MachoPacket* New() = 0;
 
 
@@ -113,7 +113,10 @@ public:
         params.push_back("channel");
     }
 
-    //~macho_CallReq(){}
+    ~macho_CallReq()
+    {
+
+    }
 
     macho_CallReq* New()
     {
