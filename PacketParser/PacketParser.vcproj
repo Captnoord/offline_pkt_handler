@@ -389,6 +389,14 @@
 					RelativePath="..\src\rowset.h"
 					>
 				</File>
+				<Filter
+					Name="DBRow"
+					>
+					<File
+						RelativePath="..\src\cRowSet.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

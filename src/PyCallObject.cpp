@@ -6,6 +6,7 @@
 #include "machoNetPacket.h"
 #include "objectCachingUtil.h"
 #include "rowset.h"
+#include "cRowSet.h"
 
 createFileSingleton(CallMgr);
 CallMgr::CallMgr()
@@ -16,6 +17,8 @@ CallMgr::CallMgr()
     reg("util.CachedObject", new util_CachedObject());
     reg("util.KeyVal", new util_KeyVal());
     reg("util.Rowset", new util_Rowset());
+
+    reg("dbutil.CRowset", new dbutil_CRowset());
     
     reg("macho.CallReq", new macho_CallReq());
     reg("macho.CallRsp", new macho_CallRsp());
@@ -45,6 +48,10 @@ bool CallMgr::reg( const char* name, PyClass* module )
 
 PyClass* CallMgr::find( const char* module )
 {
+    // stupid debugging..
+    //if (!strcmp("dbutil.CRowset", module))
+      //  ASCENT_HARDWARE_BREAKPOINT;
+
     CallMapItr itr = mCallMap.find(module);
     if (itr != mCallMap.end())
     {
