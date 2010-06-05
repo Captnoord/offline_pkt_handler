@@ -145,7 +145,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(&PyNone);
 			}
 
-			case Op_PyModule:
+            case Op_PyModule:
 			{
 				unmarshalState(Op_PyModule, stream);
 				MARSHALSTREAM_RETURN(ReadClassString(stream, (opcode & 0x40) != 0));
@@ -341,8 +341,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyObject * str_obj = ReadBuffer(stream);
 				if ((opcode & 0x40) != 0)
 				{
-					str_obj->IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(str_obj))
+					if(mReferencedObjectsMap.StoreReferencedObject(str_obj) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 				MARSHALSTREAM_RETURN(str_obj);
@@ -360,8 +359,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyTuple& tuple = *PyTuple_New(1);
 				if ((opcode & 0x40) != 0)
 				{
-					tuple.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&tuple))
+					if(mReferencedObjectsMap.StoreReferencedObject(&tuple) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
@@ -378,8 +376,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyTuple& tuple = *PyTuple_New(2);
 				if ((opcode & 0x40) != 0)
 				{
-					tuple.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&tuple))
+					if(mReferencedObjectsMap.StoreReferencedObject(&tuple) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
@@ -404,8 +401,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyTuple& tuple = *PyTuple_New(elementCount);
 				if ((opcode & 0x40) != 0)
 				{
-					tuple.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&tuple))
+					if(mReferencedObjectsMap.StoreReferencedObject(&tuple) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
@@ -435,8 +431,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				
 				if ((opcode & 0x40) != 0)
 				{
-					list.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&list))
+					if(mReferencedObjectsMap.StoreReferencedObject(&list) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 				// recursive function...
@@ -459,8 +454,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 	
 				if ((opcode & 0x40) != 0)
 				{
-					list.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&list))
+					if(mReferencedObjectsMap.StoreReferencedObject(&list) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
@@ -488,8 +482,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyDict & dict = *PyDict_New();
 				if ((opcode & 0x40) != 0)
 				{
-					dict.IncRef();
-					if(!mReferencedObjectsMap.StoreReferencedObject(&dict))
+					if(mReferencedObjectsMap.StoreReferencedObject(&dict) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
@@ -722,13 +715,12 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
     if (shared != FALSE)
     {
-        if (mReferencedObjectsMap.StoreReferencedObject(new_instance) == false)
+        if (mReferencedObjectsMap.StoreReferencedObject(new_instance) == -1)
         {
             module_name->DecRef();
             new_instance->DecRef();
             MARSHALSTREAM_RETURN_NULL;
         }
-        new_instance->IncRef();
     }
 
     PyObject * bases = unmarshal(stream);
@@ -750,8 +742,8 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 /*
 	if (shared != FALSE)
 	{
-		classObj->IncRef();
-		mReferencedObjectsMap.StoreReferencedObject(classObj);
+		if(mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
+            ASCENT_HARDWARE_BREAKPOINT
 	}
 
 	if (classObj == NULL)
@@ -789,8 +781,8 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
 
     if (shared != FALSE)
     {
-        classObj->IncRef();
-        mReferencedObjectsMap.StoreReferencedObject(classObj);
+        if(mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
+            ASCENT_HARDWARE_BREAKPOINT
     }
 
     if (classObj == NULL)
@@ -833,8 +825,8 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
     // TODO decrappy this..
     if (shared != FALSE)
     {
-        inst_obj->IncRef();
-        mReferencedObjectsMap.StoreReferencedObject(inst_obj);
+        if(mReferencedObjectsMap.StoreReferencedObject(inst_obj) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
     }
 
     if (inst_obj == NULL)
@@ -867,20 +859,18 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
 PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 {
     ASCENT_HARDWARE_BREAKPOINT;
-	PyClass * classObj = NULL;//new PyClass();
 
-	if (classObj == NULL)
-		MARSHALSTREAM_RETURN_NULL;
-
-	if (shared != FALSE)
-	{
-		classObj->IncRef();
-		mReferencedObjectsMap.StoreReferencedObject(classObj);
-	}
+    if (shared != FALSE)
+    {
+        if(mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
+    }
 
 	PyTuple * bases = (PyTuple *)unmarshal(stream);
 	if (bases == NULL)
 		MARSHALSTREAM_RETURN_NULL;
+
+
 
     PyObject * callable_object = bases->GetItem(0);
     if (callable_object == NULL)
@@ -898,23 +888,26 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 
     PyObject* call_result = PyObject_CallObject(callable_object, args);
 
-	classObj->setbases(bases);
+	/*classObj->setbases(bases);
 	ReadNewObjList(stream, *classObj);
 	ReadNewObjDict(stream, *classObj);
 
-	MARSHALSTREAM_RETURN(classObj);
+	MARSHALSTREAM_RETURN(classObj);*/
+
+    MARSHALSTREAM_RETURN_NULL; // will cause major havok
 }
 
 // C style python classes...
 PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
+{
     ASCENT_HARDWARE_BREAKPOINT;
     /* this crappy old code */
 	/*PyClass * classObj = NULL;//new PyClass();
 
 	if (shared != FALSE)
 	{
-		classObj->IncRef();
-		mReferencedObjectsMap.StoreReferencedObject(classObj);
+		if (mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
 	}
 
     // here new code starts 
@@ -989,8 +982,8 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
 
     if (shared != FALSE)
     {
-        classObj->IncRef();
-        mReferencedObjectsMap.StoreReferencedObject(classObj);
+        if(mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
     }
 
     classObj->setbases(object_root);
@@ -1171,8 +1164,8 @@ PyObject* MarshalStream::ReadVarInteger( ReadStream & stream, BOOL shared )
 	
 	if (shared != FALSE)
 	{
-		object->IncRef();
-		mReferencedObjectsMap.StoreReferencedObject(object);
+		if (mReferencedObjectsMap.StoreReferencedObject(object) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
 	}
 
 	MARSHALSTREAM_RETURN(object);
@@ -1185,14 +1178,10 @@ PyObject* MarshalStream::ReadClassString( ReadStream & stream, BOOL shared )
     PyClass* class_object = sPyCallMgr.find(objectName);
     assert(class_object);
 	
-	/* bad bad bad boy, don't do a "new" here... because the class needed to return already exists */
-	//PyClass * GlobalClass = new PyClass();
-	//GlobalClass->setname(objectName);
-
 	if (shared != FALSE)
 	{
-		class_object->IncRef();
-		mReferencedObjectsMap.StoreReferencedObject(class_object);
+		if(mReferencedObjectsMap.StoreReferencedObject(class_object) == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
 	}
 	
 	MARSHALSTREAM_RETURN(class_object);

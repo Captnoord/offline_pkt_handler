@@ -103,13 +103,14 @@ public:
 	/**
 	 * Stores a referenced Object.
 	 * @param object is the object that is marked as a object that has many references.
+     * @return returns the object index number.
 	 */
 	template<typename T>
-	bool StoreReferencedObject(T* object)
+	int StoreReferencedObject(T* object)
 	{
 		assert(mStoreObjectIndex < mExpectedObjectsCount);
 		if (mStoreObjectIndex > mExpectedObjectsCount)
-			return false;
+			return (int)-1;
 		
 
 		uint32 objectloc = mOrderMap[mStoreObjectIndex] - 1;
@@ -120,9 +121,28 @@ public:
 		mReferenceObjects[objectloc] = (PyObject*)object;
 		mStoreObjectIndex++;
 
+        // makes sure we increase the ref counter..., its possible that we store a NULL pointer...
+        if (object != NULL)
+            ((PyObject*)object)->IncRef();
+
 		mStoredObjectCount = mStoreObjectIndex;
-		return true;
+		return (int)objectloc;
 	}
+
+    template<typename T>
+    bool UpdateReferencedObject(int index, T* object)
+    {
+        assert(object);
+
+        PyObject* shared_obj_ptr = mReferenceObjects[index];
+        assert(!shared_obj_ptr); // for now... this should be NULL.... if its not crash..
+
+        mReferenceObjects[index] = (PyObject*)object;
+
+        return true;
+    }
+
+
 
 	/**
 	 * Get the current stored objects.
