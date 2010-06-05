@@ -10,14 +10,7 @@ inline bool IsPrintString(const char* str, const size_t len);
 inline bool IsPrintString(PyString * obj);
 inline void WriteSpacer(FILE * fp, size_t count);
 
-static PyList & PyListRef_PyChameleon(PyChameleon & obj)
-{
-	PyObject * ret_obj = obj.getPyObject();
-	if (ret_obj->gettype() != PyTypeList)
-		assert(false);
-	return *((PyList*)ret_obj);
-}
-
+PyList & PyListRef_PyChameleon(PyChameleon & obj);
 static void ClassDumper_util_row(FILE * fp, size_t /*deep*/, PyDict* obj);
 static void ClassDumper_util_rowset(FILE * fp, size_t deep, PyDict* obj);
 

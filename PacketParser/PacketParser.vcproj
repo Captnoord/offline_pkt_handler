@@ -374,11 +374,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\objectCachingUtil.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\PyCallObject.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\src\PyCallObject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\rowset.h"
 					>
 				</File>
 			</Filter>

@@ -458,7 +458,7 @@ public:
     virtual int UpdateDict(PyObject* bases){return -1;}
 
     // important for the inner workings of this all
-    virtual bool SetState(PyObject* state) {return false;};
+    virtual bool init(PyObject* state) = NULL;
     virtual PyTuple* GetState() {return NULL;};
 protected:
 	PyTuple		*mBases;/* A tuple of class objects */

@@ -40,7 +40,7 @@ public:
     }
 
     // stubs
-    bool SetState(PyObject* state){return false;}
+    bool init(PyObject* state){return false;}
     PyTuple* GetState(){ return NULL;};
     
 };
@@ -236,7 +236,7 @@ public:
         return state;
     }
 
-    bool SetState(PyObject* state)
+    bool init(PyObject* state)
     {
         if (state->gettype() != PyTypeTuple)
             return false;

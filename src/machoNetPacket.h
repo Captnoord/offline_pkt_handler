@@ -29,7 +29,7 @@ public:
         return mDict->set_item(attr_name.c_str(), attr_obj);
     }
 
-    bool SetState(PyObject* state)
+    bool init(PyObject* state)
     {
         // this is generic for all packet types...
         /*

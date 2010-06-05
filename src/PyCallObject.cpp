@@ -4,13 +4,19 @@
 #include "PyCallObject.h"
 
 #include "machoNetPacket.h"
+#include "objectCachingUtil.h"
+#include "rowset.h"
 
 createFileSingleton(CallMgr);
 CallMgr::CallMgr()
 {
     // we now register the proto types...
+    
     reg("util.Row", new util_Row());
-
+    reg("util.CachedObject", new util_CachedObject());
+    reg("util.KeyVal", new util_KeyVal());
+    reg("util.Rowset", new util_Rowset());
+    
     reg("macho.CallReq", new macho_CallReq());
     reg("macho.CallRsp", new macho_CallRsp());
     reg("macho.MachoAddress", new macho_MachoAddress());

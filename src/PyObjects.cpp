@@ -514,6 +514,12 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         return false;
     }
 
+    /*if (key->gettype() == PyTypeNone || obj->gettype() == PyTypeNone)
+    {
+        ASCENT_HARDWARE_BREAKPOINT;
+        return false;
+    }*/
+
     /*if (mMappingMode == true)
     {
         // create a new dictionary entry 

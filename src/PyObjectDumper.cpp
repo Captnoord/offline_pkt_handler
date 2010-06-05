@@ -484,3 +484,11 @@ bool IsPrintString(PyString * obj)
 {
 	return IsPrintString(obj->content(), obj->length());
 }
+
+PyList & PyListRef_PyChameleon(PyChameleon & obj)
+{
+    PyObject * ret_obj = obj.getPyObject();
+    if (ret_obj->gettype() != PyTypeList)
+        assert(false);
+    return *((PyList*)ret_obj);
+}

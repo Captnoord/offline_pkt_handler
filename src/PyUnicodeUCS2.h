@@ -28,23 +28,16 @@
 
 #pragma pack(push,1)
 
-class PyUnicodeUCS2
+class PyUnicodeUCS2 : public PyObject
 {
 public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyUnicodeUCS2::*mHash)();
-public:
-	explicit PyUnicodeUCS2();
-	explicit PyUnicodeUCS2(const wchar_t* str);
-	explicit PyUnicodeUCS2(const wchar_t* str, size_t len);
-	explicit PyUnicodeUCS2(std::wstring& str);
+	PyUnicodeUCS2();
+	PyUnicodeUCS2(const wchar_t* str);
+	PyUnicodeUCS2(const wchar_t* str, size_t len);
+	PyUnicodeUCS2(std::wstring& str);
 	~PyUnicodeUCS2();
+    uint32 hash();
+
 	bool set(const wchar_t* str, size_t len);
 	bool resize(size_t newsize);
 	wchar_t * content();
@@ -54,7 +47,6 @@ private:
 	wchar_t* mStr;
 	size_t mStrLen;
 	uint32 mHashValue; /* string hash cache */
-	uint32 _hash();
 };
 #pragma pack(pop)
 

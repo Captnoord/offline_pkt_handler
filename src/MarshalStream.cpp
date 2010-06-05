@@ -287,6 +287,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					Log.Error("MarshalStream", "Invalid string table index %d", index);
 					MARSHALSTREAM_RETURN_NULL;
 				}
+                Log.Warning("MarshalDebug", "string: %s", ret->content());
 				MARSHALSTREAM_RETURN(ret);
 			}
 
@@ -301,6 +302,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				if (!stream.readWstring(&strptr, strlen))
 					MARSHALSTREAM_RETURN_NULL;
 	
+                Log.Warning("MarshalDebug", "unicode string: %S", strptr);
 				MARSHALSTREAM_RETURN(PyUnicodeUCS2_FromWideChar(strptr, strlen));
 			}
 
@@ -729,7 +731,7 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
         new_instance->IncRef();
     }
 
-    PyTuple * bases = (PyTuple*)unmarshal(stream);
+    PyObject * bases = unmarshal(stream);
 
     /* for people that pay attention to detail this can really fuck things up.
      * because unless the just registered shared object ( if it is ) is removed.
@@ -742,7 +744,8 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    new_instance->SetState((PyObject*)bases);
+    // init the new object instance..
+    new_instance->init(bases);
 
 /*
 	if (shared != FALSE)
@@ -782,7 +785,7 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
 ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, BOOL shared )
 {
-    PyClass * classObj = new PyClass();
+    /*PyClass * classObj = new PyClass();
 
     if (shared != FALSE)
     {
@@ -816,14 +819,55 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
         classObj->DecRef();
         bases->DecRef();
         MARSHALSTREAM_RETURN_NULL;
+    }*/
+
+    PyString * className = (PyString *)unmarshal(stream);
+
+    // get the instance
+    PyClass* callable_object = sPyCallMgr.find(className);
+
+    PyTuple * bases = (PyTuple*)unmarshal(stream);
+
+    PyClass * inst_obj = callable_object->New();
+
+    // TODO decrappy this..
+    if (shared != FALSE)
+    {
+        inst_obj->IncRef();
+        mReferencedObjectsMap.StoreReferencedObject(inst_obj);
     }
 
-    MARSHALSTREAM_RETURN(classObj);
+    if (inst_obj == NULL)
+        MARSHALSTREAM_RETURN_NULL;
+
+    inst_obj->init(bases);
+
+
+    /*if(!classObj->setname(className))
+    {
+        ASCENT_HARDWARE_BREAKPOINT;
+        className->DecRef();
+        classObj->DecRef();
+        bases->DecRef();
+        MARSHALSTREAM_RETURN_NULL;
+    }*/
+
+    /*if(!classObj->setbases(bases))
+    {
+        ASCENT_HARDWARE_BREAKPOINT;
+        className->DecRef();
+        classObj->DecRef();
+        bases->DecRef();
+        MARSHALSTREAM_RETURN_NULL;
+    }*/
+
+    MARSHALSTREAM_RETURN(inst_obj);
 }
 
 PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 {
-	PyClass * classObj = new PyClass();
+    ASCENT_HARDWARE_BREAKPOINT;
+	PyClass * classObj = NULL;//new PyClass();
 
 	if (classObj == NULL)
 		MARSHALSTREAM_RETURN_NULL;
@@ -861,10 +905,11 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 	MARSHALSTREAM_RETURN(classObj);
 }
 
+// C style python classes...
 PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
-{
+    ASCENT_HARDWARE_BREAKPOINT;
     /* this crappy old code */
-	PyClass * classObj = new PyClass();
+	/*PyClass * classObj = NULL;//new PyClass();
 
 	if (shared != FALSE)
 	{
@@ -872,7 +917,7 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
 		mReferencedObjectsMap.StoreReferencedObject(classObj);
 	}
 
-    /* here new code starts */
+    // here new code starts 
 	PyTuple * object_root = (PyTuple *)unmarshal(stream);
 
     PyTuple* call_root = object_root->GetItem_asPyTuple(0);
@@ -887,7 +932,7 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     {
         object_root->DecRef();
         MARSHALSTREAM_RETURN_NULL;
-    }
+    }*/
 
     /*
     PyObject* PyObject_GetAttr(PyObject *o, PyObject *attr_name)
@@ -918,10 +963,40 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
 	//PyString * debugName = new PyString("[DEBUG] class new");
 	//classObj->setname(debugName);
 
-	classObj->setbases(object_root);
+	//classObj->setbases(object_root);
 
-	ReadNewObjList(stream, *classObj);
-	ReadNewObjDict(stream, *classObj);
+	//ReadNewObjList(stream, *classObj);
+	//ReadNewObjDict(stream, *classObj);
+
+    // here new code starts 
+    PyTuple * object_root = (PyTuple *)unmarshal(stream);
+
+    PyTuple* call_root = object_root->GetItem_asPyTuple(0);
+    if (call_root == NULL)
+    {
+        object_root->DecRef();
+        MARSHALSTREAM_RETURN_NULL;
+    }
+
+    PyClass* class_instance = call_root->GetItem_asPyClass(0);
+    if (class_instance == NULL)
+    {
+        object_root->DecRef();
+        MARSHALSTREAM_RETURN_NULL;
+    }
+
+    PyClass * classObj = NULL;//new PyClass();
+
+    if (shared != FALSE)
+    {
+        classObj->IncRef();
+        mReferencedObjectsMap.StoreReferencedObject(classObj);
+    }
+
+    classObj->setbases(object_root);
+
+    ReadNewObjList(stream, *classObj);
+    ReadNewObjDict(stream, *classObj);
 
 	MARSHALSTREAM_RETURN(classObj);
 }

@@ -28,34 +28,26 @@
 /************************************************************************/
 /* Py Unicode object                                                    */
 /************************************************************************/
-PyUnicodeUCS2::PyUnicodeUCS2() : mType(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0), mRefcnt(1)
+PyUnicodeUCS2::PyUnicodeUCS2() : PyObject(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0) {}
+PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str) : PyObject(PyTypeUnicode), mStrLen(0), mStr(NULL), mHashValue(0)
 {
-	mHash = &PyUnicodeUCS2::_hash;
-}
-PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str) : mType(PyTypeUnicode), mStrLen(0), mStr(NULL), mHashValue(0),mRefcnt(1)
-{
-	mHash = &PyUnicodeUCS2::_hash;
 	size_t len = wcslen(str);
 	set(str, len);
 }
 
-PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str, size_t len) : mType(PyTypeUnicode), mStr(NULL), mHashValue(0), mRefcnt(1)
+PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str, size_t len) : PyObject(PyTypeUnicode), mStr(NULL), mHashValue(0)
 {
-	mHash = &PyUnicodeUCS2::_hash;
 	set(str, len);
 }
 
-PyUnicodeUCS2::PyUnicodeUCS2(std::wstring& str) : mType(PyTypeUnicode), mStr(NULL), mHashValue(0) , mRefcnt(1)
+PyUnicodeUCS2::PyUnicodeUCS2(std::wstring& str) : PyObject(PyTypeUnicode), mStr(NULL), mHashValue(0)
 {
-	mHash = &PyUnicodeUCS2::_hash;
 	set(str.c_str(), str.length());
 }
 
 PyUnicodeUCS2::~PyUnicodeUCS2()
 {
 	SafeFree(mStr);
-	mType = PyTypeDeleted;
-	mHash = NULL;
 }
 
 bool PyUnicodeUCS2::set( const wchar_t* str, size_t len )
@@ -94,35 +86,13 @@ wchar_t* PyUnicodeUCS2::content()
 	return mStr;
 }
 
-uint8 PyUnicodeUCS2::gettype()
-{
-	return mType;
-}
-
-void PyUnicodeUCS2::IncRef()
-{
-	mRefcnt++;
-}
-
-void PyUnicodeUCS2::DecRef()
-{
-	mRefcnt--;
-	if (mRefcnt <= 0)
-		PyDelete(this);
-}
-
 const size_t PyUnicodeUCS2::length()
 {
 	return mStrLen;
 }
 
-uint32 PyUnicodeUCS2::hash()
-{
-	return (this->*mHash)();
-}
-
 /* how in gods name do I have to hash a empty string? */
-uint32 PyUnicodeUCS2::_hash()
+uint32 PyUnicodeUCS2::hash()
 {
 	if (mHashValue == 0)
 	{
