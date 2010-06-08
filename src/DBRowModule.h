@@ -46,9 +46,7 @@ public:
 	DBRowModule();
 	~DBRowModule();
 
-
 	/* strings and buffers seem to be stored in a itr sequence after the raw part, these are simply skipped
-	  
 	*/
 
 	static PyObject* ReadRawDbField(MarshalStream& stream, PyInt &type, size_t &virtualFieldCount);

@@ -132,12 +132,16 @@ public:
     template<typename T>
     bool UpdateReferencedObject(int index, T* object)
     {
+        //ASCENT_HARDWARE_BREAKPOINT;
+
         assert(object);
 
-        PyObject* shared_obj_ptr = mReferenceObjects[index];
-        assert(!shared_obj_ptr); // for now... this should be NULL.... if its not crash..
+        PyObject** shared_obj_ptr = &mReferenceObjects[index];
+        assert(!*shared_obj_ptr); // for now... this should be NULL.... if its not crash..
 
-        mReferenceObjects[index] = (PyObject*)object;
+        *shared_obj_ptr = (PyObject*)object;
+
+        ((PyObject*)object)->IncRef();
 
         return true;
     }

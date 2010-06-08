@@ -393,6 +393,10 @@
 					Name="DBRow"
 					>
 					<File
+						RelativePath="..\src\blue_DBRowDescriptor.h"
+						>
+					</File>
+					<File
 						RelativePath="..\src\cRowSet.h"
 						>
 					</File>

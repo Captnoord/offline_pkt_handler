@@ -7,6 +7,7 @@
 #include "objectCachingUtil.h"
 #include "rowset.h"
 #include "cRowSet.h"
+#include "blue_DBRowDescriptor.h"
 
 createFileSingleton(CallMgr);
 CallMgr::CallMgr()
@@ -19,6 +20,10 @@ CallMgr::CallMgr()
     reg("util.Rowset", new util_Rowset());
 
     reg("dbutil.CRowset", new dbutil_CRowset());
+
+    reg("blue.DBRowDescriptor", new blue_DBRowDescriptor());
+
+    
     
     reg("macho.CallReq", new macho_CallReq());
     reg("macho.CallRsp", new macho_CallRsp());

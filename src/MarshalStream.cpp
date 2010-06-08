@@ -10,6 +10,7 @@
 #include <zlib.h>
 
 #include "DBRowModule.h"
+#include "PyObjectDumper.h"
 
 /* macro's that help debugging exceptions */
 #define EVEMU_EXTRA_DEBUG
@@ -858,11 +859,13 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
 
 PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 {
-    ASCENT_HARDWARE_BREAKPOINT;
+    int shared_object_index = 0;
+    //ASCENT_HARDWARE_BREAKPOINT;
 
     if (shared != FALSE)
     {
-        if(mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL) == -1)
+        shared_object_index = mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL);
+        if(shared_object_index == -1)
             ASCENT_HARDWARE_BREAKPOINT;
     }
 
@@ -870,37 +873,60 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 	if (bases == NULL)
 		MARSHALSTREAM_RETURN_NULL;
 
-
-
-    PyObject * callable_object = bases->GetItem(0);
-    if (callable_object == NULL)
+    PyObject * method = bases->GetItem(0);
+    if (method == NULL)
     {
         bases->DecRef();
         MARSHALSTREAM_RETURN_NULL;
     }
 
     PyObject * args = bases->GetItem(1);
-    if (callable_object == NULL)
+    if (args == NULL)
     {
         bases->DecRef();
+        method->DecRef();
         MARSHALSTREAM_RETURN_NULL
     }
 
-    PyObject* call_result = PyObject_CallObject(callable_object, args);
+    // its important for this to return something...
+    PyObject* call_result = PyObject_CallObject(method, args);
 
-	/*classObj->setbases(bases);
-	ReadNewObjList(stream, *classObj);
-	ReadNewObjDict(stream, *classObj);
+    if(shared)
+    {
+        mReferencedObjectsMap.UpdateReferencedObject(shared_object_index, call_result);        
+    }
 
-	MARSHALSTREAM_RETURN(classObj);*/
+    // if the tuple hs more than 2 elements
+    if (bases->size() > 2)
+    {
+        // implement this..
+        ASCENT_HARDWARE_BREAKPOINT;
+        PyObject* ext_arg = bases->GetItem(3);
+        //PyObject_CallFunctionObjArgs(v13, v14, 0); // but in short its just call_result->set_states
+        // call_result->set_states(ext_arg);
 
-    MARSHALSTREAM_RETURN_NULL; // will cause major havok
+        /*if (call_result->set_states != NULL)
+        {
+            call_result->set_states(ext_arg);
+        }
+        else
+        {
+            call_result->update_dict(ext_arg);
+        }
+        */
+    }
+
+    // this needs to be done in a different way...... updating the class object using the class update functions...
+    ReadNewObjList(stream, *(PyClass*)call_result);
+    ReadNewObjDict(stream, *(PyClass*)call_result);
+
+    MARSHALSTREAM_RETURN(call_result);
 }
 
 // C style python classes...
 PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
 {
-    ASCENT_HARDWARE_BREAKPOINT;
+    //ASCENT_HARDWARE_BREAKPOINT;
     /* this crappy old code */
 	/*PyClass * classObj = NULL;//new PyClass();
 
@@ -935,11 +961,11 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     */
 
     /*
-    PyObject* PyObject_CallObject(PyObject *callable_object, PyObject *args)
+    PyObject* PyObject_CallObject(PyObject *method, PyObject *args)
     Return value: New reference.
-    Call a callable Python object callable_object, with arguments given by the tuple args. If no arguments are needed,
+    Call a callable Python object method, with arguments given by the tuple args. If no arguments are needed,
     then args may be NULL. Returns the result of the call on success, or NULL on failure. This is the equivalent of the
-    Python expression apply(callable_object, args) or callable_object(*args).
+    Python expression apply(method, args) or method(*args).
     */
 
     /*
@@ -949,17 +975,15 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
         as a variable number of parameters followed by NULL. Returns the result of the call on success, or NULL on failure.
     */
 
+    int shared_obj_index = 0;
 
-
-
-
-	//PyString * debugName = new PyString("[DEBUG] class new");
-	//classObj->setname(debugName);
-
-	//classObj->setbases(object_root);
-
-	//ReadNewObjList(stream, *classObj);
-	//ReadNewObjDict(stream, *classObj);
+    /* store a NULL so we can crash when we have recursive class calls */
+    if (shared != FALSE)
+    {
+        shared_obj_index = mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL);
+        if(shared_obj_index == -1)
+            ASCENT_HARDWARE_BREAKPOINT;
+    }
 
     // here new code starts 
     PyTuple * object_root = (PyTuple *)unmarshal(stream);
@@ -978,20 +1002,22 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    PyClass * classObj = NULL;//new PyClass();
+    // do get function stuff on call_root..... bla bla bla I dono...
 
-    if (shared != FALSE)
+    // its important for this to return something...
+    PyObject* call_result = PyObject_CallObject(class_instance, call_root);
+
+    if(shared)
     {
-        if(mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
-            ASCENT_HARDWARE_BREAKPOINT;
+        mReferencedObjectsMap.UpdateReferencedObject(shared_obj_index, call_result);        
     }
 
-    classObj->setbases(object_root);
+    // need more love here...
 
-    ReadNewObjList(stream, *classObj);
-    ReadNewObjDict(stream, *classObj);
+    ReadNewObjList(stream, *(PyClass*)call_result);
+    ReadNewObjDict(stream, *(PyClass*)call_result);
 
-	MARSHALSTREAM_RETURN(classObj);
+    MARSHALSTREAM_RETURN(call_result);
 }
 
 PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )

@@ -1229,5 +1229,10 @@ uint32 PyObject_Hash( PyObject* obj )
 
 PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )
 {
-    return NULL;
+    assert(callable_object);
+    assert(args);
+    PyClass * pClass = (PyClass *)callable_object;
+    PyClass * pNewClass = pClass->New();
+    pNewClass->init(args);
+    return pNewClass;
 }
