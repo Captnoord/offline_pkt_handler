@@ -25,15 +25,16 @@
 
 #include "PyStringTable.h"
 
-//createFileSingleton(PyMarshalStringTable);
-initialiseSingleton(PyMarshalStringTable);
+createFileSingleton(PyMarshalStringTable);
+//initialiseSingleton(PyMarshalStringTable);
 
 PyMarshalStringTable::PyMarshalStringTable()
 {
 	for (size_t i = 0; i < StringTableSize; i++)
 	{
 		uint32 hashValue = hash(StringTableData[i]);
-		mStringTable[hashValue] = static_cast<uint8>(i);
+		//mStringTable[hashValue] = static_cast<uint8>(i);
+        mStringTable.insert(std::make_pair(hashValue, i));
 		mPyStringTable[i].set(StringTableData[i], strlen(StringTableData[i]));
 	}
 }

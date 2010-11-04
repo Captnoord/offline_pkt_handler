@@ -1,6 +1,6 @@
 #include "PyObjectDumper.h"
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 /*
 def __str__(self):
@@ -17,6 +17,7 @@ public:
         setname(new PyString("util.KeyVal"));
     }
     ~util_KeyVal(){};
+    void destruct() {}
 
     util_KeyVal* New()
     {
@@ -51,13 +52,14 @@ public:
     RowClass = Row
 
     def __init__(self, hd = None, li = None, RowClass = Row):
-if (hd is None):
-hd = []
-if (li is None):
-li = []
-self.header = hd
-self.lines = li
-self.RowClass = RowClass*/
+        if (hd is None):
+            hd = []
+        if (li is None):
+            li = []
+        self.header = hd
+        self.lines = li
+        self.RowClass = RowClass
+        */
 
 class util_Rowset : public PyClass
 {
@@ -68,6 +70,7 @@ public:
         setname(new PyString("util.Rowset"));
     }
     ~util_Rowset(){};
+    void destruct() {}
 
     util_Rowset* New()
     {
@@ -106,4 +109,4 @@ public:
     //RowClass = Row
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)

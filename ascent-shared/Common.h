@@ -41,6 +41,7 @@
 #  include <crtdbg.h>
 #endif
 
+
 enum TimeVariables
 {
 	TIME_SECOND = 1,
@@ -90,29 +91,40 @@ enum MsTimeVariables
 #include <errno.h>
 
 #if defined( __WIN32__ ) || defined( WIN32 ) || defined( _WIN32 )
-#  define WIN32_LEAN_AND_MEAN
-#  define VC_EXTRALEAN
-#  define STRICT
-#  define NOSOUND
-#  define NOGDI
-#define NOCOMM
+//#  define WIN32_LEAN_AND_MEAN
+//#  define VC_EXTRALEAN
+//#  define STRICT
+//#  define NOSOUND
+//#  define NOGDI
+//#define NOCOMM
 #  ifndef _WIN32_WINNT
 #    define _WIN32_WINNT 0x0500
 #  endif
-#  define NOMINMAX
+//#  define NOMINMAX
 #  include <windows.h>
 #else
 #  include <string.h>
 #  define MAX_PATH 1024
 #endif
 
-#ifdef min
+#include "../Tools/DbgHeap/DbgHeap.h"
+
+// Enable invalid memory access detection mode
+extern DbgHeap g_Heap; // the global debug heap object.
+
+// fast hack bla bla...
+void* operator new (size_t nSize);
+void operator delete (void* pPtr);
+
+
+/*#ifdef min
 #  undef min
 #endif
 
 #ifdef max
 #  undef max
 #endif
+*/
 
 #ifdef CONFIG_USE_SELECT
 #  undef  FD_SETSIZE
@@ -120,8 +132,8 @@ enum MsTimeVariables
 #endif
 
 #if defined( __WIN32__ ) || defined( WIN32 ) || defined( _WIN32 )
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
+//#  include <winsock2.h>
+//#  include <ws2tcpip.h>
 #else
 #  include <sys/time.h>
 #  include <sys/types.h>
@@ -251,6 +263,7 @@ enum MsTimeVariables
 #  define CONFIG_USE_POLL
 #endif
 
+/*
 #ifdef min
 #  undef min
 #endif
@@ -258,6 +271,7 @@ enum MsTimeVariables
 #ifdef max
 #  undef max
 #endif
+*/
 
 #include <set>
 #include <list>

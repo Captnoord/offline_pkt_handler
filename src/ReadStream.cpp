@@ -35,8 +35,13 @@
 ReadStream::ReadStream() : mBuffer(NULL), mSize(0), mReadIndex(0), mPayloadSize(0), mAllocatedMem(0) {}
 ReadStream::ReadStream( const char* buff, size_t size ) : mBuffer(NULL), mSize(size), mReadIndex(0), mPayloadSize(size), mAllocatedMem(0)
 {
-	resize(size);
-	ASCENT_MEMCPY(mBuffer, buff, size);
+    if (size == 0)
+        ASCENT_HARDWARE_BREAKPOINT;
+
+    if (size != 0) {
+	    resize(size);
+	    ASCENT_MEMCPY(mBuffer, buff, size);
+    }
 }
 
 ReadStream::~ReadStream()

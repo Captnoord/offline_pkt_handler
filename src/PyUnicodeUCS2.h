@@ -26,7 +26,7 @@
 #ifndef _PYUNICODEUCS2_H
 #define _PYUNICODEUCS2_H
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 class PyUnicodeUCS2 : public PyObject
 {
@@ -48,7 +48,7 @@ private:
 	size_t mStrLen;
 	uint32 mHashValue; /* string hash cache */
 };
-#pragma pack(pop)
+//#pragma pack(pop)
 
 /************************************************************************/
 /* fake python api                                                      */

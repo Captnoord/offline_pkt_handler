@@ -122,7 +122,7 @@ int main(int argc, char ** argv)
 		strcpy(in_file_path,argv[1]);
 	}
 
-	new PyMarshalStringTable;
+	//new PyMarshalStringTable;
 
 	DWORD tiet = GetTickCount();
 

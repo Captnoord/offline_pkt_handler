@@ -60,7 +60,7 @@ PyClass* CallMgr::find( const char* module )
     CallMapItr itr = mCallMap.find(module);
     if (itr != mCallMap.end())
     {
-        printf("found module: %s\n", module);
+        //printf("found module: %s\n", module);
         return itr->second;
     }
     else

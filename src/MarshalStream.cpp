@@ -36,14 +36,14 @@
 
 /* macro's that help debugging exceptions */
 #ifdef _DEBUG
-#  define unmarshalState(x, y) {sLog.String("State:"#x"\toffset:0x%X", y.tell());}
-//#  define unmarshalState(x, y) /*{x, y}*/
+//#  define unmarshalState(x, y) {sLog.String("State:"#x"\toffset:0x%X", y.tell());}
+#  define unmarshalState(x, y) /*{x, y}*/
 #else
 #  define unmarshalState(x, y) /*{x, y}*/
 #endif//_DEBUG
 
 MarshalStream::MarshalStream() : PyIntZero(0), PyIntOne(1), PyIntMinOne(-1), PyFloatZero(0.0),PyIntMinusOne(-1),
-	Py_TrueStruct(true), Py_ZeroStruct(false) {}
+	Py_TrueStruct(true), Py_ZeroStruct(false), PyStringEmpty(""), mReferencedObjectsMap() {}
 
 MarshalStream::~MarshalStream() {}
 
@@ -288,7 +288,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					Log.Error("MarshalStream", "Invalid string table index %d", index);
 					MARSHALSTREAM_RETURN_NULL;
 				}
-                Log.Warning("MarshalDebug", "string: %s", ret->content());
+                //Log.Warning("MarshalDebug", "string: %s", ret->content());
 				MARSHALSTREAM_RETURN(ret);
 			}
 
@@ -303,7 +303,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				if (!stream.readWstring(&strptr, strlen))
 					MARSHALSTREAM_RETURN_NULL;
 	
-                Log.Warning("MarshalDebug", "unicode string: %S", strptr);
+                //Log.Warning("MarshalDebug", "unicode string: %S", strptr);
 				MARSHALSTREAM_RETURN(PyUnicodeUCS2_FromWideChar(strptr, strlen));
 			}
 
@@ -888,7 +888,6 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
         MARSHALSTREAM_RETURN_NULL
     }
 
-    // its important for this to return something...
     PyObject* call_result = PyObject_CallObject(method, args);
 
     if(shared)
@@ -1057,9 +1056,12 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 
 	if (size > 0)
 	{
+        //if (obj1->getbases() == NULL)
+          //  Dump(stdout, obj1, 0);
+
 		size_t guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->GetItem(1));
 
-		outsize = guessedSize+20;
+		outsize = guessedSize+200;
 		size_t bufferSize = outsize;
 
 		outbuff = (uint8*)ASCENT_MALLOC(outsize);

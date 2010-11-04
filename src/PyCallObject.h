@@ -34,6 +34,8 @@ public:
         return new util_Row();
     }
 
+    void destruct() {}
+
     int UpdateDict(PyObject* bases)
     {
         return -1;
@@ -165,7 +167,7 @@ public:
         *service = theTuple[2]
         *callID = theTuple[3]
 */
-#pragma pack(push,1)
+//#pragma pack(push,1)
 class macho_MachoAddress : public PyClass
 {
 public:
@@ -175,6 +177,7 @@ public:
     }
 
     ~macho_MachoAddress(){}
+    void destruct() {}
 
     macho_MachoAddress* New()
     {
@@ -281,7 +284,7 @@ public:
     }
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)
 
 class CallMgr : public Singleton<CallMgr>
 {

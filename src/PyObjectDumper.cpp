@@ -1,6 +1,8 @@
 #include "EvemuPCH.h"
 #include "zlib.h"
 
+DbgHeap g_Heap;
+
 void DumpObject(FILE * fd, PyObject* obj)
 {
 	Dump(fd, obj, 0);
@@ -281,8 +283,8 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			fputs("PySubStream\n", fp);
 			// make this optional, also make this so that you can auto decode this...
 
-#if 0
-			//HexAsciiModule::print_hexview(fp, (const char*)stream->content(), stream->size());
+#if 1
+			HexAsciiModule::print_hexview(fp, (const char*)stream->content(), stream->size());
 #else
 
 			ReadStream *rawsubstream = new ReadStream((const char*)stream->content(), stream->size());

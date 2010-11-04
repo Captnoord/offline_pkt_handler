@@ -117,6 +117,24 @@ private:
 		return hash;
 	}
 
+    uint32 hash(char* str)
+    {
+        uint32 hash = 5381;
+        uint32 c;
+
+        //while (c = *str++)
+            //hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+        int i = 0;
+        do {
+            //c = *str++;
+            c = str[i++];
+            printf("0x%X, %c\n", c, (char)c);
+            hash = ((hash << 5) + hash) + c;
+        } while (c != '\0');
+
+        return hash;
+    }
+
 private:
 	typedef std::tr1::unordered_map<uint32, uint8>	StringTableMap;
 	typedef StringTableMap::iterator				StringTableMapItr;

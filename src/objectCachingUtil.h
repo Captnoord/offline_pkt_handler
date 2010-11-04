@@ -1,4 +1,4 @@
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 // this is pure evill bleh
 class util_CachedObject : public PyClass
@@ -11,6 +11,7 @@ public:
         setname(new PyString("util.CachedObject"));
     }
     ~util_CachedObject(){};
+    void destruct() {}
 
     util_CachedObject* New()
     {
@@ -39,4 +40,4 @@ public:
     };
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)

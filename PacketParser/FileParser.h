@@ -82,9 +82,14 @@ void ParseFile(const char* in_file_path, const char* out_file_path)
 
 		fprintf(fp_out, "\n{%s} FileOffset:0x%X, Packet Nr:%u, length:%u, time:%u\n", (direction ? "SERVER" : "CLIENT"), FileOffset, i, length, uint32(timestamp & 0xFFFFFFFF));
 		
-		ReadStream readstream(packetBuf, length);
+		//ReadStream readstream(packetBuf, length);
+        ReadStream * _readstream = new ReadStream(packetBuf, length);
+        ReadStream & readstream = *_readstream;
 
-		MarshalStream stream;
+		
+        //MarshalStream* _stream = new MarshalStream();
+        //MarshalStream &stream = *_stream;
+        MarshalStream stream;
 		PyObject* henk = stream.load(readstream);
 
 		if (henk != NULL)
@@ -134,6 +139,9 @@ void ParseFile(const char* in_file_path, const char* out_file_path)
 			DumpObject(fp_out, henk);
 			henk->DecRef();
 		}
+
+//        delete _stream;
+
 		
 		ASCENT_FREE(packetBuf);
 		
@@ -141,6 +149,8 @@ void ParseFile(const char* in_file_path, const char* out_file_path)
 			Log.Warning("fileParser","sub stream isn't parsed completely: %u - %u", readstream.tell(), readstream.size());
 
 		//printf("Parsed packet nr: %u | offset: %u, size: %u\n", i, readstream.tell(), readstream.size());
+
+        delete _readstream;
 
 		//if (i == 5000)
 		//	break;

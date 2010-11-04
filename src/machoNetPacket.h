@@ -1,7 +1,7 @@
 #ifndef machoNetPacket_h__
 #define machoNetPacket_h__
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 class MachoPacket : public PyClass
 {
@@ -10,20 +10,21 @@ public:
     MachoPacket() : PyClass() {}
     
     ~MachoPacket(){};
-    virtual MachoPacket* New() = 0;
+    void destruct() {}
 
+    virtual MachoPacket* New() = 0;
 
     bool setattr(std::string attr_name, PyObject * attr_obj)
     {
         /*
         if hasattr(self, 'thePickle'):
-        if hasattr(self, attr):
-        curr = getattr(self, attr)
-        if ((type(curr) not in self.__intorstringtype__) or ((type(value) not in self.__intorstringtype__) or (curr != value))):
-        self.Changed()
-        else:
-        self.Changed()
-        self.__dict__[attr] = value
+            if hasattr(self, attr):
+                curr = getattr(self, attr)
+                if ((type(curr) not in self.__intorstringtype__) or ((type(value) not in self.__intorstringtype__) or (curr != value))):
+                    self.Changed()
+                else:
+                    self.Changed()
+            self.__dict__[attr] = value
         */
 
         return mDict->set_item(attr_name.c_str(), attr_obj);
@@ -35,24 +36,34 @@ public:
         /*
         (self.command, self.source, self.destination, self.userID, body, self.oob,) = state
         if (self.oob is None):
-        self.oob = {}
+            self.oob = {}
         (self.channel, self.compressedPart,) = (self.oob.get('channel', None), self.oob.get('compressedPart', 0))
         params = self.__machodesc__['params']
         l = len(params)
         if (len(body) < l):
-        l = len(body)
+            l = len(body)
         for i in range(l):
-        if params[i].endswith('?'):
-        tmp = params[i][:-1]
-        else:
-        tmp = params[i]
-        setattr(self, tmp, body[i])
+            if params[i].endswith('?'):
+                tmp = params[i][:-1]
+            else:
+                tmp = params[i]
+            setattr(self, tmp, body[i])
         */
 
-        if (state->gettype() != PyTypeTuple)
+        /* check for obj */
+        if (!state)
             return false;
 
+        /* check for obj type */
+        if (state->gettype() != PyTypeTuple)
+            return false;
+        
         PyTuple * pState = (PyTuple *)state;
+
+        if (pState->size() != 6) {
+            sLog.Error("machoNetPacket", "payload obj size != 6");
+            return false;
+        }
 
         mDict->set_item("command", pState->GetItem(0));
         mDict->set_item("source", pState->GetItem(1));
@@ -63,6 +74,8 @@ public:
 
         // we possible could get this from 
         PyDict * oob = (PyDict *)mDict->get_item("oob");
+
+        assert(oob);
 
         if (oob->gettype() == PyTypeDict)
         {
@@ -80,13 +93,14 @@ public:
             {
                 /*for i in range(l):
                 if params[i].endswith('?'):
-                tmp = params[i][:-1]
+                    tmp = params[i][:-1]
                 else:
-                tmp = params[i]
+                    tmp = params[i]
                 setattr(self, tmp, body[i])*/
 
                 std::string tmp = params[i];
-
+                size_t offset = tmp.find('?');
+                assert(offset == size_t(-1));
                 setattr(tmp, body->GetItem(i));
             }
         }
@@ -96,8 +110,10 @@ public:
     // not implemented for now
     PyTuple* GetState()
     {
+
         return NULL;
     };
+
 protected:
     uint8 command;          // hmmm should we use normal types for this
     std::vector<std::string> params;     // should we use normal types for this
@@ -247,6 +263,6 @@ public:
     }
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)
 
 #endif // machoNetPacket_h__

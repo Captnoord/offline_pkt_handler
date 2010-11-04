@@ -837,6 +837,8 @@ PyClass::PyClass() : PyObject(PyTypeClass), mDict(NULL), mName(NULL), mBases(NUL
 
 PyClass::~PyClass()
 {
+    destruct();
+
 	if (mName)
 	{
 		mName->DecRef();
@@ -1227,6 +1229,8 @@ uint32 PyObject_Hash( PyObject* obj )
 	return obj->hash();
 }
 
+// this is so wrong 'callable_object' should only contain the method to call...
+// now we are assuming they always call init and new...
 PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )
 {
     assert(callable_object);

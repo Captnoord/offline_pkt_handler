@@ -1,6 +1,6 @@
 //blue.DBRowDescriptor
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 class blue_DBRowDescriptor : public PyClass
 {
@@ -14,6 +14,8 @@ public:
     ~blue_DBRowDescriptor()
     {
     };
+
+    void destruct() {}
 
     blue_DBRowDescriptor* New()
     {
@@ -74,4 +76,4 @@ public:
     std::vector <uint32>        mTableSizes;
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)

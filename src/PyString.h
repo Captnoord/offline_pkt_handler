@@ -1,7 +1,7 @@
 #ifndef PYSTRING_H
 #define PYSTRING_H
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 class PyString : public PyObject
 {
@@ -47,7 +47,7 @@ private:
 	
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)
 
 /**
  * wrapper function to create a PyString from a buffer

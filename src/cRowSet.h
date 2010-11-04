@@ -1,6 +1,6 @@
 #include "PyObjectDumper.h"
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 class dbutil_CRowset : public PyClass
 {
@@ -11,10 +11,17 @@ public:
         setname(new PyString("dbutil.CRowset"));
         mList = new PyList();
     }
+
+    // this of course will never be called
     ~dbutil_CRowset()
     {
-        mList->DecRef();
+    
     };
+
+    void destruct()
+    {
+        mList->DecRef();
+    }
 
     dbutil_CRowset* New()
     {
@@ -65,4 +72,4 @@ public:
     PyList * mList;
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)

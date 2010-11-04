@@ -48,8 +48,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
-				BasicRuntimeChecks="3"
-				SmallerTypeCheck="true"
+				BasicRuntimeChecks="0"
+				SmallerTypeCheck="false"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -73,16 +73,16 @@
 				AdditionalLibraryDirectories="D:\Dev\Python2_6\PCbuild"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				AssemblyDebug="1"
-				GenerateMapFile="true"
-				MapExports="true"
+				AssemblyDebug="0"
+				GenerateMapFile="false"
+				MapExports="false"
 				SubSystem="1"
 				HeapReserveSize="8192"
 				HeapCommitSize="8192"
 				LargeAddressAware="0"
-				RandomizedBaseAddress="1"
-				FixedBaseAddress="2"
-				DataExecutionPrevention="1"
+				RandomizedBaseAddress="0"
+				FixedBaseAddress="0"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 				CLRUnmanagedCodeCheck="false"
 			/>
@@ -211,7 +211,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\Main.cpp"
 				>
 			</File>
 			<File
@@ -512,6 +512,14 @@
 			</File>
 			<File
 				RelativePath="..\ascent-shared\Log.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ascent-shared\Memory.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ascent-shared\Memory.h"
 				>
 			</File>
 			<File

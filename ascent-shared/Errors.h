@@ -38,7 +38,7 @@
 // This should always halt everything.  If you ever find yourself wanting to remove the assert( false ), switch to WPWarning or WPError
 #define WPFatal( assertion, errmsg ) if( ! (assertion) ) { Log::getSingleton( ).outError( "%s:%i FATAL ERROR:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); assert( #assertion &&0 ); abort(); }
 
-#define ASSERT WPAssert
+//#define ASSERT WPAssert
 #define ASCENT_ASSERT WPAssert
 
 #endif

@@ -67,7 +67,7 @@ class PyString;
 
 typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 
-#pragma pack(push,1)
+//#pragma pack(push,1)
 
 // a single global static declaration of the PyNone object
 //static PyBaseNone PyNone;
@@ -83,11 +83,40 @@ public:
     PyObject(PyType type);
     virtual ~PyObject();
     virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
+    virtual size_t size() {
+        
+        // debug assert to make sure its only called by objects that really have size shit.....
+        switch(mType)
+        {
+        case PyTypeNone:
+        case PyTypeBool:
+        case PyTypeInt:
+        case PyTypeLong:
+        case PyTypeReal:
+            return -1;
+        case PyTypeString:
+        case PyTypeUnicode:
+        case PyTypeDict:
+        case PyTypeTuple:
+        case PyTypeList:
+        case PyTypeSubStream:
+            
+        case PyTypeClass:
+        case PyTypeModule:
+        case PyTypePackedRow:
+        case PyTypeSubStruct:
+            ASCENT_HARDWARE_BREAKPOINT;
+            break;
+
+        }
+        return -1;
+    }; // most objects have a size function....
 
 	uint8 gettype();
 	void IncRef();
 	void DecRef();
     size_t GetRef();
+    
 	
 private:
     uint8 mType;
@@ -108,8 +137,8 @@ class PyBaseNone : public virtual PyObject
 {
 public:
     PyBaseNone();
-    // bleh..
     ~PyBaseNone(){}
+
     uint32 hash();
 };
 
@@ -127,8 +156,8 @@ class PyInt : public PyObject
 {
 public:
 	PyInt(int32 num );
-    //bleh..
     ~PyInt(){}
+
 	PyInt &operator = (const int num);
 	int32 GetValue();
 
@@ -144,6 +173,8 @@ class PyLong : public PyObject
 public:
 	PyLong(int64 & num);
 	PyLong(uint64 & num);
+    ~PyLong(){}
+
 	int64 GetValue();
     uint32 hash();
 private:
@@ -156,6 +187,8 @@ public:
     PyFloat();
 	PyFloat(float num);
 	PyFloat(double num);
+    ~PyFloat(){}
+
 	double GetValue();
     uint32 hash();
 private:
@@ -190,8 +223,8 @@ class PyTuple : public PyObject
 /* limit the tuple to 1000 items */
 #define PY_TUPLE_ELEMENT_MAX 1000
 public:
-	explicit PyTuple();
-	explicit PyTuple(size_t elementCount);
+	PyTuple();
+	PyTuple(size_t elementCount);
 	~PyTuple();
 
     // tuple hash function
@@ -241,8 +274,8 @@ private:
 class PyList : public PyObject
 {
 public:
-	explicit PyList();
-	explicit PyList(int elementCount);
+	PyList();
+	PyList(int elementCount);
 	~PyList();
 	PyChameleon &operator[](const int index);
 	size_t size();
@@ -437,7 +470,9 @@ class PyClass : public PyObject
 {
 public:
 	PyClass();
-	virtual ~PyClass();
+	virtual ~PyClass(); // this doesn't do shit... bleh...
+    virtual void destruct() {};
+
     uint32 hash();
 
 	bool setname(PyString* name);
@@ -576,7 +611,7 @@ private:
 	PyObject* payload;
 };
 
-#pragma pack(pop)
+//#pragma pack(pop)
 
 /************************************************************************/
 /* Small portion of the Python API so we are able to handle various    */
