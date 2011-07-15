@@ -435,9 +435,12 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					if(mReferencedObjectsMap.StoreReferencedObject(&list) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
+
 				// recursive function...
-				list[0] = unmarshal(stream);
-				assert(list[0].getPyObject() != (PyObject*)&list);
+				list.set_item(0, unmarshal(stream));
+
+                /* check for adding self */
+				assert(list.get_item(0) != (PyObject*)&list);
 
 				MARSHALSTREAM_RETURN(&list);
 			}
@@ -462,12 +465,12 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				// n recursive function call
 				for (uint32 i = 0; i < elementCount; i++)
 				{
-					PyObject* itr = unmarshal(stream);
-					assert(itr != (PyObject*)&list);
-					if (itr == NULL)
+					PyObject* obj = unmarshal(stream);
+					assert(obj != (PyObject*)&list);
+					if (obj == NULL)
 						MARSHALSTREAM_RETURN_NULL;
 
-					list[i] = itr;
+					list.set_item(i, obj);
 				}
 				MARSHALSTREAM_RETURN(&list);
 			}
@@ -1754,6 +1757,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 	case PyTypeList:
 		{
+            /* just crash because we haven't implemented shared object marshaling for this object yet */
             if (object->GetRef() > 1)
                 ASCENT_HARDWARE_BREAKPOINT;
 
@@ -1775,14 +1779,12 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 				break;
 			}
 
-			for (size_t i = 0; i < list.size(); i++)
-			{
-				PyChameleon& leaf = list[int(i)];
-				if (&leaf == NULL)
+            for ( PyList::iterator itr = list.begin(); itr != list.end(); itr++ ) {
+				PyObject* obj = *itr;
+				if ( obj == NULL )
 					return false;
-				if (leaf.getPyObject() == NULL)
-					return false;
-				if(!marshal(leaf.getPyObject(), stream))
+
+				if( !marshal( obj, stream ) )
 					return false;
 			}
 			return true;

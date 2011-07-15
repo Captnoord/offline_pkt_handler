@@ -385,35 +385,15 @@ bool PyTuple::set_item( const int index, PyObject *object )
 /************************************************************************/
 /* PyList                                                               */
 /************************************************************************/
-PyList::PyList() : PyObject(PyTypeList) {}
-PyList::PyList( int elementCount ) : PyObject(PyTypeList)
+PyList::PyList() : PyObject( PyTypeList ) {}
+PyList::PyList( size_t count ) : PyObject( PyTypeList )
 {
-	mList.resize(elementCount);
+	mList.resize( count );
 }
 
 PyList::~PyList()
 {
-	iterator Itr = mList.begin();
-	for (; Itr != mList.end(); Itr++)
-	{
-		delete *Itr;
-	}
-	
-	mList.clear();
-}
-
-PyChameleon & PyList::operator[]( const int index )
-{
-	if (index < 0)
-		return PyErrorIterator;
-
-	if (index > (int)mList.size())
-		mList.resize(index);
-
-	if (mList[index] == NULL)
-		mList[index] = new PyChameleon();
-
-	return *mList[index];
+    clear();	
 }
 
 size_t PyList::size()
@@ -423,12 +403,12 @@ size_t PyList::size()
 
 bool PyList::add( PyObject* obj )
 {
-	if (obj == NULL || obj->gettype() == PyTypeDeleted)
+	if (obj == NULL)
 		return false;
-	
-	PyChameleon * itr = new PyChameleon();
-	itr->setPyObject(obj);
-	mList.push_back(itr);
+
+    /* because we store a extra ref of the object we should increase the ref counter */
+	mList.push_back(obj);
+    PyIncRef(obj);
 
 	return true;
 }
@@ -439,7 +419,7 @@ uint32 PyList::hash()
     PyList::iterator itr = mList.begin();
     for (; itr != mList.end(); itr++)
     {
-        PyObject* obj = (*itr)->getPyObject();
+        PyObject* obj = (*itr);
         assert(obj);
         hsh|= PyObject_Hash(obj);
         hsh = hsh << 3;
@@ -455,6 +435,91 @@ PyList::iterator PyList::begin()
 PyList::iterator PyList::end()
 {
 	return mList.end();
+}
+
+/* NEVER EVER USE THIS FOR REGULAR USE BECAUSE OF THE REF STEALING */
+bool PyList::init( PyObject* list )
+{
+    if (list == NULL)
+        return false;
+
+    if (!PyTuple_Check(list))
+        return false;
+
+    PyList* plist = (PyList*)list;
+
+    /* if we are already filled, clear us */
+    if (size() != 0)
+        clear();
+
+    /* we're gonna steal references here... */
+    size_t index = 0;
+    for (PyList::iterator itr = plist->begin(); itr != plist->end(); itr++) {
+        set_item(index++, *itr);
+    }
+
+    return true;
+}
+
+bool PyList::resize( size_t new_size )
+{
+    if (new_size == mList.size())
+        return true;
+
+    /* resize when the requested size is larger than the current size */
+    if (new_size > mList.size()) {
+        mList.resize(new_size);
+    } else {
+    /* very ugly situation: if we resize to a size that is smaller than the current; we need to decref the
+     * objects that are "disapearing" because of the resize.
+     */
+        size_t new_end_index = new_size - mList.size();
+
+        if (new_end_index == 0)
+            return true;
+
+        if (new_end_index < 0) // this should never happen.
+            return false;
+
+        iterator Itr = mList.end();
+        while (new_end_index--) {
+            PyDecRef( *Itr );
+            mList.erase(Itr);
+            Itr = mList.end();
+        }
+    }
+    return true;
+}
+
+bool PyList::clear()
+{
+    iterator Itr = mList.begin();
+    for (; Itr != mList.end(); Itr++)
+        PyDecRef( *Itr );
+
+    mList.clear();
+    return true;
+}
+
+bool PyList::set_item( size_t index, PyObject* obj )
+{
+    /* we have to check if we already have a object at the index position */
+    PyObject* tobj = mList[index];
+
+    if (tobj != NULL)
+        PyDecRef(tobj);
+
+    mList[index] = obj;
+    return true;
+}
+
+PyObject* PyList::get_item( size_t index )
+{
+    /* return NULL because I don't want to  */
+    if (index > mList.size())
+        return NULL;
+
+    return mList[index];
 }
 
 /************************************************************************/
@@ -475,7 +540,6 @@ PyDict::~PyDict()
 
         entry->key->DecRef();
         entry->obj->DecRef();
-        //SafeDelete(entry);
         SafeFree(entry);
         i++;
     }

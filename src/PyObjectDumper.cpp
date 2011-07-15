@@ -268,11 +268,11 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 				deep+=DUMP_ITR_SPACE;
 
 			fprintf(fp, "PyList:%u\n", list.size());
-			for (uint32 i = 0; i < list.size(); i++)
+            for (PyList::iterator itr = list.begin(); itr != list.end(); itr++)
 			{
 				WriteSpacer(fp, deep+DUMP_ITR_SPACE);
 				fprintf(fp,"itr:");
-				Dump(fp, list[i].getPyObject(), deep, true);
+				Dump(fp, *itr, deep, true);
 			}
 		}
 		break;

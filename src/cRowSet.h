@@ -6,10 +6,10 @@ class dbutil_CRowset : public PyClass
 {
 protected:
 public:
-    dbutil_CRowset() : PyClass( "dbutil.CRowset" )
+    dbutil_CRowset() : PyClass( "dbutil.CRowset" ), mList( NULL )
     {
-        if (mList)
-            mList->DecRef();
+        if (mList != NULL)
+            PyDecRef(mList);
         mList = new PyList();
     }
 
@@ -39,8 +39,8 @@ public:
         */
 
         PyTuple * pTuple = (PyTuple *)state;
-        //mList->init(pTuple->GetItem(1)); // doesn't work yet
 
+        mList->init(pTuple->GetItem(1));
         mDict->set_item("header", pTuple->GetItem(0));
 
 

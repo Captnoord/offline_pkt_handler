@@ -284,16 +284,25 @@ class PyList : public PyObject
 {
 public:
 	PyList();
-	PyList(int elementCount);
+	PyList(size_t count);
 	~PyList();
-	PyChameleon &operator[](const int index);
+
+    bool init( PyObject* list );
+    bool clear();
+
 	size_t size();
+    bool resize(size_t new_size);
 	bool add(PyObject* obj);
+    bool set_item( size_t index, PyObject* obj );
+    PyObject* get_item( size_t index );
     uint32 hash();
+
 private:
-	std::vector<PyChameleon*> mList;
+    typedef std::vector<PyObject*> list_vect;
+	list_vect mList;
 public:
-	typedef std::vector<PyChameleon*>::iterator iterator;
+    /* we have to be able to iterate trough the pylist */
+	typedef list_vect::iterator iterator;
 	iterator begin();
 	iterator end();
 };
@@ -822,5 +831,9 @@ static bool PY_TYPE_CHECK(PyObject* object, uint8 type)
 };
 
 PyObject * PyObject_CallObject(PyObject *callable_object, PyObject *args);
+
+#define PyObject_TypeCheck(ob, tp) ((ob)->gettype() == (tp))
+#define PyTuple_Check(op) PyObject_TypeCheck(op, PyTypeTuple)
+#define PyDict_Check(op) PyObject_TypeCheck(op, PyTypeDict)
 
 #endif //_PYOBJECTS_H
