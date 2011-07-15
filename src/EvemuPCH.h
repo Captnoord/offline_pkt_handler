@@ -18,15 +18,14 @@
 #ifndef __EVEPCH_H
 #define __EVEPCH_H
 
+/* this enables the remarshaling of the unmarshaled object to check if our unmarshal and marshal code is in sync */
 //#define MARSHAL_REMARSHAL
 
 //#include <vld.h>
 
-#include "ascent.h"
-
-//4355
-
 #include <algorithm>
+
+#include "ascent.h"
 
 #include "TimeMeasure.h"
 
@@ -40,8 +39,6 @@
 
 #include "PyChameleon.h"
 #include "PyObjectDeleter.h"
-
-
 
 #include "RleModule.h"
 #include "BinAsciiModule.h"

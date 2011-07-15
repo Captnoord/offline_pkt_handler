@@ -282,10 +282,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\PyObjectDeleter.h"
-					>
-				</File>
-				<File
 					RelativePath="..\src\PyObjects.cpp"
 					>
 				</File>

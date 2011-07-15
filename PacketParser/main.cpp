@@ -1,67 +1,40 @@
-//#include <vld.h>
+/*
+	------------------------------------------------------------------------------------
+	LICENSE:
+	------------------------------------------------------------------------------------
+	This file is part of EVEmu: EVE Online Server Emulator
+	Copyright 2006 - 2011 The EVEmu Team
+	For the latest information visit http://evemu.org
+	------------------------------------------------------------------------------------
+	This program is free software; you can redistribute it and/or modify it under
+	the terms of the GNU Lesser General Public License as published by the Free Software
+	Foundation; either version 2 of the License, or (at your option) any later
+	version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+	FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License along with
+	this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+	Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+	http://www.gnu.org/copyleft/lesser.txt.
+	------------------------------------------------------------------------------------
+	Author:		Captnoord
+*/
 
 #include "EvemuPCH.h"
 #include "FileParser.h"
 #include "ascent_getopt.h"
 
-/* Visual Studio debug stuff
-   --in D:\\Games\\CCP\\Dump\\Dump-2009-3-16-12-35-29(PID9944).bin
-   --alt --in D:\\Games\\CCP\\EVE\\bulkdata\\15a6.cache
-   
-   //Dump-2009-5-4-17-38-33(PID5424)_bulk_data_login.bin
-   Dump-2009-5-14-18-34-1(PID1272).bin
-*/
-
 int main(int argc, char ** argv)
 {
-    //BOOL f=HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
-
-	// test case for RleModule
-	//size_t size = 22;
-	//uint8 test_data_source[] = {0xA7, 0x09, 0x85, 0xF1, 0x42, 0x0F, 0x85, 0xB0, 0x93, 0x24, 0x96, 0x62, 0x02, 0x82, 0x10, 0x07, 0x08, 0x05, 0x0A, 0x0A, 0x87, 0x20};
-
-	//size_t guessedSize = 0x100;
-	
-	/*size_t size = 2;
-	uint8 test_data_source[] = {0xB7, 0x02};
-	uint8 test_data_dest[1024];
-	size_t outsize = 1024;
-
-	// 0x8b 0x09
-
-	RleModule::decode(test_data_source, size, test_data_dest, &outsize);
-	//RleModule::zerounpackex((char*)test_data_dest, outsize, (char*)test_data_source, size);
-	
-
-	std::vector<uint8> unfuckedup;
-	RleModule::UnpackZeroCompressed(test_data_source, size, unfuckedup);
-
-	printf("unpacked mine:\n");
-	//HexAsciiModule::print_hexview(stdout, test_data_dest, guessedSize);
-	HexAsciiModule::print_hexview(stdout, test_data_dest, outsize+10);
-	
-	printf("unpacked there's:\n");
-	HexAsciiModule::print_hexview(stdout, &unfuckedup[0], unfuckedup.size());
-
-	printf("packed source:\n");
-	HexAsciiModule::print_hexview(stdout, test_data_source, size);
-
-	std::vector<uint8> fuckedup;
-	size_t dst_len = 0;
-	RleModule::PackZeroCompressed(test_data_dest, outsize, fuckedup, dst_len);
-
-	printf("packed repacked:\n");
-	HexAsciiModule::print_hexview(stdout, &fuckedup[0], dst_len);
-	return 0;*/
-
-	char * in_file_path = NULL; /* required */
-	char * out_file_path = NULL; /* optional */
-	bool is_in_file_cache = false;
-    bool is_in_file_logserver = false;
+	char * in_file_path = NULL;     /* required */
+	char * out_file_path = NULL;    /* optional */
 
 	if (argc <=1)
 	{
-		printf("Usage: %s [--in <filename>] [--out <filename>] [--alt]\n", argv[0]);
+		printf("Usage: %s [--in <filename>] [--out <filename>] \n", argv[0]);
 		return 1;
 	}
 
@@ -69,8 +42,6 @@ int main(int argc, char ** argv)
 	{
 		{ "in",				ascent_required_argument,		NULL,					'i'		},
 		{ "out",			ascent_optional_argument,		NULL,					'o'		},
-		{ "alt",			ascent_no_argument,				NULL,					'a'		},
-        { "logserv",        ascent_no_argument,				NULL,					'l'		},
 		{ 0, 0, 0, 0 }
 	};
 
@@ -92,14 +63,6 @@ int main(int argc, char ** argv)
 				out_file_path = new char[strlen(ascent_optarg)+1];
 				strcpy(out_file_path,ascent_optarg);
 				break;
-			case 'a':
-				/* the input file is from a alternative source (example: bulk data) */
-				is_in_file_cache = true;
-				break;
-            case 'l':
-                /* the input file is a dump from the eve client logserver */
-                is_in_file_logserver = true;
-                break;
 			case 0:
 				break;
 			default:
@@ -126,16 +89,9 @@ int main(int argc, char ** argv)
 		strcpy(in_file_path,argv[1]);
 	}
 
-	//new PyMarshalStringTable;
-
 	DWORD tiet = GetTickCount();
 
-    if (is_in_file_cache == true)
-        ParseCacheFile(in_file_path, out_file_path);
-    else if (is_in_file_logserver == true)
-        ParseLogServerFile(in_file_path, out_file_path);
-    else
-        ParseFile(in_file_path, out_file_path);
+    HandleFile(in_file_path, out_file_path);
 
 	printf("File parsing took: %u ms\n", GetTickCount() - tiet);
 
@@ -147,10 +103,7 @@ int main(int argc, char ** argv)
 	if (in_file_path)
 		delete [] in_file_path;
 
-	//sBufferPool.print_stats();
-
 	//_CrtDumpMemoryLeaks();
-
 	//system("pause");
 
 	return 0;

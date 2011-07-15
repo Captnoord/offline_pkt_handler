@@ -1,3 +1,28 @@
+/*
+	------------------------------------------------------------------------------------
+	LICENSE:
+	------------------------------------------------------------------------------------
+	This file is part of EVEmu: EVE Online Server Emulator
+	Copyright 2006 - 2011 The EVEmu Team
+	For the latest information visit http://evemu.org
+	------------------------------------------------------------------------------------
+	This program is free software; you can redistribute it and/or modify it under
+	the terms of the GNU Lesser General Public License as published by the Free Software
+	Foundation; either version 2 of the License, or (at your option) any later
+	version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+	FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License along with
+	this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+	Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+	http://www.gnu.org/copyleft/lesser.txt.
+	------------------------------------------------------------------------------------
+	Author:		Captnoord
+*/
+
 #ifndef _FILE_PARSER_H
 #define _FILE_PARSER_H
 
@@ -49,14 +74,14 @@ char* GetBuffer(size_t len)
 	return buff;
 }
 
-void ParseFile(const char* in_file_path, const char* out_file_path)
+void HandleFile(const char* in_file_path, const char* out_file_path)
 {
 	std::string out_path;
 	if (out_file_path == NULL)
 	{
 		out_path = in_file_path;
 		out_path.resize(out_path.size() - 4);
-		out_path+="_parsed.txt";
+		out_path+="_handled.txt";
 	}
 	else
 	{
@@ -137,229 +162,17 @@ void ParseFile(const char* in_file_path, const char* out_file_path)
 		ASCENT_FREE(packetBuf);
 		
 		if (readstream.tell()!= readstream.size())
-			Log.Warning("fileParser","sub stream isn't parsed completely: %u - %u", readstream.tell(), readstream.size());
+			Log.Warning("OfflinePacketParser","sub stream isn't handled completely: %u - %u", readstream.tell(), readstream.size());
 
 		//printf("Parsed packet nr: %u | offset: %u, size: %u\n", i, readstream.tell(), readstream.size());
 
-        //delete _readstream;
-
-		//if (i == 5000)
-		//	break;
 		i++;
 	}
 
 	fclose(fp_out);
 	fclose (fp_in);
 
-	printf("\nParsing done: parsed:%u packets\n", i);
-}
-
-/* method prepping for parsing cache files */
-void ParseCacheFile(const char* in_file_path, const char* out_file_path)
-{
-	std::string out_path;
-	if (out_file_path == NULL)
-	{
-		out_path = in_file_path;
-		//out_path.resize(out_path.size() - 4);
-		out_path+="_parsed.txt";
-	}
-	else
-	{
-		out_path = out_file_path;
-	}
-
-	fp_in = fopen(in_file_path,"rb");
-	fp_out = fopen(out_path.c_str(), "w");
-
-	long fsize = 0;
-	fseek(fp_in,0,SEEK_END);
-	fsize = ftell(fp_in);
-	fseek(fp_in,0,SEEK_SET);
-
-	/* we read the entire file because its 1 marshal file/object/packet
-	 * @note we assume this, this obviously doesn't mean its correct.
-	 */
-	char* packetBuf = GetBuffer(fsize);
-
-	ReadStream readstream(packetBuf, fsize);
-
-	MarshalStream stream;
-	PyObject* henk = stream.load(readstream);
-
-	if (henk != NULL)
-	{
-		DumpObject(fp_out, henk);
-		henk->DecRef();
-	}
-
-	fflush(fp_out);
-
-	/* check if we where capable of parsing the entire packet, if not warn us about it */
-	if (readstream.tell()!= readstream.size())
-		Log.Warning("fileParser","sub stream isn't parsed completely: %u - %u", readstream.tell(), readstream.size());
-
-	printf("Parsed cache file | offset: %u, size: %u\n", readstream.tell(), readstream.size());
-	
-	SafeDeleteArray(packetBuf);
-	fclose(fp_out);
-}
-
-bool PyDecodeEscape( const char* str, WriteStream& into )
-{
-    const size_t len = strlen( str );
-    const char* const end = str + len;
-
-    while( str < end )
-    {
-        if( *str != '\\' )
-        {
-            into.write1< char >( *str++ );
-            //into.Append< char >( *str++ );
-            continue;
-        }
-
-        if( ++str == end )
-            //ended with a \ char
-            return false;
-
-        int c;
-        switch( *str++ )
-        {
-            /* XXX This assumes ASCII! */
-        case '\n':                                break; /* ? */
-            //case '\\': into.Append< char >( '\\' );   break;
-            //case '\'': into.Append< char >( '\'' );   break;
-            //case '\"': into.Append< char >( '\"' );   break;
-            //case 'b':  into.Append< char >( '\b' );   break;
-            //case 'f':  into.Append< char >( '\014' ); break; /* FF */
-            //case 't':  into.Append< char >( '\t' );   break;
-            //case 'n':  into.Append< char >( '\n' );   break;
-            //case 'r':  into.Append< char >( '\r' );   break;
-            //case 'v':  into.Append< char >( '\013' ); break; /* VT */
-            //case 'a':  into.Append< char >( '\007' ); break; /* BEL, not classic C */
-
-        case '\\': into.write1< char >( '\\' );   break;
-        case '\'': into.write1< char >( '\'' );   break;
-        case '\"': into.write1< char >( '\"' );   break;
-        case 'b':  into.write1< char >( '\b' );   break;
-        case 'f':  into.write1< char >( '\014' ); break; /* FF */
-        case 't':  into.write1< char >( '\t' );   break;
-        case 'n':  into.write1< char >( '\n' );   break;
-        case 'r':  into.write1< char >( '\r' );   break;
-        case 'v':  into.write1< char >( '\013' ); break; /* VT */
-        case 'a':  into.write1< char >( '\007' ); break; /* BEL, not classic C */
-
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-            c = str[-1] - '0';
-            if( '0' <= *str && *str <= '7' )
-            {
-                c = ( c << 3 ) + *str++ - '0';
-                if( '0' <= *str && *str <= '7' )
-                    c = ( c << 3 ) + *str++ - '0';
-            }
-            into.write1< uint8 >( c );
-            break;
-
-        case 'x':
-            if( isxdigit( str[0] ) && isxdigit( str[1] ) )
-            {
-                unsigned int x = 0;
-                c = *str++;
-
-                if( isdigit(c) )
-                    x = c - '0';
-                else if( islower(c) )
-                    x = 10 + c - 'a';
-                else
-                    x = 10 + c - 'A';
-
-                x = x << 4;
-                c = *str++;
-
-                if( isdigit(c) )
-                    x += c - '0';
-                else if( islower(c) )
-                    x += 10 + c - 'a';
-                else
-                    x += 10 + c - 'A';
-
-                into.write1< uint8 >( x );
-                break;
-            }
-            //"invalid \\x escape");
-            return false;
-
-        default:
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/* method prepping for parsing logserver stream files */
-void ParseLogServerFile(const char* in_file_path, const char* out_file_path)
-{
-    //PyDecodeEscape
-
-    std::string out_path;
-    if (out_file_path == NULL)
-    {
-        out_path = in_file_path;
-        //out_path.resize(out_path.size() - 4);
-        out_path+="_parsed.txt";
-    }
-    else
-    {
-        out_path = out_file_path;
-    }
-
-    fp_in = fopen(in_file_path,"rb");
-    fp_out = fopen(out_path.c_str(), "w");
-
-    long fsize = 0;
-    fseek(fp_in,0,SEEK_END);
-    fsize = ftell(fp_in);
-    fseek(fp_in,0,SEEK_SET);
-
-    /* we read the entire file because its 1 marshal file/object/packet
-    * @note we assume this, this obviously doesn't mean its correct.
-    */
-    char* packetBuf = GetBuffer(fsize);
-
-    WriteStream frits;
-    PyDecodeEscape(packetBuf, frits);
-    
-    ReadStream readstream((char*)frits.content(), fsize);
-
-    MarshalStream stream;
-    PyObject* henk = stream.load(readstream);
-
-    if (henk != NULL)
-    {
-        DumpObject(fp_out, henk);
-        henk->DecRef();
-    }
-
-    fflush(fp_out);
-
-    /* check if we where capable of parsing the entire packet, if not warn us about it */
-    if (readstream.tell()!= readstream.size())
-        Log.Warning("fileParser","sub stream isn't parsed completely: %u - %u", readstream.tell(), readstream.size());
-
-    printf("Parsed cache file | offset: %u, size: %u\n", readstream.tell(), readstream.size());
-
-    SafeDeleteArray(packetBuf);
-    fclose(fp_out);
-
+	printf("\nOffline packet handling done: handled:%u packets\n", i);
 }
 
 #endif//_FILE_PARSER_H
