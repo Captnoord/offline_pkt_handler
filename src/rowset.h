@@ -1,20 +1,10 @@
 #include "PyObjectDumper.h"
 
-//#pragma pack(push,1)
-
-/*
-def __str__(self):
-    members = dict(filter(lambda (k, v,):(not k.startswith('__')), self.__dict__.items()))
-    return ('%s %s: %s' % ((self.__doc__ or 'Anonymous'), self.__class__.__name__, members))
-*/
-
 class util_KeyVal : public PyClass
 {
 protected:
 public:
-    util_KeyVal() : PyClass( "util.KeyVal" )
-    {
-    }
+    util_KeyVal() : PyClass( "util.KeyVal" ) {}
 
     ~util_KeyVal(){};
     void destruct() {}
@@ -24,7 +14,7 @@ public:
         return new util_KeyVal();
     }
 
-    // comments: format guessed from compiled scripts
+    /* comments: format guessed from compiled scripts */
     bool init(PyObject* state)
     {
         if (state->gettype() != PyTypeDict)
@@ -39,36 +29,18 @@ public:
         return true;
     }
 
+    /* this is a stub that needs to be implemented */
     PyTuple* GetState()
     {
         return NULL;
     };
 };
 
-/*class Rowset:
-    __module__ = __name__
-    __guid__ = 'util.Rowset'
-    __passbyvalue__ = 1
-    __immutable__ = weakref.WeakKeyDictionary()
-    RowClass = Row
-
-    def __init__(self, hd = None, li = None, RowClass = Row):
-        if (hd is None):
-            hd = []
-        if (li is None):
-            li = []
-        self.header = hd
-        self.lines = li
-        self.RowClass = RowClass
-        */
-
 class util_Rowset : public PyClass
 {
 protected:
 public:
-    util_Rowset() : PyClass( "util.Rowset" )
-    {
-    }
+    util_Rowset() : PyClass( "util.Rowset" ) {}
 
     ~util_Rowset(){};
     void destruct() {}
@@ -78,10 +50,10 @@ public:
         return new util_Rowset();
     }
 
-    // comments: format guessed from compiled scripts
+    /* comments: format guessed from compiled scripts */
     bool init(PyObject* state)
     {
-        /*if (state->gettype() != PyTypeTuple)
+        /*if (!PyTuple_Check(state))
             return false;
         PyTuple * pTuple = (PyTuple*)state;
 
@@ -89,7 +61,7 @@ public:
         mDict->set_item("lines", pTuple->GetItem(1));
         mDict->set_item("RowClass", pTuple->GetItem(2));*/
 
-        if (state->gettype() != PyTypeDict)
+        if (!PyDict_Check(state))
             return false;
 
         // TODO check if this has any data in it... it should be empty
@@ -102,13 +74,12 @@ public:
         return true;
     }
 
+    /* this is a stub that needs to be implemented */
     PyTuple* GetState()
     {
         return NULL;
-    };
+    }
 
     // todo implement 'Row'
     //RowClass = Row
 };
-
-//#pragma pack(pop)

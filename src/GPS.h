@@ -13,10 +13,12 @@ public:
         return new exceptions_GPSTransportClosed();
     }
 
-    // comments: format guessed from compiled scripts
+    /* comments: format guessed from compiled scripts
+     * @note not finished yet
+     */
     bool init(PyObject* state)
     {
-        if (state->gettype() != PyTypeTuple)
+        if (!PyTuple_Check(state))
             return false;
 
         PyTuple * pState = (PyTuple*)state;
@@ -35,9 +37,9 @@ public:
         return true;
     }
 
+    /* this is a stub that needs to be implemented */
     PyTuple* GetState()
     {
         return NULL;
     };
 };
-

@@ -290,7 +290,7 @@ PyTuple* PyTuple::GetItem_asPyTuple( const int index )
 	if (itr == NULL)
 		return NULL;
 	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || obj->gettype() != PyTypeTuple)
+	if (obj == NULL || PyTuple_Check(obj))
 		return NULL;
 
 	return (PyTuple*)obj;

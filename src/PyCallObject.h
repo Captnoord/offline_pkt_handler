@@ -11,17 +11,7 @@
     PyClass.
 */
 
-//macho.CallReq
-/*class CallReq : public PyClass
-{
-public:
-    CallReq() : PyClass()
-    {
-
-    }
-};*/
-
-/* dono what todo with this one... yet */
+/* move this to its own file */
 class util_Row : public PyClass
 {
 public:
@@ -33,110 +23,29 @@ public:
 
     void destruct() {}
 
+    /* this is a stub that needs to be implemented */
     int UpdateDict(PyObject* bases)
     {
         return -1;
     }
 
-    // stubs
-    bool init(PyObject* state){return false;}
-    PyTuple* GetState(){ return NULL;};
-    
-};
-
-
-#if 0
-//macho.CallReq
-
-class macho_CallReq : public PyClass
-{
-public:
-    macho_CallReq() : PyClass()
+    /* this is a stub that needs to be implemented */
+    bool init(PyObject* state)
     {
-        setname(new PyString("macho.CallReq"));
-        mDict = new PyDict();
-    }
-
-    macho_CallReq* New()
-    {
-        return new macho_CallReq();
-    }
-
-    int UpdateDict(PyObject* bases)
-    {
-        return -1;
-    }
-
-    bool SetState(PyObject* state)
-    {
-        // this is generic for all packet types...
-        /*
-        (self.command, self.source, self.destination, self.userID, body, self.oob,) = state
-        if (self.oob is None):
-            self.oob = {}
-        (self.channel, self.compressedPart,) = (self.oob.get('channel', None), self.oob.get('compressedPart', 0))
-            params = self.__machodesc__['params']
-        l = len(params)
-        if (len(body) < l):
-            l = len(body)
-        for i in range(l):
-        if params[i].endswith('?'):
-        tmp = params[i][:-1]
-        else:
-        tmp = params[i]
-        setattr(self, tmp, body[i])
-        */
-
-        if (state->gettype() != PyTypeTuple)
-            return false;
-
-        PyTuple * pState = (PyTuple *)state;
-
-        mDict->set_item("command", pState->GetItem(0));
-        mDict->set_item("source", pState->GetItem(1));
-        mDict->set_item("destination", pState->GetItem(2));
-        mDict->set_item("userID", pState->GetItem(3));
-        mDict->set_item("body", pState->GetItem(4)); // this one isn't "self.body"
-        mDict->set_item("oob", pState->GetItem(5));
-
-        // we possible could get this from 
-        PyDict * oob = (PyDict *)mDict->get_item("oob");
-
-        if (oob->gettype() == PyTypeDict)
-        {
-            //mDict->set_item("channel", oob->get_item("channel")); // default would be PyNone
-            mDict->set_item("compressedPart", oob->get_item("compressedPart")); // default would be PyInt(0);
-        }
-
-        // PyClass related
-        /*
-        class CallReq(MachoPacket):
-        __module__ = __name__
-        __guid__ = 'macho.CallReq'
-        __machodesc__ = {'command': MACHONETMSG_TYPE_CALL_REQ,
-        'params': ['payload',
-        'channel?'],
-        'response': CallRsp}
-        */
-
-        PyTuple * body = (PyTuple *)mDict->get_item("body");
-        assert(body->size() == 2); // should have 2 elements
-
-        mDict->set_item("payload", body->GetItem(0));
-        mDict->set_item("channel", body->GetItem(1));
         return false;
     }
 
-    // not implemented for now
+    /* this is a stub that needs to be implemented */
     PyTuple* GetState()
     {
         return NULL;
     };
+    
 };
 
-#endif
-
-/*
+/** MachoAddress
+ * @note move to its own file
+    
     -A macho client tuple address       4 elements
     -A macho broadcast tuple address    4 elements
     -A macho any tuple address          3 elements
@@ -164,7 +73,7 @@ public:
         *service = theTuple[2]
         *callID = theTuple[3]
 */
-//#pragma pack(push,1)
+
 class macho_MachoAddress : public PyClass
 {
 public:
@@ -178,6 +87,7 @@ public:
         return new macho_MachoAddress();
     }
 
+    /* this is a stub that needs to be implemented */
     int UpdateDict(PyObject* bases)
     {
         return -1;
@@ -233,15 +143,13 @@ public:
         return state;
     }
 
-
     bool init(PyObject* state)
     {
-        if (state->gettype() != PyTypeTuple)
+        if (!PyTuple_Check(state))
             return false;
 
         PyTuple * pState = (PyTuple *)state;
 
-        // we need to inc ref of the addressType?
         int addressType = pState->GetItem_asInt(0);
         if (addressType == 2)
         {
@@ -279,7 +187,7 @@ public:
     }
 };
 
-//#pragma pack(pop)
+
 
 class CallMgr : public Singleton<CallMgr>
 {
@@ -291,7 +199,6 @@ public:
 
     PyClass* find(const char* module);
     PyClass* find(PyString* module);
-
 
 private:
     typedef std::map<std::string, PyClass*> CallMap;

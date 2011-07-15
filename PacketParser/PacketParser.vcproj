@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="PacketParser"
+	Name="OfflinePacketHandler"
 	ProjectGUID="{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}"
 	RootNamespace="PacketParser"
 	Keyword="Win32Proj"
@@ -19,7 +19,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\bin\$(ConfigurationName)"
-			IntermediateDirectory=".\PacketParser___Win32_Debug"
+			IntermediateDirectory=".\OfflinePacketHandler___Win32_Debug"
 			ConfigurationType="1"
 			UseOfATL="0"
 			CharacterSet="2"
@@ -70,7 +70,7 @@
 				UseUnicodeResponseFiles="false"
 				ShowProgress="0"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="D:\Dev\Python2_6\PCbuild"
+				AdditionalLibraryDirectories=""
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				AssemblyDebug="0"

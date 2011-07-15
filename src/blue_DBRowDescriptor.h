@@ -1,7 +1,3 @@
-//blue.DBRowDescriptor
-
-//#pragma pack(push,1)
-
 class blue_DBRowDescriptor : public PyClass
 {
 protected:
@@ -76,5 +72,3 @@ public:
     std::vector <int32>         mTableTypes;
     std::vector <uint32>        mTableSizes;
 };
-
-//#pragma pack(pop)

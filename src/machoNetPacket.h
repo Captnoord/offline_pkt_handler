@@ -1,9 +1,6 @@
 #ifndef machoNetPacket_h__
 #define machoNetPacket_h__
 
-//#pragma pack(push,1)
-
-
 
 class MachoPacket : public PyClass
 {
@@ -18,46 +15,19 @@ public:
 
     bool setattr(std::string attr_name, PyObject * attr_obj)
     {
-        /*
-        if hasattr(self, 'thePickle'):
-            if hasattr(self, attr):
-                curr = getattr(self, attr)
-                if ((type(curr) not in self.__intorstringtype__) or ((type(value) not in self.__intorstringtype__) or (curr != value))):
-                    self.Changed()
-                else:
-                    self.Changed()
-            self.__dict__[attr] = value
-        */
+        /* missing some stuff? */
 
         return mDict->set_item(attr_name.c_str(), attr_obj);
     }
 
     bool init(PyObject* state)
     {
-        // this is generic for all packet types...
-        /*
-        (self.command, self.source, self.destination, self.userID, body, self.oob,) = state
-        if (self.oob is None):
-            self.oob = {}
-        (self.channel, self.compressedPart,) = (self.oob.get('channel', None), self.oob.get('compressedPart', 0))
-        params = self.__machodesc__['params']
-        l = len(params)
-        if (len(body) < l):
-            l = len(body)
-        for i in range(l):
-            if params[i].endswith('?'):
-                tmp = params[i][:-1]
-            else:
-                tmp = params[i]
-            setattr(self, tmp, body[i])
-        */
-
         /* check for obj */
         if (!state)
             return false;
 
         /* check for obj type */
-        if (state->gettype() != PyTypeTuple)
+        if (!PyTuple_Check(state))
             return false;
         
         PyTuple * pState = (PyTuple *)state;
@@ -79,27 +49,18 @@ public:
 
         assert(oob);
 
-        if (oob->gettype() == PyTypeDict)
-        {
-            mDict->set_item("channel", oob->get_item("channel", (PyObject*)new PyBaseNone())); // default would be PyNone
+        if (oob->gettype() == PyTypeDict) {
             mDict->set_item("compressedPart", oob->get_item("compressedPart", (PyObject*)new PyInt(0))); // default would be PyInt(0);
         }
 
-        if (params.size() != 0)
-        {
+        if (params.size() != 0) {
+
             PyTuple* body = (PyTuple*)mDict->get_item("body");
 
             assert(params.size() == body->size());
 
             for (unsigned int i = 0; i < params.size(); i++)
             {
-                /*for i in range(l):
-                if params[i].endswith('?'):
-                    tmp = params[i][:-1]
-                else:
-                    tmp = params[i]
-                setattr(self, tmp, body[i])*/
-
                 std::string tmp = params[i];
                 size_t offset = tmp.find('?');
                 assert(offset == size_t(-1));
@@ -109,18 +70,18 @@ public:
         return false;
     }
 
-    // not implemented for now
+    /* this is a stub that needs to be implemented */
     PyTuple* GetState()
     {
-
         return NULL;
     };
 
 protected:
-    uint8 command;          // hmmm should we use normal types for this
-    std::vector<std::string> params;     // should we use normal types for this
+    uint8 command;                      // hmmm should we use normal types for this
+    std::vector<std::string> params;    // should we use normal types for this
 };
 
+/* @note does this need the GetStage call? */
 class macho_CallReq : public MachoPacket
 {
 public:
@@ -129,10 +90,7 @@ public:
         params.push_back("payload");
     }
 
-    ~macho_CallReq()
-    {
-
-    }
+    ~macho_CallReq() {}
 
     macho_CallReq* New()
     {
@@ -140,6 +98,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_CallRsp : public MachoPacket
 {
 public:
@@ -156,6 +115,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_SessionChangeNotification : public MachoPacket
 {
 public:
@@ -173,6 +133,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_SessionInitialStateNotification : public MachoPacket
 {
 public:
@@ -189,6 +150,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_PingRsp : public MachoPacket
 {
 public:
@@ -205,6 +167,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_PingReq : public MachoPacket
 {
 public:
@@ -221,6 +184,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_ErrorResponse : public MachoPacket
 {
 public:
@@ -239,6 +203,7 @@ public:
     }
 };
 
+/* @note does this need the GetStage call? */
 class macho_Notification : public MachoPacket
 {
 public:
@@ -254,7 +219,5 @@ public:
         return new macho_Notification();
     }
 };
-
-//#pragma pack(pop)
 
 #endif // machoNetPacket_h__
