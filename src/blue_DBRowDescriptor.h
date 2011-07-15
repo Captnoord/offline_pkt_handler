@@ -6,11 +6,11 @@ class blue_DBRowDescriptor : public PyClass
 {
 protected:
 public:
-    blue_DBRowDescriptor() : PyClass()
+    blue_DBRowDescriptor() : PyClass( "blue.DBRowDescriptor" )
     {
-        setname(new PyString("blue.DBRowDescriptor"));
-        blue_obj = true; // bleh hack...
+        is_c_api = true; // bleh hack...
     }
+
     ~blue_DBRowDescriptor()
     {
     };
@@ -40,11 +40,12 @@ public:
                 //DumpObject(stdout, state);
                 PyTuple* pTuple = (PyTuple*)state;
                 PyTuple* pSubTuple = (PyTuple*)pTuple->GetItem(0);
-                for (int i = 0; i < pSubTuple->size(); i++)
+                for (unsigned int i = 0; i < pSubTuple->size(); i++)
                 {
                     PyTuple* itemTuple = (PyTuple*)pSubTuple->GetItem(i);
                     assert(itemTuple);
                     
+                    assert(itemTuple->size() == 2);
                     // bleh this is evil... aka fucked up..
                     mTableNames.push_back(itemTuple->GetItem_asPyString(0)->content());
                     mTableTypes.push_back(itemTuple->GetItem_asInt(1));
@@ -68,7 +69,7 @@ public:
     };
 
     // this is really is CPythonClass
-    bool blue_obj;
+    bool is_c_api;
 
     // clean this up so it only contains the stuff we need... more compact
     std::vector <std::string>   mTableNames;

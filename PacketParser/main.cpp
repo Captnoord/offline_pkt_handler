@@ -7,8 +7,6 @@
 /* Visual Studio debug stuff
    --in D:\\Games\\CCP\\Dump\\Dump-2009-3-16-12-35-29(PID9944).bin
    --alt --in D:\\Games\\CCP\\EVE\\bulkdata\\15a6.cache
-
-   
    
    //Dump-2009-5-4-17-38-33(PID5424)_bulk_data_login.bin
    Dump-2009-5-14-18-34-1(PID1272).bin
@@ -16,6 +14,8 @@
 
 int main(int argc, char ** argv)
 {
+    //BOOL f=HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+
 	// test case for RleModule
 	//size_t size = 22;
 	//uint8 test_data_source[] = {0xA7, 0x09, 0x85, 0xF1, 0x42, 0x0F, 0x85, 0xB0, 0x93, 0x24, 0x96, 0x62, 0x02, 0x82, 0x10, 0x07, 0x08, 0x05, 0x0A, 0x0A, 0x87, 0x20};
@@ -54,11 +54,10 @@ int main(int argc, char ** argv)
 	HexAsciiModule::print_hexview(stdout, &fuckedup[0], dst_len);
 	return 0;*/
 
-
-
 	char * in_file_path = NULL; /* required */
 	char * out_file_path = NULL; /* optional */
 	bool is_in_file_cache = false;
+    bool is_in_file_logserver = false;
 
 	if (argc <=1)
 	{
@@ -71,6 +70,7 @@ int main(int argc, char ** argv)
 		{ "in",				ascent_required_argument,		NULL,					'i'		},
 		{ "out",			ascent_optional_argument,		NULL,					'o'		},
 		{ "alt",			ascent_no_argument,				NULL,					'a'		},
+        { "logserv",        ascent_no_argument,				NULL,					'l'		},
 		{ 0, 0, 0, 0 }
 	};
 
@@ -96,6 +96,10 @@ int main(int argc, char ** argv)
 				/* the input file is from a alternative source (example: bulk data) */
 				is_in_file_cache = true;
 				break;
+            case 'l':
+                /* the input file is a dump from the eve client logserver */
+                is_in_file_logserver = true;
+                break;
 			case 0:
 				break;
 			default:
@@ -126,14 +130,17 @@ int main(int argc, char ** argv)
 
 	DWORD tiet = GetTickCount();
 
-	if (is_in_file_cache == false)
-		ParseFile(in_file_path, out_file_path);
-	else
-		ParseCacheFile(in_file_path, out_file_path);
+    if (is_in_file_cache == true)
+        ParseCacheFile(in_file_path, out_file_path);
+    else if (is_in_file_logserver == true)
+        ParseLogServerFile(in_file_path, out_file_path);
+    else
+        ParseFile(in_file_path, out_file_path);
 
 	printf("File parsing took: %u ms\n", GetTickCount() - tiet);
 
-	delete PyMarshalStringTable::getSingletonPtr();
+    // dono if I should delete this one....:P
+	//delete PyMarshalStringTable::getSingletonPtr();
 
 	if (out_file_path)
 		delete [] out_file_path;
@@ -142,7 +149,7 @@ int main(int argc, char ** argv)
 
 	//sBufferPool.print_stats();
 
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 
 	//system("pause");
 

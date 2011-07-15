@@ -142,7 +142,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyNone:
 			{
 				unmarshalState(Op_PyNone, stream);
-				PyNone.IncRef();
+				PyIncRef(&PyNone);
 				MARSHALSTREAM_RETURN(&PyNone);
 			}
 
@@ -191,21 +191,21 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyMinusOne:
 			{
 				unmarshalState(Op_PyMinusOne, stream);
-				PyIntMinusOne.IncRef();
+                PyIncRef(&PyIntMinusOne);
 				MARSHALSTREAM_RETURN(&PyIntMinusOne);
 			}
 			
 			case Op_PyZeroInteger:
 			{
 				unmarshalState(Op_PyZeroInteger, stream);
-				PyIntZero.IncRef();
+                PyIncRef(&PyIntZero);
 				MARSHALSTREAM_RETURN(&PyIntZero);
 			}
 			
 			case Op_PyOneInteger:
 			{
 				unmarshalState(Op_PyOneInteger, stream);
-				PyIntOne.IncRef();
+                PyIncRef(&PyIntOne);
 				MARSHALSTREAM_RETURN(&PyIntOne);
 			}
 			
@@ -221,21 +221,21 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyZeroFloat:
 			{
 				unmarshalState(Op_PyZeroFloat, stream);
-				PyFloatZero.IncRef();
+                PyIncRef(&PyFloatZero);
 				MARSHALSTREAM_RETURN(&PyFloatZero);
 			}
 			
 			case Op_PyTrue:
 			{
 				unmarshalState(Op_PyTrue, stream);
-				Py_TrueStruct.IncRef();
+                PyIncRef(&Py_TrueStruct);
 				MARSHALSTREAM_RETURN(&Py_TrueStruct);
 			}
 			
 			case Op_PyFalse:
 			{
 				unmarshalState(Op_PyFalse, stream);
-				Py_ZeroStruct.IncRef();
+                PyIncRef(&Py_ZeroStruct);
 				MARSHALSTREAM_RETURN(&Py_ZeroStruct);
 			}
 			
@@ -250,7 +250,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyEmptyString:
 			{
 				unmarshalState(Op_PyEmptyString, stream);
-				PyStringEmpty.IncRef();
+                PyIncRef(&PyStringEmpty);
 				MARSHALSTREAM_RETURN(&PyStringEmpty);
 			}
 			
@@ -571,7 +571,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					MARSHALSTREAM_RETURN_NULL;
 				}
 
-				obj->IncRef();
+                PyIncRef(obj);
 				MARSHALSTREAM_RETURN(obj);
 			}
 
@@ -857,6 +857,7 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
     MARSHALSTREAM_RETURN(inst_obj);
 }
 
+/* normal python class */
 PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 {
     int shared_object_index = 0;
@@ -899,8 +900,8 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
     if (bases->size() > 2)
     {
         // implement this..
-        ASCENT_HARDWARE_BREAKPOINT;
-        PyObject* ext_arg = bases->GetItem(3);
+        //ASCENT_HARDWARE_BREAKPOINT;
+        PyObject* ext_arg = bases->GetItem(2);
         //PyObject_CallFunctionObjArgs(v13, v14, 0); // but in short its just call_result->set_states
         // call_result->set_states(ext_arg);
 

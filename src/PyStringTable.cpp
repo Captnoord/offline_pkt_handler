@@ -104,7 +104,7 @@ bool PyMarshalStringTable::LookupPyString( uint8 index, PyString *&str )
 
 	assert(index > 0);
 	str = &mPyStringTable[index-1];
-	str->IncRef();
+	PyIncRef(str);
 	mLock.Release();
 	return true;
 }

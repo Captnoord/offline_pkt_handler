@@ -59,10 +59,10 @@ int32 PyInt::GetValue()
 /************************************************************************/
 /* PyLong                                                               */
 /************************************************************************/
-PyLong::PyLong( int64 & num ) : PyObject(PyTypeInt), mNumber(num) {}
+PyLong::PyLong( int64 & num ) : PyObject(PyTypeLong), mNumber(num) {}
 
 /* @todo solve the signed/unsigned problem */
-PyLong::PyLong( uint64 & num ) : PyObject(PyTypeInt), mNumber(num) {}
+PyLong::PyLong( uint64 & num ) : PyObject(PyTypeLong), mNumber(num) {}
 
 int64 PyLong::GetValue()
 {
@@ -325,7 +325,10 @@ PyString* PyTuple::GetItem_asPyString( const int index )
 		return NULL;
 	PyObject* obj = itr->getPyObject();
 	if (obj == NULL || obj->gettype() != PyTypeString)
+    {
+        printf("object isn't a string\n");
 		return NULL;
+    }
 
 	return (PyString*)obj;
 }
@@ -372,7 +375,7 @@ bool PyTuple::set_item( const int index, PyObject *object )
 		mTuple.resize(index+1);
 
     // we'r storing the object somewhere else so... dec the ref..
-    object->IncRef();
+    PyIncRef(object);
 
 	PyChameleon & itr = *mTuple[index];
 	itr.setPyObject(object);
@@ -472,7 +475,8 @@ PyDict::~PyDict()
 
         entry->key->DecRef();
         entry->obj->DecRef();
-        SafeDelete(entry);
+        //SafeDelete(entry);
+        SafeFree(entry);
         i++;
     }
 
@@ -491,7 +495,7 @@ PyChameleon PyDict::operator[]( const char* keyName )
     PyDictEntry * entry = mDict[hsh];
     if (entry == NULL)
     {
-        entry = new PyDictEntry;
+        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry;
         entry->key = (PyObject*)new PyString(keyName);
         entry->obj = NULL;
         mDict[hsh] = entry;
@@ -543,21 +547,22 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         if (itr == mDict.end())
         {
             /* create a new dictionary entry */
-            PyDictEntry * entry = new PyDictEntry;
+            //PyDictEntry * entry = new PyDictEntry();
+            PyDictEntry * entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));
             entry->key = key;
             entry->obj = obj;
             mDict.insert(std::make_pair(hsh, entry));
-            key->IncRef();  // we seem to reuse a object that is already in the system so increase its mojo
-            obj->IncRef();
+            PyIncRef(key); // we seem to reuse a object that is already in the system so increase its mojo
+            PyIncRef(obj);
         }
         else
         {
             /* update/replace a already existing entry ( bit tricky ) */
-            //ASCENT_HARDWARE_BREAKPOINT;
+            ASCENT_HARDWARE_BREAKPOINT;
             PyDictEntry * entry = itr->second;
-            entry->obj->DecRef();
+            PyDecRef(entry->obj);
             entry->obj = obj;
-            obj->IncRef();
+            PyIncRef(obj);
         }
     }
 
@@ -584,7 +589,7 @@ PyObject* PyDict::get_item(const char* key_name)
     if (entry == NULL)
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        entry = new PyDictEntry;
+        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry;
         entry->key = (PyObject*)new PyString(key_name);
         entry->obj = NULL;
         mDict[hsh] = entry;
@@ -608,9 +613,9 @@ PyObject* PyDict::get_item(const char* key_name, PyObject* default_obj)
     if (entry == NULL)
     {
         //ASCENT_HARDWARE_BREAKPOINT;
-        entry = new PyDictEntry();
+        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry();
         entry->key = (PyObject*)new PyString(key_name);
-        entry->obj = default_obj; default_obj->IncRef();
+        entry->obj = default_obj; PyIncRef(default_obj);
         mDict[hsh] = entry;
     }
 
@@ -618,7 +623,7 @@ PyObject* PyDict::get_item(const char* key_name, PyObject* default_obj)
     if (entry->obj == NULL)
         ASCENT_HARDWARE_BREAKPOINT;
 
-    default_obj->DecRef();
+    PyDecRef(default_obj);
     return entry->obj;
 }
 
@@ -829,10 +834,8 @@ uint32 PySubStream::hash()
 /************************************************************************/
 /* PyClass                                                              */
 /************************************************************************/
-PyClass::PyClass() : PyObject(PyTypeClass), mDict(NULL), mName(NULL), mBases(NULL), mWeakRefList(NULL), mInDict(NULL)
+PyClass::PyClass( const char* class_name ) : PyObject( PyTypeClass ), mDict( new PyDict() ), mName( new PyString( class_name ) ), mBases(NULL), mWeakRefList(NULL), mInDict(NULL)
 {
-    // needed... this is what python called 'self'
-    mDict = new PyDict();
 }
 
 PyClass::~PyClass()
@@ -867,27 +870,6 @@ PyClass::~PyClass()
 		mInDict->DecRef();
 		mInDict = NULL;
 	}
-}
-
-bool PyClass::setname( PyString* name )
-{
-	// for now we don't do class name object swapping and stuff
-	ASCENT_ASSERT(mName == NULL);
-
-	// object must exist
-	if (name == NULL)
-		return false;
-
-	// name must be a string object
-	if (name->gettype() != PyTypeString)
-		return false;
-
-	// must not contain null bytes
-	if (name->length() == 0)
-		return false;
-
-	mName = name;
-	return true;
 }
 
 bool PyClass::setbases( PyTuple* tuple )
@@ -1009,7 +991,7 @@ void PyObject::DecRef()
 {
     mRefcnt--;
     if (mRefcnt <= 0)
-        PyDelete(this);
+        delete this;
 }
 
 uint8 PyObject::gettype()
@@ -1199,7 +1181,7 @@ bool PySubStruct::setPyObject( PyObject* obj )
 		return false;
 
 	payload = obj;
-	obj->IncRef();
+	PyIncRef(obj);
 
 	return true;
 }

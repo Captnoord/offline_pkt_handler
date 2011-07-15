@@ -97,7 +97,7 @@ PyObject* DBRowModule::ReadRawDbField( MarshalStream& stream, PyInt &type, size_
 	if (mReadIndex > mReadBufferSize)
 	{
 		ASCENT_HARDWARE_BREAKPOINT;
-		stream.PyNone.IncRef();
+		PyIncRef(&stream.PyNone);
 		return (PyObject*)&stream.PyNone;
 	}
 

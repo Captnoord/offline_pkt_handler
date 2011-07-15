@@ -3,11 +3,13 @@
 
 //#pragma pack(push,1)
 
+
+
 class MachoPacket : public PyClass
 {
 protected:
 public:
-    MachoPacket() : PyClass() {}
+    MachoPacket(const char* derived_name) : PyClass(derived_name) {}
     
     ~MachoPacket(){};
     void destruct() {}
@@ -89,7 +91,7 @@ public:
 
             assert(params.size() == body->size());
 
-            for (int i = 0; i < params.size(); i++)
+            for (unsigned int i = 0; i < params.size(); i++)
             {
                 /*for i in range(l):
                 if params[i].endswith('?'):
@@ -122,11 +124,9 @@ protected:
 class macho_CallReq : public MachoPacket
 {
 public:
-    macho_CallReq() : MachoPacket()
+    macho_CallReq() : MachoPacket("macho.CallReq")
     {
-        setname(new PyString("macho.CallReq"));
         params.push_back("payload");
-        params.push_back("channel");
     }
 
     ~macho_CallReq()
@@ -143,9 +143,8 @@ public:
 class macho_CallRsp : public MachoPacket
 {
 public:
-    macho_CallRsp() : MachoPacket()
+    macho_CallRsp() : MachoPacket("macho.CallRsp")
     {
-        setname(new PyString("macho.CallRsp"));
         params.push_back("payload");
     }
 
@@ -160,9 +159,8 @@ public:
 class macho_SessionChangeNotification : public MachoPacket
 {
 public:
-    macho_SessionChangeNotification() : MachoPacket()
+    macho_SessionChangeNotification() : MachoPacket("macho.SessionChangeNotification")
     {
-        setname(new PyString("macho.SessionChangeNotification"));
         params.push_back("change");
         params.push_back("nodesOfInterest");
     }
@@ -178,9 +176,8 @@ public:
 class macho_SessionInitialStateNotification : public MachoPacket
 {
 public:
-    macho_SessionInitialStateNotification() : MachoPacket()
+    macho_SessionInitialStateNotification() : MachoPacket("macho.SessionInitialStateNotification")
     {
-        setname(new PyString("macho.SessionInitialStateNotification"));
         params.push_back("initialstate");
     }
 
@@ -195,9 +192,8 @@ public:
 class macho_PingRsp : public MachoPacket
 {
 public:
-    macho_PingRsp() : MachoPacket()
+    macho_PingRsp() : MachoPacket("macho.PingRsp")
     {
-        setname(new PyString("macho.PingRsp"));
         params.push_back("times");
     }
 
@@ -212,9 +208,8 @@ public:
 class macho_PingReq : public MachoPacket
 {
 public:
-    macho_PingReq() : MachoPacket()
+    macho_PingReq() : MachoPacket("macho.PingReq")
     {
-        setname(new PyString("macho.PingReq"));
         params.push_back("times");
     }
 
@@ -229,9 +224,8 @@ public:
 class macho_ErrorResponse : public MachoPacket
 {
 public:
-    macho_ErrorResponse() : MachoPacket()
+    macho_ErrorResponse() : MachoPacket("macho.ErrorResponse")
     {
-        setname(new PyString("macho.ErrorResponse"));
         params.push_back("originalCommand");
         params.push_back("code");
         params.push_back("payload");
@@ -248,11 +242,9 @@ public:
 class macho_Notification : public MachoPacket
 {
 public:
-    macho_Notification() : MachoPacket()
+    macho_Notification() : MachoPacket("macho.Notification")
     {
-        setname(new PyString("macho.Notification"));
         params.push_back("payload");
-        params.push_back("channel");
     }
 
     ~macho_Notification(){}

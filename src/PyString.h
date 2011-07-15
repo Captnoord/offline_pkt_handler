@@ -1,8 +1,6 @@
 #ifndef PYSTRING_H
 #define PYSTRING_H
 
-//#pragma pack(push,1)
-
 class PyString : public PyObject
 {
 public:

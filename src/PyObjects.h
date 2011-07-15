@@ -46,6 +46,9 @@ enum PyType
 	PyTypeDeleted,		//15 // must be last, and can max be 16...
 };
 
+#define PyIncRef(x) (x)->IncRef();
+#define PyDecRef(x) (x)->DecRef();
+
 // object hash function
 //#define hashfunc(x) uint32 (*x)(void);
 typedef uint32 (*hashfunc)(void);
@@ -159,6 +162,12 @@ public:
     ~PyInt(){}
 
 	PyInt &operator = (const int num);
+
+    bool operator==( const int num )
+    {
+        return mNumber == num;
+    }
+
 	int32 GetValue();
 
     /** simple hash function, atm this one is pretty weak.
@@ -399,7 +408,7 @@ public:
         return true;
     }
 
-    bool set_item(PyObject* key, PyObject* obj);
+    __forceinline bool set_item(PyObject* key, PyObject* obj);
     PyObject* get_item(PyObject* key);
     PyObject* get_item(const char* key_name);
     PyObject* get_item(const char* key_name, PyObject* default_obj);
@@ -469,13 +478,12 @@ private:
 class PyClass : public PyObject
 {
 public:
-	PyClass();
+	PyClass( const char* class_name );
 	virtual ~PyClass(); // this doesn't do shit... bleh...
     virtual void destruct() {};
 
     uint32 hash();
 
-	bool setname(PyString* name);
 	bool setbases(PyTuple* tuple);
 	bool setdict(PyDict* dict);
 	bool setDirList(PyList * list);
@@ -498,7 +506,7 @@ public:
 protected:
 	PyTuple		*mBases;/* A tuple of class objects */
 	PyDict		*mDict;	/* A dictionary, used to store 'self.xxxx' variable info */
-	PyString	*mName;	/* A string */
+	PyString	*mName;	/* A string that represents the objects name */
 
 	// instance object info...
 	PyDict		*mInDict;

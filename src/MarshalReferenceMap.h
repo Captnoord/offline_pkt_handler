@@ -59,6 +59,7 @@ public:
 	 */
 	UnmarshalReferenceMap(const uint32 objectCount) : mExpectedObjectsCount(objectCount), mStoredObjectCount(0), mStoreObjectIndex(0), mReferenceObjects(NULL)
 	{
+        ASCENT_HARDWARE_BREAKPOINT;
 		assert(false);
 		//if (objectCount == 0)
 			//return;
@@ -123,7 +124,7 @@ public:
 
         // makes sure we increase the ref counter..., its possible that we store a NULL pointer...
         if (object != NULL)
-            ((PyObject*)object)->IncRef();
+            PyIncRef((PyObject*)object);
 
 		mStoredObjectCount = mStoreObjectIndex;
 		return (int)objectloc;
@@ -141,7 +142,7 @@ public:
 
         *shared_obj_ptr = (PyObject*)object;
 
-        ((PyObject*)object)->IncRef();
+        PyIncRef((PyObject*)object);
 
         return true;
     }
@@ -168,7 +169,7 @@ public:
 
 	void SetOrderMapSize(int size)
 	{
-		mOrderMap.resize(size);
+		mOrderMap.resize(size+1);
 	}
 
 	void SetObjectOrder(int index, int order)
@@ -191,7 +192,7 @@ public:
 			//SafeDeleteArray(mReferenceObjects);
 
 		assert(mReferenceObjects.size() == 0);
-		mReferenceObjects.resize(sharedObjectCount);
+		mReferenceObjects.resize(sharedObjectCount+1);
 
 		//mReferenceObjects = new PyObject*[expectedObjectsCount+1];
 		//mReferenceObjects = (PyObject**)ASCENT_MALLOC(sizeof(PyObject*) * (expectedObjectsCount+1));

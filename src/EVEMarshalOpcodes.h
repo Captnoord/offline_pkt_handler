@@ -29,7 +29,7 @@
 typedef enum _PyRepOpcodes
 {
 	Op_PyNone				= 0x01u,	//1
-	Op_PyModule		        = 0x02u,	//2		| get a class interface (class module) trough the module name. (the function name used for the call...)
+	Op_PyModule		        = 0x02u,	//2		| get a new instance of a class (class module) trough the module name. (the function name used for the call...)
 	Op_PyLongLong			= 0x03u,	//3
 	Op_PyLong				= 0x04u,	//4
 	Op_PySignedShort		= 0x05u,	//4

@@ -8,6 +8,7 @@
 #include "rowset.h"
 #include "cRowSet.h"
 #include "blue_DBRowDescriptor.h"
+#include "GPS.h"
 
 createFileSingleton(CallMgr);
 CallMgr::CallMgr()
@@ -34,6 +35,7 @@ CallMgr::CallMgr()
     reg("macho.PingReq", new macho_PingReq());
     reg("macho.ErrorResponse", new macho_ErrorResponse());
     reg("macho.Notification", new macho_Notification());
+    reg("exceptions.GPSTransportClosed", new exceptions_GPSTransportClosed());
 }
 
 CallMgr::~CallMgr()
@@ -45,9 +47,9 @@ CallMgr::~CallMgr()
     }
 }
 
-bool CallMgr::reg( const char* name, PyClass* module )
+bool CallMgr::reg( const char* guid, PyClass* module )
 {
-    mCallMap.insert(std::make_pair(name, module));
+    mCallMap.insert(std::make_pair(guid, module));
     return true;
 }
 
@@ -56,6 +58,10 @@ PyClass* CallMgr::find( const char* module )
     // stupid debugging..
     //if (!strcmp("dbutil.CRowset", module))
       //  ASCENT_HARDWARE_BREAKPOINT;
+
+    //if (!strcmp("exceptions.GPSTransportClosed", module))
+        //ASCENT_HARDWARE_BREAKPOINT;
+    
 
     CallMapItr itr = mCallMap.find(module);
     if (itr != mCallMap.end())

@@ -25,10 +25,7 @@ public:
 class util_Row : public PyClass
 {
 public:
-    util_Row() : PyClass()
-    {
-        setname(new PyString("util.Row"));
-    }
+    util_Row() : PyClass( "util.Row" ) {}
     util_Row* New()
     {
         return new util_Row();
@@ -171,10 +168,7 @@ public:
 class macho_MachoAddress : public PyClass
 {
 public:
-    macho_MachoAddress() : PyClass()
-    {
-        setname(new PyString("macho.MachoAddress"));
-    }
+    macho_MachoAddress() : PyClass( "macho.MachoAddress" ) {}
 
     ~macho_MachoAddress(){}
     void destruct() {}
@@ -239,6 +233,7 @@ public:
         return state;
     }
 
+
     bool init(PyObject* state)
     {
         if (state->gettype() != PyTypeTuple)
@@ -247,28 +242,28 @@ public:
         PyTuple * pState = (PyTuple *)state;
 
         // we need to inc ref of the addressType?
-        PyString *addressType = pState->GetItem_asPyString(0);
-        if (*addressType == "C")
+        int addressType = pState->GetItem_asInt(0);
+        if (addressType == 2)
         {
             mDict->set_item("addressType", pState->GetItem(0));
             mDict->set_item("clientID", pState->GetItem(1));
             mDict->set_item("callID", pState->GetItem(2));
             mDict->set_item("service", pState->GetItem(3));
         }
-        else if (*addressType == "B")
+        else if (addressType == 4)
         {
             mDict->set_item("addressType", pState->GetItem(0));
             mDict->set_item("broadcastID", pState->GetItem(1));
             mDict->set_item("narrowcast", pState->GetItem(2));
             mDict->set_item("idtype", pState->GetItem(3));
         }
-        else if (*addressType == "A")
+        else if (addressType == 8)
         {
             mDict->set_item("addressType", pState->GetItem(0));
             mDict->set_item("service", pState->GetItem(1));
             mDict->set_item("callID", pState->GetItem(2));
         }
-        else if (*addressType == "N")
+        else if (addressType == 1)
         {
             mDict->set_item("addressType", pState->GetItem(0));
             mDict->set_item("nodeID", pState->GetItem(1));

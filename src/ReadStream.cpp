@@ -76,6 +76,8 @@ bool ReadStream::resize( size_t newsize )
 	if (mBuffer == NULL)
 	{
 		mAllocatedMem = 0;
+		mPayloadSize = 0;
+        mSize = 0;
 		return false;
 	}
 

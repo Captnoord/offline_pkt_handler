@@ -5,11 +5,8 @@ class util_CachedObject : public PyClass
 {
 protected:
 public:
-    util_CachedObject() : PyClass()
-    {
-        //setname(new PyString("objectCaching.CachedObject"));
-        setname(new PyString("util.CachedObject"));
-    }
+    util_CachedObject() : PyClass("util.CachedObject") {}
+
     ~util_CachedObject(){};
     void destruct() {}
 

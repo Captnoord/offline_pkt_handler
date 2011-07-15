@@ -244,7 +244,7 @@ void PyChameleon::setAtributeObj( PyObject* attrib )
 	assert(mKeyObj == NULL);
 	assert(attrib);
 	mKeyObj = attrib;
-	attrib->IncRef();
+    PyIncRef(attrib);
 }
 
 PyObject* PyChameleon::getAtributeObj()

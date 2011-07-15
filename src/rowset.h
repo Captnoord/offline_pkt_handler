@@ -12,10 +12,10 @@ class util_KeyVal : public PyClass
 {
 protected:
 public:
-    util_KeyVal() : PyClass()
+    util_KeyVal() : PyClass( "util.KeyVal" )
     {
-        setname(new PyString("util.KeyVal"));
     }
+
     ~util_KeyVal(){};
     void destruct() {}
 
@@ -34,7 +34,8 @@ public:
         mDict->DecRef();
 
         // replace the current dict with that one to init...
-        mDict = (PyDict*)state; state->IncRef();
+        mDict = (PyDict*)state;
+        PyIncRef(state);
         return true;
     }
 
@@ -65,10 +66,10 @@ class util_Rowset : public PyClass
 {
 protected:
 public:
-    util_Rowset() : PyClass()
+    util_Rowset() : PyClass( "util.Rowset" )
     {
-        setname(new PyString("util.Rowset"));
     }
+
     ~util_Rowset(){};
     void destruct() {}
 
@@ -95,7 +96,8 @@ public:
         mDict->DecRef();
 
         // replace the current dict with that one to init...
-        mDict = (PyDict*)state; state->IncRef();
+        mDict = (PyDict*)state;
+        PyIncRef(state);
 
         return true;
     }

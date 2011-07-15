@@ -56,9 +56,12 @@ public:
             m_dwPageSize = sysInfo.dwPageSize;
         }*/
 
-		GObj::VMem_G pPtr = (PBYTE) VirtualAlloc(NULL, nSize + m_dwPageSize, MEM_RESERVE, PAGE_NOACCESS);
-		if (!pPtr)
+		GObj::VMem_G pPtr = (PBYTE) VirtualAlloc(NULL, nSize + m_dwPageSize, MEM_RESERVE | MEM_LARGE_PAGES, PAGE_NOACCESS);
+        if (!pPtr) {
+            DWORD lError = GetLastError();
+            printf("virtual alloc failed\n");
 			return NULL;
+        }
 
 		PBYTE pRet = pPtr;
 		if (bAlignTop)
@@ -75,7 +78,6 @@ public:
 		// ok
 		pPtr.Detach();
 		return pRet;
-
 	}
 
 	void Free(void* pPtr)

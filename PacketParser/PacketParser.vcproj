@@ -77,8 +77,8 @@
 				GenerateMapFile="false"
 				MapExports="false"
 				SubSystem="1"
-				HeapReserveSize="8192"
-				HeapCommitSize="8192"
+				HeapReserveSize="0"
+				HeapCommitSize="0"
 				LargeAddressAware="0"
 				RandomizedBaseAddress="0"
 				FixedBaseAddress="0"
@@ -369,6 +369,10 @@
 			<Filter
 				Name="PyCallObjects"
 				>
+				<File
+					RelativePath="..\src\GPS.h"
+					>
+				</File>
 				<File
 					RelativePath="..\src\machoNetPacket.h"
 					>

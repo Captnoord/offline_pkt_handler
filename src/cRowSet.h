@@ -6,9 +6,10 @@ class dbutil_CRowset : public PyClass
 {
 protected:
 public:
-    dbutil_CRowset() : PyClass()
+    dbutil_CRowset() : PyClass( "dbutil.CRowset" )
     {
-        setname(new PyString("dbutil.CRowset"));
+        if (mList)
+            mList->DecRef();
         mList = new PyList();
     }
 
