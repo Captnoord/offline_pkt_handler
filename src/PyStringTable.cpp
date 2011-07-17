@@ -33,24 +33,13 @@ PyMarshalStringTable::PyMarshalStringTable()
 	for (size_t i = 0; i < StringTableSize; i++)
 	{
 		uint32 hashValue = hash(StringTableData[i]);
-		//mStringTable[hashValue] = static_cast<uint8>(i);
-        mStringTable.insert(std::make_pair(hashValue, i));
-		mPyStringTable[i].set(StringTableData[i], strlen(StringTableData[i]));
+        mStringTable.insert( std::make_pair( hashValue, static_cast<uint8>(i) ) );
+		mPyStringTable[i].set( StringTableData[i], strlen( StringTableData[i] ) );
 	}
 }
 
 PyMarshalStringTable::~PyMarshalStringTable()
 {
-	/*for (size_t i = 0; i < StringTableSize; i++)
-	{
-		//mPyStringTable[i].set(StringTableData[i], strlen(StringTableData[i]));
-		//if (mPyStringTable[i].)
-
-		//uint8* tst = (uint8*)&mPyStringTable[i];
-		//size_t * refcount = (size_t*)(tst+1);
-		//printf("str[%u] %u\n", i, *refcount);
-	}
-	printf("string table delete \n");*/
 }
 
 /* lookup a index using a string */

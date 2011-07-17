@@ -38,7 +38,6 @@
 #include "PyString.h"
 
 #include "PyChameleon.h"
-#include "PyObjectDeleter.h"
 
 #include "RleModule.h"
 #include "BinAsciiModule.h"
