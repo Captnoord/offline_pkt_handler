@@ -63,5 +63,4 @@
 #include "Database/SQLiteDatabase.h"
 #endif*/
 
-#include "Auth/Sha1.h"
 #endif // _ASCENT_H
