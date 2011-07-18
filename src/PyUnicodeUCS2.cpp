@@ -86,7 +86,7 @@ wchar_t* PyUnicodeUCS2::content()
 	return mStr;
 }
 
-const size_t PyUnicodeUCS2::length()
+size_t PyUnicodeUCS2::size()
 {
 	return mStrLen;
 }

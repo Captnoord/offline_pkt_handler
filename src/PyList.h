@@ -22,3 +22,11 @@
 	------------------------------------------------------------------------------------
 	Author:		Captnoord
 */
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif

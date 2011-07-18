@@ -750,7 +750,7 @@ bool PyDict::scanf( const char * keyName, const char* format, ... )
         std::wstring * str = (std::wstring *)pVar;
         str->clear();
 
-        size_t len = ((PyUnicodeUCS2*)foundObject)->length();
+        size_t len = ((PyUnicodeUCS2*)foundObject)->size();
         wchar_t * buff = ((PyUnicodeUCS2*)foundObject)->content();
         str->append(buff, len);
         break;

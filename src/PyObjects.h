@@ -26,6 +26,9 @@
 #ifndef _PYOBJECTS_H
 #define _PYOBJECTS_H
 
+#define ENABLE_PACKED_CLASSES
+
+
 enum PyType
 {
 	PyTypeNone,			//0
@@ -70,7 +73,9 @@ class PyString;
 
 typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 
-//#pragma pack(push,1)
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
 
 // a single global static declaration of the PyNone object
 //static PyBaseNone PyNone;
@@ -488,7 +493,9 @@ class PyClass : public PyObject
 {
 public:
 	PyClass( const char* class_name );
-	virtual ~PyClass(); // this doesn't do shit... bleh...
+	virtual ~PyClass();
+
+    /* .... hmm check this.. */
     virtual void destruct() {};
 
     uint32 hash();
@@ -628,7 +635,9 @@ private:
 	PyObject* payload;
 };
 
-//#pragma pack(pop)
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
 
 /************************************************************************/
 /* Small portion of the Python API so we are able to handle various    */

@@ -26,6 +26,10 @@
 #ifndef PYSTRING_H
 #define PYSTRING_H
 
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
 class PyString : public PyObject
 {
 public:
@@ -70,7 +74,9 @@ private:
 	
 };
 
-//#pragma pack(pop)
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
 
 /**
  * wrapper function to create a PyString from a buffer

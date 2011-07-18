@@ -1633,7 +1633,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			v32 = PyUnicodeUCS2_AsUTF8String(ArgList);
 			*/
 			PyUnicodeUCS2 & str = *(PyUnicodeUCS2*)object;
-			size_t str_len = str.length();
+			size_t str_len = str.size();
 			if (str_len == 0)
 			{
 				return stream.writeOpcode(Op_PyUnicodeEmptyString);
@@ -1679,10 +1679,10 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			if (!stream.writeOpcode(Op_PyUnicodeString))
 				return false;
 
-			if (!stream.writeSizeEx(str.length()))
+			if (!stream.writeSizeEx(str.size()))
 				return false;
 
-			return stream.write((char*)str.content(), str.length() * 2);
+			return stream.write((char*)str.content(), str.size() * 2);
 		} break;
 
 	case PyTypeDict:

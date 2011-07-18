@@ -221,7 +221,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (isItr == false)
 				fputs("PyUnicode:", fp);
 
-			if (str->length() == 0 || str->content() == NULL)
+			if (str->size() == 0 || str->content() == NULL)
 				fputs("\"\"", fp);
 			else
 				fprintf(fp, "\"%S\"", str->content());

@@ -26,7 +26,9 @@
 #ifndef _PYUNICODEUCS2_H
 #define _PYUNICODEUCS2_H
 
-//#pragma pack(push,1)
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
 
 class PyUnicodeUCS2 : public PyObject
 {
@@ -41,14 +43,18 @@ public:
 	bool set(const wchar_t* str, size_t len);
 	bool resize(size_t newsize);
 	wchar_t * content();
-	const size_t length();
+	size_t size();
 
 private:
 	wchar_t* mStr;
 	size_t mStrLen;
 	uint32 mHashValue; /* string hash cache */
 };
-//#pragma pack(pop)
+
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
 
 /************************************************************************/
 /* fake python api                                                      */
@@ -109,11 +115,11 @@ static PyObject *PyUnicode_AsUTF8String(PyObject *unicode)
 	PyUnicodeUCS2 * str = (PyUnicodeUCS2 *)unicode;
 
 	PyString * res = new PyString();
-	res->resize(str->length());
+	res->resize(str->size());
 		
-	size_t ret_len = wcstombs((char*)&res->content()[0], str->content(), str->length());
+	size_t ret_len = wcstombs((char*)&res->content()[0], str->content(), str->size());
 
-	if (ret_len != str->length())
+	if (ret_len != str->size())
 	{
 		// check if this ever happens
 		ASCENT_HARDWARE_BREAKPOINT;
