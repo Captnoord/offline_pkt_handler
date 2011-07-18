@@ -54,16 +54,15 @@ public:
         }
         else
         {
-            // TODO add sub type check..
-            if (state->gettype() == PyTypeTuple)
+            if (!PyTuple_Check(state))
             {
                 //ASCENT_HARDWARE_BREAKPOINT; // this is kinda correct... it needs a hell lot more... can't explain... need to reverse..
                 //DumpObject(stdout, state);
                 PyTuple* pTuple = (PyTuple*)state;
-                PyTuple* pSubTuple = (PyTuple*)pTuple->GetItem(0);
+                PyTuple* pSubTuple = (PyTuple*)pTuple->get_item(0);
                 for (unsigned int i = 0; i < pSubTuple->size(); i++)
                 {
-                    PyTuple* itemTuple = (PyTuple*)pSubTuple->GetItem(i);
+                    PyTuple* itemTuple = (PyTuple*)pSubTuple->get_item(i);
                     assert(itemTuple);
                     
                     assert(itemTuple->size() == 2);

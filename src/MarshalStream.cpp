@@ -902,14 +902,14 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 	if (bases == NULL)
 		MARSHALSTREAM_RETURN_NULL;
 
-    PyObject * method = bases->GetItem(0);
+    PyObject * method = bases->get_item(0);
     if (method == NULL)
     {
         bases->DecRef();
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    PyObject * args = bases->GetItem(1);
+    PyObject * args = bases->get_item(1);
     if (args == NULL)
     {
         bases->DecRef();
@@ -929,7 +929,7 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
     {
         // implement this..
         //ASCENT_HARDWARE_BREAKPOINT;
-        PyObject* ext_arg = bases->GetItem(2);
+        PyObject* ext_arg = bases->get_item(2);
         //PyObject_CallFunctionObjArgs(v13, v14, 0); // but in short its just call_result->set_states
         // call_result->set_states(ext_arg);
 
@@ -1088,7 +1088,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
         //if (obj1->getbases() == NULL)
           //  Dump(stdout, obj1, 0);
 
-		size_t guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->GetItem(1));
+		size_t guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->get_item(1));
 
 		outsize = guessedSize+200;
 		size_t bufferSize = outsize;
@@ -1529,7 +1529,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 		}
 	case PyTypeInt:
 		{
-			int32 val = ((PyInt *)object)->GetValue();;
+			int32 val = ((PyInt *)object)->get_value();;
 
 			if (val == -1)
 			{
@@ -1769,12 +1769,10 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
             PyTuple::iterator itr = tuple.begin();
 			for (; itr != tuple.end(); itr++)
 			{
-				PyChameleon* leaf = (*itr);
+				PyObject* leaf = (*itr);
 				if (leaf == NULL)
 					return false;
-				if (leaf->getPyObject() == NULL)
-					return false;
-				if(!marshal(leaf->getPyObject(), stream))
+				if(!marshal(leaf, stream))
 					return false;
 			}
 			return true;

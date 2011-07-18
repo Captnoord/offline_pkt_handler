@@ -31,7 +31,6 @@
 #include "string_map.h"
 
 #include "PyObjects.h"
-#include "PyChameleon.h"
 #include "PyObjectDumper.h"
 
 /************************************************************************/
@@ -51,7 +50,7 @@ uint32 PyInt::hash()
 	return mNumber;
 }
 
-int32 PyInt::GetValue()
+int32 PyInt::get_value()
 {
 	return mNumber;
 }
@@ -175,14 +174,9 @@ PyTuple::~PyTuple()
 }
 
 /* this is kinda slow because we are resizing a vector */
-PyChameleon & PyTuple::operator[]( const int index )
+PyObject* PyTuple::operator[]( const int index )
 {
-	if (index < 0)
-		return PyErrorIterator;
-	if (index+1 > (int)mTuple.size())
-		mTuple.resize(index+1);
-	PyChameleon & itr = *mTuple[index];
-	return itr;
+    return get_item(index);
 }
 
 size_t PyTuple::size()
@@ -194,11 +188,9 @@ void PyTuple::clear()
 {
 	iterator itr = mTuple.begin();
 	for (; itr != mTuple.end(); itr++)
-	{
-		PyChameleon* obj = *itr;
-		SafeDelete(obj);
-	}
-	mTuple.clear();
+		PyDecRef(*itr);
+
+    mTuple.clear();
 }
 
 uint32 PyTuple::hash()
@@ -207,7 +199,7 @@ uint32 PyTuple::hash()
     uint32 hash = 5381;
     for (int i = 0; i < (int)tuple.size(); i++)
     {
-        uint32 hashChunk = PyObject_Hash(tuple[i].getPyObject());
+        uint32 hashChunk = PyObject_Hash(tuple[i]);
         hash = (hash << 3) + hashChunk;
     }
     return hash;
@@ -225,160 +217,114 @@ bool PyTuple::resize( size_t newTupleSize )
 	/* we need to grow or shrink */
 	if (newTupleSize > currentTupleSize)
 	{
-		// debug breakpoint for the situation we are resizing a already excisting object
+		// debug breakpoint for the situation we are resizing a already existing object
 		if (currentTupleSize != 0)
 			ASCENT_HARDWARE_BREAKPOINT;
 		
 		/* we need to grow (this one is easy) */
 		mTuple.resize(newTupleSize);
-
-		for (size_t i = currentTupleSize; i < newTupleSize; i++)
-		{
-			mTuple[int(i)] = new PyChameleon();
-		}
 	}
 	else
 	{
 		ASCENT_HARDWARE_BREAKPOINT;
 		/* we need to shrink (a bit harder) */
-		for(size_t i = currentTupleSize; i > newTupleSize; i--)
-		{
-			PyChameleon* obj = mTuple[int(i)];
-			SafeDelete(obj);
+		for(int i = (int)currentTupleSize; i > (int)newTupleSize; i--) {
+			PyDecRef(mTuple[i]);
 		}
 		mTuple.resize(newTupleSize);
 	}
 	return true;
 }
 
-PyObject* PyTuple::GetItem( const int index )
+PyObject* PyTuple::get_item( const int index )
 {
 	if (index < 0)
 		return NULL;
-	if (index+1 > (int)mTuple.size())
-		mTuple.resize(index+1);
 
-	PyChameleon * itr = mTuple[index];
-	return itr->getPyObject();
+    if (index > (int)size())
+        return NULL;
+
+    return mTuple[index];
 }
 
 int32 PyTuple::GetItem_asInt( const int index )
 {
-	if (index < 0)
-		return 0;
-	if (index > (int)mTuple.size())
-		return 0;
+    PyInt* obj = (PyInt*)get_item(index);
 
-	PyChameleon * itr = mTuple[index];
-	if (itr == NULL)
-		return 0;
-	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || obj->gettype() != PyTypeInt)
-		return 0;
+    if (!PyInt_Check(obj))
+        return 0;
 
-	return ((PyInt*)obj)->GetValue();
+    return obj->get_value();
 }
 
 PyTuple* PyTuple::GetItem_asPyTuple( const int index )
 {
-	if (index < 0)
-		return NULL;
-	if (index > (int)mTuple.size())
-		return NULL;
+    PyTuple* obj = (PyTuple*)get_item(index);
 
-	PyChameleon * itr = mTuple[index];
-	if (itr == NULL)
-		return NULL;
-	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || PyTuple_Check(obj))
-		return NULL;
+    /* throw exception? */
+    if (!PyTuple_Check(obj))
+        return NULL;
 
-	return (PyTuple*)obj;
+    return obj;
 }
 
 PyList* PyTuple::GetItem_asPyList( const int index )
 {
-	if (index < 0)
-		return NULL;
-	if (index > (int)mTuple.size())
-		return NULL;
+    PyList* obj = (PyList*)get_item(index);
 
-	PyChameleon * itr = mTuple[index];
-	if (itr == NULL)
-		return NULL;
-	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || obj->gettype() != PyTypeList)
-		return NULL;
+    /* throw exception? */
+    if (!PyList_Check(obj))
+        return NULL;
 
-	return (PyList*)obj;
+    return obj;
 }
 
 PyString* PyTuple::GetItem_asPyString( const int index )
 {
-	if (index < 0)
-		return NULL;
-	if (index > (int)mTuple.size())
-		return NULL;
+    PyString* obj = (PyString*)get_item(index);
 
-	PyChameleon * itr = mTuple[index];
-	if (itr == NULL)
-		return NULL;
-	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || obj->gettype() != PyTypeString)
-    {
-        printf("object isn't a string\n");
-		return NULL;
-    }
+    /* throw exception? */
+    if (!PyString_Check(obj))
+        return NULL;
 
-	return (PyString*)obj;
+    return obj;
 }
 
 PySubStream* PyTuple::GetItem_asPySubStream( const int index )
 {
-	if (index < 0)
-		return NULL;
-	if (index > (int)mTuple.size())
-		return NULL;
+    PySubStream* obj = (PySubStream*)get_item(index);
 
-	PyChameleon * itr = mTuple[index];
-	if (itr == NULL)
-		return NULL;
-	PyObject* obj = itr->getPyObject();
-	if (obj == NULL || obj->gettype() != PyTypeSubStream)
-		return NULL;
+    /* throw exception? */
+    if (!PySubStream_Check(obj))
+        return NULL;
 
-	return (PySubStream*)obj;
+    return obj;
 }
 
 PyClass* PyTuple::GetItem_asPyClass( const int index )
 {
-    if (index < 0)
-        return NULL;
-    if (index > (int)mTuple.size())
+    PyClass* obj = (PyClass*)get_item(index);
+
+    /* throw exception? */
+    if (!PyClass_Check(obj))
         return NULL;
 
-    PyChameleon * itr = mTuple[index];
-    if (itr == NULL)
-        return NULL;
-    PyObject* obj = itr->getPyObject();
-    if (obj == NULL || obj->gettype() != PyTypeClass)
-        return NULL;
-
-    return (PyClass*)obj;
+    return obj;
 }
 
 bool PyTuple::set_item( const int index, PyObject *object )
 {
 	if (index < 0)
 		return false;
-	if (index+1 > (int)mTuple.size())
+
+    /* object stored at index 0 is the first object so size = 1 */
+    if (index+1 > (int)size()) 
 		mTuple.resize(index+1);
 
     // we'r storing the object somewhere else so... dec the ref..
     PyIncRef(object);
 
-	PyChameleon & itr = *mTuple[index];
-	itr.setPyObject(object);
+	mTuple[index] = object;
 	return true;
 }
 
@@ -1190,7 +1136,7 @@ PyObject* PyPackedRow::getRawPayLoad()
 bool PyPackedRow::init( PyObject* header )
 {
 	size_t argumentCount = 0;
-	if (header->gettype() == PyTypeTuple)
+	if (PyTuple_Check(header))
 	{
 		PyTuple& tulple = *(PyTuple*)header;
 		argumentCount = tulple.size();
@@ -1213,7 +1159,7 @@ bool PyPackedRow::init( PyObject* header )
 PyObject* PyPackedRow::GetFieldObject( int index )
 {
 	PyTuple & fieldHelper = *rawPayLoad;
-	PyObject * res = fieldHelper[index].getPyObject();
+	PyObject * res = fieldHelper[index];
 	//f ()
 	return 0;
 }

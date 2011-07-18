@@ -178,30 +178,30 @@ public:
         int addressType = pState->GetItem_asInt(0);
         if (addressType == 2)
         {
-            mDict->set_item("addressType", pState->GetItem(0));
-            mDict->set_item("clientID", pState->GetItem(1));
-            mDict->set_item("callID", pState->GetItem(2));
-            mDict->set_item("service", pState->GetItem(3));
+            mDict->set_item("addressType", pState->get_item(0));
+            mDict->set_item("clientID", pState->get_item(1));
+            mDict->set_item("callID", pState->get_item(2));
+            mDict->set_item("service", pState->get_item(3));
         }
         else if (addressType == 4)
         {
-            mDict->set_item("addressType", pState->GetItem(0));
-            mDict->set_item("broadcastID", pState->GetItem(1));
-            mDict->set_item("narrowcast", pState->GetItem(2));
-            mDict->set_item("idtype", pState->GetItem(3));
+            mDict->set_item("addressType", pState->get_item(0));
+            mDict->set_item("broadcastID", pState->get_item(1));
+            mDict->set_item("narrowcast", pState->get_item(2));
+            mDict->set_item("idtype", pState->get_item(3));
         }
         else if (addressType == 8)
         {
-            mDict->set_item("addressType", pState->GetItem(0));
-            mDict->set_item("service", pState->GetItem(1));
-            mDict->set_item("callID", pState->GetItem(2));
+            mDict->set_item("addressType", pState->get_item(0));
+            mDict->set_item("service", pState->get_item(1));
+            mDict->set_item("callID", pState->get_item(2));
         }
         else if (addressType == 1)
         {
-            mDict->set_item("addressType", pState->GetItem(0));
-            mDict->set_item("nodeID", pState->GetItem(1));
-            mDict->set_item("service", pState->GetItem(2));
-            mDict->set_item("callID", pState->GetItem(3));
+            mDict->set_item("addressType", pState->get_item(0));
+            mDict->set_item("nodeID", pState->get_item(1));
+            mDict->set_item("service", pState->get_item(2));
+            mDict->set_item("callID", pState->get_item(3));
         }
         else
         {

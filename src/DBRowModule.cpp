@@ -63,7 +63,7 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 		return NULL;
 	}
 
-	assert(classdata.gettype() == PyTypeTuple);
+	assert(PyTuple_Check(&classdata));
 
 	PyTuple& classdataterror = *classdata.GetItem_asPyTuple(1);
 	PyTuple& tuple = *classdataterror.GetItem_asPyTuple(0);
@@ -91,18 +91,18 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 
 	for (int i = 0; i < (int)tuple.size(); i++)
 	{
-		PyTuple& field = (PyTuple&)tuple[henk[i].index].getPyObjRef();
+		PyTuple& field = (PyTuple&)*tuple[henk[i].index];
 
 		/* this tuple is required to have 2 leaves because it has a field name and a field type */
 		assert(field.size() == 2); // needs to be 2
 
-		PyInt& fieldType = (PyInt&)field[1].getPyObjRef();
+		PyInt& fieldType = (PyInt&)*field[1];
 		PyObject* resObj = ReadRawDbField(stream, fieldType, mVirtualFieldCount);
 
 		if (resObj == NULL)
 			continue;
 
-		result_tuple[henk[i].index] = resObj;
+		result_tuple.set_item(henk[i].index, resObj);
 	}
 
 	virtualFieldCount = mVirtualFieldCount;
@@ -126,7 +126,7 @@ PyObject* DBRowModule::ReadRawDbField( MarshalStream& stream, PyInt &type, size_
 		return (PyObject*)&stream.PyNone;
 	}
 
-	switch(type.GetValue())
+	switch(type.get_value())
 	{
 	case DBTYPE_I1:
 		{
@@ -259,18 +259,19 @@ PyObject* DBRowModule::ReadRawDbField( MarshalStream& stream, PyInt &type, size_
 
 size_t DBRowModule::GetRawFieldSizeFromHeader( PyObject* object )
 {
-	if (!PY_TYPE_CHECK(object, PyTypeTuple))
-		return size_t(-1);
+    PyTuple * pTuple = (PyTuple*)object;
 
-	PyTuple * pTuple = (PyTuple*)object;
+	if (!PyTuple_Check(pTuple))
+		return size_t(-1);
+	
 	if (pTuple->size() == 0)
 		return size_t(-1);
 
 	/* check if we need to get the sub object */
 	if (pTuple->size() == 1)
 	{
-		PyObject* subObject = pTuple->GetItem(0);
-		if (!PY_TYPE_CHECK(subObject, PyTypeTuple))
+		PyObject* subObject = pTuple->get_item(0);
+		if (!PyTuple_Check(subObject))
 			return size_t(-1);
 
 		pTuple = (PyTuple*)subObject;

@@ -54,8 +54,8 @@ public:
     {
         PyTuple * pTuple = (PyTuple *)state;
 
-        mList->init(pTuple->GetItem(1));
-        mDict->set_item("header", pTuple->GetItem(0));
+        mList->init(pTuple->get_item(1));
+        mDict->set_item("header", pTuple->get_item(0));
 
 
         /*if (!PyTuple_Check(state))

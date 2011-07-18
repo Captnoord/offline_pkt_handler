@@ -86,11 +86,11 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (isItr == false)
 				fputs("PyInt:", fp);
 
-			int32 val = num.GetValue();
+			int32 val = num.get_value();
 			if ( val < 10 && val > -10 || deep == -1)
-				fprintf(fp, "%d", num.GetValue());
+				fprintf(fp, "%d", num.get_value());
 			else
-				fprintf(fp, "%d    <0x%X>", num.GetValue(), num.GetValue());
+				fprintf(fp, "%d    <0x%X>", num.get_value(), num.get_value());
 
 			/* part of a hack to handle iterators of class objects */
 			if (deep != -1)
@@ -269,17 +269,16 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			{
 				WriteSpacer(fp, deep+DUMP_ITR_SPACE);
 				fprintf(fp,"itr[%d]:", i);
-				PyObject* item = tuple[i].getPyObject();
+				PyObject* obj = tuple[i];
 				
 				/* this check only exists because of not complete DBRow unmarshal algorithm */
-				if (item == NULL)
-				{
+				if (obj == NULL) {
 					fputc('\n', fp);
 					continue;
 				}
 				/* commented because: see above comments */
-				//assert(item);
-				Dump(fp, item, deep, true);
+				//assert(obj);
+				Dump(fp, obj, deep, true);
 			}
 		}
 		break;

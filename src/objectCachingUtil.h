@@ -49,9 +49,9 @@ public:
         if (pState->size() != 3)
             return false;
 
-        mDict->set_item("objectID", pState->GetItem(0));
-        mDict->set_item("nodeID", pState->GetItem(1));
-        mDict->set_item("objectVersion", pState->GetItem(2));
+        mDict->set_item("objectID", pState->get_item(0));
+        mDict->set_item("nodeID", pState->get_item(1));
+        mDict->set_item("objectVersion", pState->get_item(2));
         return true;
     }
 

@@ -62,12 +62,12 @@ public:
             return false;
         }
 
-        mDict->set_item("command", pState->GetItem(0));
-        mDict->set_item("source", pState->GetItem(1));
-        mDict->set_item("destination", pState->GetItem(2));
-        mDict->set_item("userID", pState->GetItem(3));
-        mDict->set_item("body", pState->GetItem(4)); // this one isn't "self.body"
-        mDict->set_item("oob", pState->GetItem(5));
+        mDict->set_item("command", pState->get_item(0));
+        mDict->set_item("source", pState->get_item(1));
+        mDict->set_item("destination", pState->get_item(2));
+        mDict->set_item("userID", pState->get_item(3));
+        mDict->set_item("body", pState->get_item(4)); // this one isn't "self.body"
+        mDict->set_item("oob", pState->get_item(5));
 
         // we possible could get this from 
         PyDict * oob = (PyDict *)mDict->get_item("oob");
@@ -89,7 +89,7 @@ public:
                 std::string tmp = params[i];
                 size_t offset = tmp.find('?');
                 assert(offset == size_t(-1));
-                setattr(tmp, body->GetItem(i));
+                setattr(tmp, body->get_item(i));
             }
         }
         return false;

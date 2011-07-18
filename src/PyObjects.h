@@ -173,7 +173,7 @@ public:
         return mNumber == num;
     }
 
-	int32 GetValue();
+	int32 get_value();
 
     /** simple hash function, atm this one is pretty weak.
      */
@@ -252,8 +252,10 @@ public:
 	 * @param[in] index is the location of the required object.
 	 * @return always returns a PyChameleon object even if there isn't a object stored (so it can be used to store objects).
 	 */
-	PyChameleon &operator[](const int index);
-	PyObject* GetItem(const int index);
+	PyObject *operator[](const int index);
+	
+    PyObject*   get_item(const int index);
+    bool		set_item(const int index, PyObject *object);
 	
 	// utility functions, warning don't use this should without knowing how it works and what it does.
 	int32		GetItem_asInt(const int index);
@@ -265,7 +267,7 @@ public:
 	PySubStream*GetItem_asPySubStream(const int index);
     PyClass*    GetItem_asPyClass(const int index);
 
-	bool		set_item(const int index, PyObject *object);
+	
 
 	// returns the element count
 	size_t size();
@@ -275,7 +277,7 @@ public:
 
 	bool resize(size_t elementCount);
 private:
-	typedef std::vector<PyChameleon*> TupleVector;
+	typedef std::vector<PyObject*> TupleVector;
 public:
 	typedef TupleVector::iterator iterator;
 	typedef TupleVector::const_iterator const_iterator;
@@ -831,18 +833,21 @@ static int64 _PyLong_AsInt64(PyLong& number)
 // a wrapper for hashing "objects"
 uint32 PyObject_Hash(PyObject* obj);
 
-// function to do the basic object checking...
-static bool PY_TYPE_CHECK(PyObject* object, uint8 type)
-{
-	if (object == NULL || object->gettype() != type)
-		return false;
-	return true;
-};
-
 PyObject * PyObject_CallObject(PyObject *callable_object, PyObject *args);
 
 #define PyObject_TypeCheck(ob, tp) ((ob)->gettype() == (tp))
 #define PyTuple_Check(op) PyObject_TypeCheck(op, PyTypeTuple)
+#define PyList_Check(op) PyObject_TypeCheck(op, PyTypeList)
+
+/* following defines aren't based on the python design */
 #define PyDict_Check(op) PyObject_TypeCheck(op, PyTypeDict)
+#define PyInt_Check(op) PyObject_TypeCheck(op, PyTypeInt)
+#define PyString_Check(op) PyObject_TypeCheck(op, PyTypeString)
+
+/* this one is a c api class.... */
+#define PySubStream_Check(op) PyObject_TypeCheck(op, PyTypeSubStream)
+#define PyClass_Check(op) PyObject_TypeCheck(op, PyTypeClass)
+
+
 
 #endif //_PYOBJECTS_H
