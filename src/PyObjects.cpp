@@ -1035,23 +1035,17 @@ uint32 PyBaseNone::hash()
 /************************************************************************/
 /* PyPackedRow                                                          */
 /************************************************************************/
-PyPackedRow::PyPackedRow() : PyObject(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0) {}
+PyPackedRow::PyPackedRow() : PyObject(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0), mFlowers( new PyList() ) {}
 
 PyPackedRow::~PyPackedRow()
 {
-	iterator Itr = flowers.begin();
-	for (; Itr != flowers.end(); Itr++)
-	{
-		delete *Itr;
-	}
-
-	flowers.clear();
+    PyDecRef(mFlowers);
 
 	if (mHeader)
-		mHeader->DecRef();
+		PyDecRef(mHeader);
 
 	if (rawPayLoad)
-		rawPayLoad->DecRef();
+		PyDecRef(rawPayLoad);
 
 	if (mRawFieldData)
 		SafeFree(mRawFieldData);
@@ -1063,10 +1057,10 @@ bool PyPackedRow::addleaf( PyObject* leaf )
 	
 	// fucked up because of some c++ fuckup...
 	uint32 hsh = PyObject_Hash(leaf);
-	PyChameleon * itr = new PyChameleon();
-	itr->setPyObject(leaf);
+	//PyChameleon * itr = new PyChameleon();
+	//itr->setPyObject(leaf);
 
-	flowers.push_back(itr);
+	mFlowers->add( leaf );
 	
 	return true;
 }
@@ -1084,12 +1078,12 @@ uint32 PyPackedRow::hash()
 		hsh |= PyObject_Hash((PyObject *)mHeader);
 	}
 
-	iterator itr = flowers.begin();
-	for (; itr != flowers.end(); itr++)
+	iterator itr = mFlowers->begin();
+	for (; itr != mFlowers->end(); itr++)
 	{
 		hsh = hsh << 3;
-		if((*itr)->getPyObject())
-			hsh |= PyObject_Hash((*itr)->getPyObject());
+		if((*itr))
+			hsh |= PyObject_Hash((*itr));
 	}
 	return hsh;
 }
@@ -1105,12 +1099,12 @@ bool PyPackedRow::setheader( PyClass * obj )
 
 PyPackedRow::iterator PyPackedRow::begin()
 {
-	return flowers.begin();
+	return mFlowers->begin();
 }
 
 PyPackedRow::iterator PyPackedRow::end()
 {
-	return flowers.end();
+	return mFlowers->end();
 }
 
 PyClass* PyPackedRow::getheader()
@@ -1120,7 +1114,7 @@ PyClass* PyPackedRow::getheader()
 
 size_t PyPackedRow::size()
 {
-	return flowers.size();
+	return mFlowers->size();
 }
 
 bool PyPackedRow::setRawPayLoad( PyObject* tuple )
@@ -1167,7 +1161,7 @@ PyObject* PyPackedRow::GetFieldObject( int index )
 
 PyObject* PyPackedRow::GetLeaf( int i )
 {
-	return flowers[i]->getPyObject();
+	return mFlowers->get_item(i);
 }
 
 /************************************************************************/

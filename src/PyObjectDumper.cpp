@@ -424,7 +424,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			PyPackedRow::iterator Itr = row->begin();
 			for (; Itr != row->end(); Itr++)
 			{
-				Dump(fp, (PyObject*)(*Itr)->getPyObject(), deep);
+				Dump(fp, (*Itr), deep);
 			}
 			fputc('\n', fp);
 		}

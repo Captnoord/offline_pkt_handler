@@ -559,9 +559,11 @@ private:
 	PyTuple* rawPayLoad;
 
 	// experimental stuff
-	std::vector<PyChameleon*> flowers; // payload / virtual row set
+	//std::vector<PyChameleon*> flowers; // payload / virtual row set
+    PyList* mFlowers;
+
 public:
-	typedef std::vector<PyChameleon*>::iterator iterator;
+	typedef PyList::iterator iterator;
 	iterator begin();
 	iterator end();
 	size_t size();
