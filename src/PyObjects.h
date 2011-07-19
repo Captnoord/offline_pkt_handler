@@ -277,14 +277,14 @@ public:
 
 	bool resize(size_t elementCount);
 private:
-	typedef std::vector<PyObject*> TupleVector;
+	typedef std::vector<PyObject*> tuple_vector;
 public:
-	typedef TupleVector::iterator iterator;
-	typedef TupleVector::const_iterator const_iterator;
+	typedef tuple_vector::iterator iterator;
+	typedef tuple_vector::const_iterator const_iterator;
 	iterator begin() {return mTuple.begin();}
 	iterator end() {return mTuple.end();}
 private:
-	TupleVector mTuple;
+	tuple_vector mTuple;
 };
 
 class PyList : public PyObject
@@ -322,48 +322,6 @@ struct PyDictEntry
 	PyObject* obj;
 };
 
-/*class PyDict
-{
-public:
-	uint8 gettype();
-	void IncRef();
-	void DecRef();
-    size_t GetRef();
-	uint32 hash();
-private:
-	uint8 mType;
-	size_t mRefcnt;
-	uint32 (PyDict::*mHash)();
-public:
-	PyDict();
-	~PyDict();
-	PyChameleon operator[](const char* keyName);
-
-	bool set_item(const char* key_name, PyObject* obj);
-	bool set_item(PyObject* key, PyObject* obj);
-	PyObject* get_item(PyObject* key);
-	PyObject* get_item(const char* key_name);
-
-	size_t size();
-
-private:
-
-	typedef std::map<uint32, PyDictEntry*>	DictMap;
-	typedef DictMap::iterator				DictMapItr;
-public:
-	typedef DictMap::iterator				iterator;
-	iterator begin();
-	iterator end();
-private:
-
-	DictMap mDict;
-	//mMappingMode makes it possible to simply store the objects
-	bool	mMappingMode;
-	uint32	mMappingIndex;
-
-	uint32 _hash();
-}; */
-
 class PyDict : public PyObject
 {
 public:
@@ -374,7 +332,7 @@ public:
     bool    mMappingMode;
     uint32  mMappingIndex;
 
-    PyChameleon operator[](const char* keyName);
+    //PyChameleon operator[](const char* keyName);
 
     /**
     * \brief set_item adds or sets a database entry.
@@ -432,10 +390,11 @@ public:
     bool scanf(const char * keyName, const char * format, ...);
 
     bool get_buffer(const char * keyName, char* dst, size_t dst_len);
-    bool set_int(const char * keyName, int number);
-    bool set_double(const char * keyName, double number);
-    bool set_str(const char * keyName, const char* str);
-    bool set_bool(const char * keyName, bool check);
+
+    bool set_item(const char * keyName, int number);
+    bool set_item(const char * keyName, double number);
+    bool set_item(const char * keyName, const char* str);
+    bool set_item(const char * keyName, bool check);
 
     size_t size();
 

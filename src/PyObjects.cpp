@@ -494,7 +494,7 @@ PyDict::~PyDict()
 }
 
 // this one needs to die...
-PyChameleon PyDict::operator[]( const char* keyName )
+/*PyChameleon PyDict::operator[]( const char* keyName )
 {
     ASCENT_HARDWARE_BREAKPOINT;
     if (keyName == NULL || *keyName == '\0')
@@ -513,6 +513,7 @@ PyChameleon PyDict::operator[]( const char* keyName )
 
     return entry;
 }
+*/
 
 size_t PyDict::size()
 {
@@ -764,22 +765,22 @@ bool PyDict::get_buffer( const char * keyName, char* dst, size_t dst_len )
     return true;
 }
 
-bool PyDict::set_int( const char * keyName, int number )
+bool PyDict::set_item( const char * keyName, int number )
 {
     return set_item(keyName, (PyObject *)new PyInt(number));
 }
 
-bool PyDict::set_double( const char * keyName, double number )
+bool PyDict::set_item( const char * keyName, double number )
 {
     return set_item(keyName, (PyObject *)new PyFloat(number));
 }
 
-bool PyDict::set_str( const char * keyName, const char* str )
+bool PyDict::set_item( const char * keyName, const char* str )
 {
     return set_item(keyName, (PyObject *)new PyString(str));
 }
 
-bool PyDict::set_bool( const char * keyName, bool check )
+bool PyDict::set_item( const char * keyName, bool check )
 {
     return set_item(keyName, (PyObject *)new PyBool(check));
 }

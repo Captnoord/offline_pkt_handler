@@ -84,7 +84,7 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 		uint32 index = i;
 
 		henk[i].index = i;
-		henk[i].typeSize = GetFieldSizeFromType(type);
+		henk[i].typeSize = (uint8)GetFieldSizeFromType(type);
 	}	
 
 	std::sort(henk.begin(), henk.end(), DBRowSortCallback);
@@ -285,7 +285,7 @@ size_t DBRowModule::GetRawFieldSizeFromHeader( PyObject* object )
 			ASCENT_HARDWARE_BREAKPOINT;
 
 		uint32 fieldtype = leaf->GetItem_asInt(1);
-		uint8 fieldSize = GetFieldSizeFromType(fieldtype);
+		uint8 fieldSize = (uint8)GetFieldSizeFromType(fieldtype);
 		chunkSize+=fieldSize;
 		//printf("db row field type = %u, size = %u\n", fieldtype, fieldSize);
 	}
