@@ -37,8 +37,6 @@
 #include "PyUnicodeUCS2.h"
 #include "PyString.h"
 
-#include "PyChameleon.h"
-
 #include "RleModule.h"
 #include "BinAsciiModule.h"
 #include "HexAsciiModule.h"
@@ -51,6 +49,5 @@
 
 #include "packet_types.h"
 #include "PyObjectDumper.h"
-#include "DatabaseDumpModule.h"
 
 #endif//__EVEPCH_H

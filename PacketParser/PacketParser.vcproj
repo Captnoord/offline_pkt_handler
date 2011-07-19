@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OmitFramePointers="false"
-				AdditionalIncludeDirectories="&quot;d:\Dev\Eve\PacketParser V2\src&quot;;d:\Dev\Python2_6\PC;../zlib/;..\src\;&quot;../ascent-shared/&quot;"
+				AdditionalIncludeDirectories="../zlib/;..\src\;&quot;../ascent-shared/&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -265,14 +265,6 @@
 			<Filter
 				Name="PyObjects"
 				>
-				<File
-					RelativePath="..\src\PyChameleon.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\PyChameleon.h"
-					>
-				</File>
 				<File
 					RelativePath="..\src\PyDict.h"
 					>

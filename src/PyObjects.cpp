@@ -173,12 +173,6 @@ PyTuple::~PyTuple()
 	clear();
 }
 
-/* this is kinda slow because we are resizing a vector */
-PyObject* PyTuple::operator[]( const int index )
-{
-    return get_item(index);
-}
-
 size_t PyTuple::size()
 {
 	return mTuple.size();
@@ -199,7 +193,7 @@ uint32 PyTuple::hash()
     uint32 hash = 5381;
     for (int i = 0; i < (int)tuple.size(); i++)
     {
-        uint32 hashChunk = PyObject_Hash(tuple[i]);
+        uint32 hashChunk = PyObject_Hash(tuple.get_item(i));
         hash = (hash << 3) + hashChunk;
     }
     return hash;
@@ -492,28 +486,6 @@ PyDict::~PyDict()
 
     mDict.clear();
 }
-
-// this one needs to die...
-/*PyChameleon PyDict::operator[]( const char* keyName )
-{
-    ASCENT_HARDWARE_BREAKPOINT;
-    if (keyName == NULL || *keyName == '\0')
-        return PyErrorIterator;
-
-    uint32 hsh = Utils::Hash::sdbm_hash(keyName);
-
-    PyDictEntry * entry = mDict[hsh];
-    if (entry == NULL)
-    {
-        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry;
-        entry->key = (PyObject*)new PyString(keyName);
-        entry->obj = NULL;
-        mDict[hsh] = entry;
-    }
-
-    return entry;
-}
-*/
 
 size_t PyDict::size()
 {
@@ -1051,18 +1023,14 @@ PyPackedRow::~PyPackedRow()
 		SafeFree(mRawFieldData);
 }
 
-bool PyPackedRow::addleaf( PyObject* leaf )
+bool PyPackedRow::addleaf( PyObject* obj )
 {
-	assert(leaf != NULL);
+	assert(obj != NULL);
 	
 	// fucked up because of some c++ fuckup...
-	uint32 hsh = PyObject_Hash(leaf);
-	//PyChameleon * itr = new PyChameleon();
-	//itr->setPyObject(leaf);
+	//uint32 hsh = PyObject_Hash(obj);
 
-	mFlowers->add( leaf );
-	
-	return true;
+	return mFlowers->add( obj );
 }
 
 uint32 PyPackedRow::hash()
@@ -1154,7 +1122,7 @@ bool PyPackedRow::init( PyObject* header )
 PyObject* PyPackedRow::GetFieldObject( int index )
 {
 	PyTuple & fieldHelper = *rawPayLoad;
-	PyObject * res = fieldHelper[index];
+	PyObject * res = fieldHelper.get_item(index);
 	//f ()
 	return 0;
 }

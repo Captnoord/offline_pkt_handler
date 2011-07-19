@@ -269,7 +269,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			{
 				WriteSpacer(fp, deep+DUMP_ITR_SPACE);
 				fprintf(fp,"itr[%d]:", i);
-				PyObject* obj = tuple[i];
+				PyObject* obj = tuple.get_item(i);
 				
 				/* this check only exists because of not complete DBRow unmarshal algorithm */
 				if (obj == NULL) {
@@ -358,11 +358,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 
 			fputs("PyClass\n", fp);
 
-			/* handle special cases we need a different format dump */
-			if (DBDumpModule::HandleSpecialDump(fp, deep, klass) == true)
-				break;
-
-			/* if our class is a itr, we need to read it as a part of a tuple/string/dict. So we need to add 2 spaces extra */
+    		/* if our class is a itr, we need to read it as a part of a tuple/string/dict. So we need to add 2 spaces extra */
 			if (isItr == true)
 				deep+=DUMP_ITR_SPACE;
 

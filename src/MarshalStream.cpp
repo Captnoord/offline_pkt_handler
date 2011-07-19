@@ -1594,7 +1594,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			{
 				if (!stream.writeOpcode(Op_PyCharString))
 					return false;
-				return stream.write1(str[0]);
+				return stream.write1(*str.content());
 			}
 
 			size_t str_index = sPyStringTable.LookupIndex(str.content());
@@ -1658,18 +1658,18 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 					if (!stream.writeSizeEx(utf8str->length()))
 					{
-						utf8str->DecRef();
+						PyDecRef(utf8str);
 						return false;
 					}
 
 					if (stream.write(utf8str->content(), utf8str->length()))
 					{
-						utf8str->DecRef();
+						PyDecRef(utf8str);
 						return true;
 					}
 					else
 					{
-						utf8str->DecRef();
+						PyDecRef(utf8str);
 						return false;
 					}
 				}

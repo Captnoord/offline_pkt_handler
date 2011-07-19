@@ -66,7 +66,6 @@ class PyFloat;
 class PyBool;
 class PyClass;
 class PyObject;
-class PyChameleon;
 class PyUnicodeUCS2;
 class PySubStream;
 class PyString;
@@ -244,16 +243,6 @@ public:
     // tuple hash function
     uint32 hash();
 
-	/**
-	 * \brief operator overload for easy object access and storage
-	 *
-	 * nothing much to tell about this function, it returns a PyChameleon object reference.
-	 *
-	 * @param[in] index is the location of the required object.
-	 * @return always returns a PyChameleon object even if there isn't a object stored (so it can be used to store objects).
-	 */
-	PyObject *operator[](const int index);
-	
     PyObject*   get_item(const int index);
     bool		set_item(const int index, PyObject *object);
 	
@@ -331,8 +320,6 @@ public:
 
     bool    mMappingMode;
     uint32  mMappingIndex;
-
-    //PyChameleon operator[](const char* keyName);
 
     /**
     * \brief set_item adds or sets a database entry.
@@ -559,8 +546,7 @@ private:
 	PyTuple* rawPayLoad;
 
 	// experimental stuff
-	//std::vector<PyChameleon*> flowers; // payload / virtual row set
-    PyList* mFlowers;
+    PyList* mFlowers; // payload / virtual row set
 
 public:
 	typedef PyList::iterator iterator;

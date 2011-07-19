@@ -187,6 +187,7 @@ uint32 PyString::hash()
     return mHashValue;
 }
 
+#if 0
 char &PyString::operator[]( const int index )
 {
 	if (mStr != NULL && (int)mStrLen > index)
@@ -196,6 +197,8 @@ char &PyString::operator[]( const int index )
 	ASCENT_HARDWARE_BREAKPOINT;
 	/* not all routes return a char, this is a bug */
 }
+
+#endif
 
 PyString* PyString_FromStringAndSize(const char* str, size_t len)
 {

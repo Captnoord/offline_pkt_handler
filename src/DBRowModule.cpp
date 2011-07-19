@@ -91,12 +91,12 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 
 	for (int i = 0; i < (int)tuple.size(); i++)
 	{
-		PyTuple& field = (PyTuple&)*tuple[henk[i].index];
+		PyTuple& field = (PyTuple&)*tuple.get_item(henk[i].index);
 
 		/* this tuple is required to have 2 leaves because it has a field name and a field type */
 		assert(field.size() == 2); // needs to be 2
 
-		PyInt& fieldType = (PyInt&)*field[1];
+		PyInt& fieldType = (PyInt&)*field.get_item(1);
 		PyObject* resObj = ReadRawDbField(stream, fieldType, mVirtualFieldCount);
 
 		if (resObj == NULL)

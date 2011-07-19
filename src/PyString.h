@@ -69,7 +69,7 @@ public:
     /**
      * @note we need this operator?
      */
-	char &operator[](const int index);
+	//char &operator[](const int index);
 private:
 
 	char* mStr;

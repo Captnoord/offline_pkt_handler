@@ -29,7 +29,6 @@
 #include "ascent.h"
 #include "PyObjects.h"
 #include "PyString.h"
-#include "PyChameleon.h"
 
 /**
  * \class PyMarshalStringTable
