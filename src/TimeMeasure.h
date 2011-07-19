@@ -27,32 +27,60 @@
 #define _TIMEMEASURE_H
 
 /**
- * @note change this to performance counters for windows..
+ * class TimeMeasure
+ *
+ * TimeMeasure that is designed kinda like a stop watch.
+ *
+ * @note change this so it also supports Linux
  */
 class TimeMeasure
 {
 public:
-	TimeMeasure()
+    TimeMeasure() : m_sampled_time(0.0)
 	{
-		mTimeStamp = GetTickCount();
+        int64 freq;
+
+        // Check if we have a performance counter
+        if( QueryPerformanceFrequency( (LARGE_INTEGER *)&freq ) )
+        {
+            // Counter resolution is 1 / counter frequency
+            m_resolution = 1.0 / (double)freq;
+
+            // Set start time for timer
+            QueryPerformanceCounter( (LARGE_INTEGER *)&m_start_time );
+        }
 	}
 
-	void tick()
-	{
-		mTimeStamp = GetTickCount();
-	}
+    double get_time()
+    {
+        //store so we can easily do something like delta time
+        m_sampled_time = _get_time();
 
-	static void printTimeDiff(TimeMeasure & time)
-	{
-		DWORD timeDiff = GetTickCount() - time.getTick();
-		printf("TimeMeasure diff: %u ms\n", timeDiff);
-	}
+        // Calculate the current time in seconds
+        return m_sampled_time;
+    }
 
-	uint32 getTick()
-	{
-		return mTimeStamp;
-	}
+    double get_delta_time()
+    {
+        return _get_time() - m_sampled_time;
+    }
+
+protected:
+    ASCENT_INLINE double _get_time()
+    {
+        double  t;
+        int64 t_64;
+
+        QueryPerformanceCounter( (LARGE_INTEGER *)&t_64 );
+        t = (double)(t_64 - m_start_time);
+
+        /* Calculate the current time */
+        return t * m_resolution;
+    }
+
 private:
-	DWORD mTimeStamp;
+    double       m_resolution;
+    double       m_sampled_time;
+    int64        m_start_time;
 };
 #endif // _TIMEMEASURE_H
