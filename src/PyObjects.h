@@ -188,7 +188,7 @@ public:
 	PyLong(uint64 & num);
     ~PyLong(){}
 
-	int64 GetValue();
+	int64 get_value();
     uint32 hash();
 private:
 	int64 mNumber;
@@ -202,7 +202,7 @@ public:
 	PyFloat(double num);
     ~PyFloat(){}
 
-	double GetValue();
+	double get_value();
     uint32 hash();
 private:
 	double mNumber;
@@ -466,7 +466,11 @@ public:
 
     // important for the inner workings of this all
     virtual bool init(PyObject* state) = NULL;
-    virtual PyTuple* GetState() {return NULL;};
+    virtual PyTuple* GetState() { return NULL; };
+
+    /* method for dumping classes into the correct format... */
+    virtual bool repr( FILE* fp ) = NULL;
+
 protected:
 	PyTuple		*mBases;/* A tuple of class objects */
 	PyDict		*mDict;	/* A dictionary, used to store 'self.xxxx' variable info */
@@ -768,19 +772,24 @@ static bool _PyLong_AsInt64(PyObject* number, int64& dst_num)
 	if (number->gettype() != PyTypeLong)
 		return false;
 	
-	dst_num = ((PyLong*)number)->GetValue();
+	dst_num = ((PyLong*)number)->get_value();
 	return true;
 }
 
 static int64 _PyLong_AsInt64(PyLong& number)
 {
-	return number.GetValue();
+	return number.get_value();
 }
 
 // a wrapper for hashing "objects"
 uint32 PyObject_Hash(PyObject* obj);
 
 PyObject * PyObject_CallObject(PyObject *callable_object, PyObject *args);
+
+/* capt: generic function to get value from int's and longs... I know how to fix this better btw... */
+uint64 PyNumberGetValue(PyObject* obj);
+
+
 
 #define PyObject_TypeCheck(ob, tp) ((ob)->gettype() == (tp))
 #define PyTuple_Check(op) PyObject_TypeCheck(op, PyTypeTuple)
@@ -789,11 +798,17 @@ PyObject * PyObject_CallObject(PyObject *callable_object, PyObject *args);
 /* following defines aren't based on the python design */
 #define PyDict_Check(op) PyObject_TypeCheck(op, PyTypeDict)
 #define PyInt_Check(op) PyObject_TypeCheck(op, PyTypeInt)
+#define PyLong_Check(op) PyObject_TypeCheck(op, PyTypeLong)
 #define PyString_Check(op) PyObject_TypeCheck(op, PyTypeString)
+#define PyNone_Check(op) PyObject_TypeCheck(op, PyTypeNone)
+
 
 /* this one is a c api class.... */
 #define PySubStream_Check(op) PyObject_TypeCheck(op, PyTypeSubStream)
 #define PyClass_Check(op) PyObject_TypeCheck(op, PyTypeClass)
+
+
+
 
 
 

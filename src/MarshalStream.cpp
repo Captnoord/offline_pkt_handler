@@ -85,8 +85,7 @@ PyObject* MarshalStream::load(ReadStream & stream)
 	if (checkForBytecode(stream) == true)
 		return NULL;
 
-	if (ReadMarshalHeader(stream) == false)
-	{
+	if (ReadMarshalHeader(stream) == false) {
 		Log.Error("MarshalStream", "[load] Unable to read and initialize the packet header");
 		return NULL;
 	}
@@ -98,22 +97,19 @@ PyObject* MarshalStream::load(ReadStream & stream)
 bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 {
 	char marshalTilde;
-	if (!stream.read1(marshalTilde))
-	{
+	if (!stream.read1(marshalTilde)) {
 		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left", 1, 1, stream.size() - stream.tell());
 		return false;
 	}
 
-	if (marshalTilde != '~')
-	{
+	if (marshalTilde != '~') {
 		//Log.Error("MarshalStream", "[ReadMarshalHeader]invalid marshal header, missing tilde");
 		Log.Error("MarshalStream", "[ReadMarshalHeader]invalid marshal header, missing tilde: 0x%X", marshalTilde);
 		return false;
 	}
 
 	int32 sharedObjectCount;
-	if (!stream.read4(sharedObjectCount))
-	{
+	if (!stream.read4(sharedObjectCount)) {
 		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left", 1, 4, stream.size() - stream.tell());
 		return false;
 	}
@@ -126,8 +122,7 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 	mReferencedObjectsMap.SetSharedObjectCount(sharedObjectCount);
 	
 	size_t tReadIndex2 = stream.tell();
-	if ( (signed int)(stream.size() - tReadIndex2) / 4 < sharedObjectCount )
-	{
+	if ( (signed int)(stream.size() - tReadIndex2) / 4 < sharedObjectCount ) {
 		Log.Error("MarshalStream", "[ReadMarshalHeader]Too little data in marshal stream, %u bytes. I really wanted at least %u bytes total, mapcount in header is %d", stream.size(), tReadIndex2 + 4 * sharedObjectCount, sharedObjectCount);
 		return false;
 	}
@@ -138,8 +133,7 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 
 	int32* sharedObjectBegin = (int32*)&stream.content()[sharedObjectIndex];
 	int32 loopcounter = 0;
-	while ( *sharedObjectBegin >= 1 && *sharedObjectBegin <= sharedObjectCount )
-	{
+	while ( *sharedObjectBegin >= 1 && *sharedObjectBegin <= sharedObjectCount ) {
 		mReferencedObjectsMap.SetObjectOrder(loopcounter, *sharedObjectBegin);
 		++loopcounter;
 		++sharedObjectBegin;
@@ -1510,7 +1504,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 	case PyTypeLong:
 		{
-			int64 val = ((PyLong *)object)->GetValue();
+			int64 val = ((PyLong *)object)->get_value();
 
 			if (val < 0)
 			{
@@ -1569,7 +1563,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 	case PyTypeReal:
 		{
 			PyFloat & number = *(PyFloat*)object;
-			double val = number.GetValue();
+			double val = number.get_value();
 			if (val == 0.0)
 				return stream.writeOpcode(Op_PyZeroFloat);
 
@@ -1933,7 +1927,7 @@ ASCENT_INLINE bool MarshalStream::WriteVarInteger( WriteStream& stream, PyObject
 	if (number->gettype() != PyTypeLong)
 		return false;
 
-	int64 num = ((PyLong*)number)->GetValue();
+	int64 num = ((PyLong*)number)->get_value();
 	int64 tempNum = num;
 	bool negative = false;
 	if (num < 0)

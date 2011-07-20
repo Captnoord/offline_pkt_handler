@@ -105,7 +105,9 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 		int length = Getint32();
 		char* packetBuf = GetBuffer(length);
 
-		fprintf(fp_out, "\n{%s} FileOffset:0x%X, Packet Nr:%u, length:%u, time:%u\n", (direction ? "SERVER" : "CLIENT"), FileOffset, i, length, uint32(timestamp & 0xFFFFFFFF));
+		//fprintf(fp_out, "\n{%s} FileOffset:0x%X, Packet Nr:%u, length:%u, time:%u\n\n", (direction ? "SERVER" : "CLIENT"), FileOffset, i, length, uint32(timestamp & 0xFFFFFFFF));
+
+        fprintf(fp_out, "\n\n");
 		
 		ReadStream readstream(packetBuf, length);
         MarshalStream stream;

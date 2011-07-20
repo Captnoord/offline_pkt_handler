@@ -63,7 +63,7 @@ PyLong::PyLong( int64 & num ) : PyObject(PyTypeLong), mNumber(num) {}
 /* @todo solve the signed/unsigned problem */
 PyLong::PyLong( uint64 & num ) : PyObject(PyTypeLong), mNumber(num) {}
 
-int64 PyLong::GetValue()
+int64 PyLong::get_value()
 {
 	return mNumber;
 }
@@ -118,7 +118,7 @@ PyFloat::PyFloat() : PyObject(PyTypeReal), mNumber(0.0) {}
 PyFloat::PyFloat( float num ) : PyObject(PyTypeReal), mNumber(num) {}
 PyFloat::PyFloat( double num ) : PyObject(PyTypeReal), mNumber(num) {}
 
-double PyFloat::GetValue()
+double PyFloat::get_value()
 {
 	return mNumber;
 }
@@ -1194,4 +1194,15 @@ PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )
     PyClass * pNewClass = pClass->New();
     pNewClass->init(args);
     return pNewClass;
+}
+
+uint64 PyNumberGetValue(PyObject* obj)
+{
+    if (!obj)
+        return 0xDEADBEEF;
+    if (PyInt_Check(obj))
+        return ((PyInt*)obj)->get_value();
+    else if (PyLong_Check(obj))
+        return ((PyLong*)obj)->get_value();
+    return 0xDEADBEEF;
 }

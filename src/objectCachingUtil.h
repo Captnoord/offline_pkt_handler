@@ -60,4 +60,11 @@ public:
     {
         return NULL;
     }
+
+    bool repr( FILE* fp )
+    {
+        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        return true;
+    }
+
 };

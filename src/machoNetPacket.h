@@ -26,6 +26,8 @@
 #ifndef machoNetPacket_h__
 #define machoNetPacket_h__
 
+#include "PyObjectDumper.h"
+
 
 class MachoPacket : public PyClass
 {
@@ -100,6 +102,34 @@ public:
     {
         return NULL;
     };
+
+    bool repr( FILE* fp )
+    {
+        if (*mName == "macho.AuthenticationReq")
+        {
+            //into+="Packet::AuthenticationReq(%s,%s,%s,%s,%s)";
+            fprintf(fp, "Packet::AuthenticationReq(");
+            return true;
+        }
+
+
+        PyObject* source = mDict->get_item("source");
+        PyObject* destination = mDict->get_item("destination");
+        PyObject* payload = mDict->get_item("body"); // naming here is wrong.
+        PyObject* oob = mDict->get_item("oob");
+
+        //fprintf(fp, "Packet::%s (%s,%s,PAYLOAD(%d bytes),%s)",
+
+        fprintf(fp, "Packet::%s (", mName->content());
+        
+        Dump(fp, source, -1, true);         fprintf(fp, ", ");
+        Dump(fp, destination, -1, true);    fprintf(fp, ", ");
+        fprintf(fp, "PAYLOAD( ... bytes), "); // fix this better...
+        Dump(fp, oob, size_t(-1), true, true);fprintf(fp, ")\n");
+
+        return true;
+    }
+
 
 protected:
     uint8 command;                      // hmmm should we use normal types for this

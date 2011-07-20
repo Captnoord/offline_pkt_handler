@@ -36,7 +36,7 @@ void DumpObject(FILE * fd, PyObject* obj)
 
 #define DUMP_ITR_SPACE 2
 
-void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool convertNull /*= false*/ )
+void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool dict_trick /*= false*/ )
 {
 	if (obj == NULL)
 	{
@@ -52,10 +52,10 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 	switch(obj->gettype())
 	{
 	case PyTypeNone:
-		if (convertNull == false)
+		//if (dict_trick == false)
 			fputs("PyNone", fp);
-		else
-			fputs("NULL", fp);
+		//else
+		//	fputs("NULL", fp);
 
 		if (deep != -1)
 			fputc('\n', fp);
@@ -87,10 +87,10 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 				fputs("PyInt:", fp);
 
 			int32 val = num.get_value();
-			if ( val < 10 && val > -10 || deep == -1)
-				fprintf(fp, "%d", num.get_value());
-			else
-				fprintf(fp, "%d    <0x%X>", num.get_value(), num.get_value());
+			//if ( val < 10 && val > -10 || deep == -1)
+				fprintf(fp, "%d", val);
+			//else
+			//	fprintf(fp, "%d    <0x%X>", num.get_value(), num.get_value());
 
 			/* part of a hack to handle iterators of class objects */
 			if (deep != -1)
@@ -105,11 +105,11 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (isItr == false)
 				fputs("PyLong:", fp);
 
-			int64 val = num.GetValue();
-			if ( val < 10 && val > -10 || deep == -1)
-				fprintf(fp, I64FMTD, num.GetValue());
-			else
-				fprintf(fp, I64FMTD"    <0x%I64X>", num.GetValue(), num.GetValue());
+			int64 val = num.get_value();
+			//if ( val < 10 && val > -10 || deep == -1)
+				fprintf(fp, I64FMTD, val);
+			//else
+			//	fprintf(fp, I64FMTD"    <0x%I64X>", num.get_value(), num.get_value());
 
 			/* part of a hack to handle iterators of class objects */
 			if (deep != -1)
@@ -123,7 +123,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (isItr == false)
 				fputs("PyFloat:", fp);
 
-			fprintf(fp, "%f", num->GetValue());
+			fprintf(fp, "%f", num->get_value());
 
 			/* part of a hack to handle iterators of class objects */
 			if (deep != -1)
@@ -238,20 +238,53 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (isItr == true)
 				deep+=DUMP_ITR_SPACE;
 
-			PyDict & dict = *((PyDict*)obj);
-			fprintf(fp, "PyDict:%u\n", dict.size());
-			PyDict::iterator itr = dict.begin();
-			for (; itr != dict.end(); itr++)
-			{
-				PyDictEntry * entry = itr->second;
-				WriteSpacer(fp, deep+DUMP_ITR_SPACE);
+            if (dict_trick == false)
+            {
+                PyDict & dict = *((PyDict*)obj);
+                fprintf(fp, "PyDict:%u\n", dict.size());
+                PyDict::iterator itr = dict.begin();
+                for (; itr != dict.end(); itr++)
+                {
+                    PyDictEntry * entry = itr->second;
+                    WriteSpacer(fp, deep+DUMP_ITR_SPACE);
 
-				/* write "dict[n]=" */
-				fputs("dict[",fp);
-					Dump(fp, entry->key, size_t(-1), true);
-				fputs("]=",fp);
-					Dump(fp, entry->obj, deep, true);
-			}
+                    /* write "dict[n]=" */
+                    fputs("dict[",fp);
+                    Dump(fp, entry->key, size_t(-1), true);
+                    fputs("]=",fp);
+                    Dump(fp, entry->obj, deep, true);
+                }
+            }
+            else
+            {
+                //dict({'one': 1, 'two': 2})
+                PyDict & dict = *((PyDict*)obj);
+                fprintf(fp, "dict(");
+
+                PyDict::iterator itr = dict.begin();
+                for (; itr != dict.end(); itr++)
+                {
+                    PyDictEntry * entry = itr->second;
+                    //WriteSpacer(fp, deep+DUMP_ITR_SPACE);
+
+                    /* write "dict[n]=" */
+                    Dump(fp, entry->key, size_t(-1), true);
+                    fputs(": ",fp);
+                    Dump(fp, entry->obj, size_t(-1), true, true);
+
+                    /* formatting hacks */
+                    PyDict::iterator itr2 = itr;
+                    itr2++;
+
+                    if(itr2 != dict.end())
+                        fputs(", ",fp);
+                }
+
+                fprintf(fp, ")");
+
+            }
+
+			
 		}
 		break;
 
@@ -304,11 +337,11 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 	case PyTypeSubStream:
 		{
 			PySubStream * stream = (PySubStream*) obj;
-			fputs("PySubStream\n", fp);
+            fprintf(fp, "PySubStream size:%u <hidden from dump>\n", stream->size());
 			// make this optional, also make this so that you can auto decode this...
 
 #if 1
-			HexAsciiModule::print_hexview(fp, (const char*)stream->content(), stream->size());
+			//HexAsciiModule::print_hexview(fp, (const char*)stream->content(), stream->size());
 #else
 
 			ReadStream *rawsubstream = new ReadStream((const char*)stream->content(), stream->size());
@@ -356,26 +389,48 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 		{
 			PyClass * klass = (PyClass*) obj;
 
-			fputs("PyClass\n", fp);
+            klass->repr(fp);
 
-    		/* if our class is a itr, we need to read it as a part of a tuple/string/dict. So we need to add 2 spaces extra */
-			if (isItr == true)
-				deep+=DUMP_ITR_SPACE;
+#if 0
+            {
+                //fputs("PyClass\n", fp);
+                fprintf(fp, "%s", klass->getname()->content());
 
-			if (klass->getname())
-				Dump(fp, (PyObject*)klass->getname(), deep+DUMP_ITR_SPACE);
+                /* if our class is a itr, we need to read it as a part of a tuple/string/dict. So we need to add 2 spaces extra */
+                if (isItr == true)
+                    deep+=DUMP_ITR_SPACE;
 
-			if (klass->getbases())
-				Dump(fp, (PyObject*)klass->getbases(), deep+DUMP_ITR_SPACE);
+                //if (klass->getname())
+                //	Dump(fp, (PyObject*)klass->getname(), deep+DUMP_ITR_SPACE);
 
-			if (klass->getdict())
-				Dump(fp, (PyObject*)klass->getdict(), deep+DUMP_ITR_SPACE);
+                if (klass->getdict() && ( !klass->getbases() &&  !klass->getDirDict() && !klass->getDirList()) )
+                {
+                    fprintf(fp, "( ");
 
-			if (klass->getDirDict())
-				Dump(fp, (PyObject*)klass->getDirDict(), deep+DUMP_ITR_SPACE);
+                    for (PyDict::iterator itr = klass->getdict()->begin(); itr != klass->getdict()->end(); itr++)
+                    {
+                        Dump(fp, (*itr).second->obj, -1, true);
+                        fprintf(fp, "/* ");
+                        Dump(fp, (*itr).second->key, -1, true);
+                        fprintf(fp, " */, ");
+                    }
+                }
+                else
+                {
+                    if (klass->getbases())
+                        Dump(fp, (PyObject*)klass->getbases(), deep+DUMP_ITR_SPACE);
 
-			if(klass->getDirList())
-				Dump(fp, (PyObject*)klass->getDirList(), deep+DUMP_ITR_SPACE);
+                    if (klass->getdict())
+                        Dump(fp, (PyObject*)klass->getdict(), deep+DUMP_ITR_SPACE);
+
+                    if (klass->getDirDict())
+                        Dump(fp, (PyObject*)klass->getDirDict(), deep+DUMP_ITR_SPACE);
+
+                    if(klass->getDirList())
+                        Dump(fp, (PyObject*)klass->getDirList(), deep+DUMP_ITR_SPACE);
+                }
+            }
+#endif
 		}
 		break;
 
@@ -419,9 +474,8 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 
 			PyPackedRow::iterator Itr = row->begin();
 			for (; Itr != row->end(); Itr++)
-			{
 				Dump(fp, (*Itr), deep);
-			}
+
 			fputc('\n', fp);
 		}
 		break;

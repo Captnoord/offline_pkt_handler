@@ -59,6 +59,13 @@ public:
     {
         return NULL;
     };
+
+    bool repr( FILE* fp )
+    {
+        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        return true;
+    }
+
 };
 
 class util_Rowset : public PyClass
@@ -104,6 +111,13 @@ public:
     {
         return NULL;
     }
+
+    bool repr( FILE* fp )
+    {
+        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        return true;
+    }
+
 
     // todo implement 'Row'
     //RowClass = Row
