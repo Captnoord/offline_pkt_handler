@@ -115,48 +115,6 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 
 		if (henk != NULL)
 		{
-#ifdef MARSHAL_REMARSHAL
-
-			WriteStream writeStream(length);
-			bool saveret = stream.save(henk, writeStream);
-
-			if (saveret == false)
-			{
-				HexAsciiModule::print_hexview(stdout, (char*)packetBuf, length);
-				DumpObject(stdout, henk);
-				HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-				ASCENT_HARDWARE_BREAKPOINT;
-			}
-
-			size_t writeStreamSize = writeStream.size();
-
-			//debug checking exception, client packets had a hash in front of them I am not including in the marshal write 
-			if (direction == 0)
-			{
-				if (readstream.buffersize() != writeStream.size())
-					writeStream.insert((uint8*)"\x1C\0\0\0\0", 5, 5);
-			}
-			else
-			{
-				// do the mem compare to check if the rebuild packets are the same 
-				if(memcmp(writeStream.content(), readstream.content(), readstream.size()))
-				{
-					DumpObject(stdout, henk);
-					HexAsciiModule::print_hexview(stdout, (char*)packetBuf, length);
-					HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-					//ASCENT_HARDWARE_BREAKPOINT;
-				}
-			}
-
-			if (readstream.buffersize() != writeStream.size())
-			{
-				DumpObject(stdout, henk);
-				HexAsciiModule::print_hexview(stdout, (char*)packetBuf, length);
-				HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-				//ASCENT_HARDWARE_BREAKPOINT;
-			}
-#endif//ENABLE_MARSHAL_SAVE_CHECK
-
 			DumpObject(fp_out, henk);
 			henk->DecRef();
 		}

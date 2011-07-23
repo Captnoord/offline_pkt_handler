@@ -151,27 +151,6 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 					PyObject* obj1 = substream->load(*rawsubstream);
 					if (obj1 != NULL)
 					{
-#ifdef MARSHAL_REMARSHAL
-						WriteStream writeStream(rawsubstream->size());
-						bool saveret = substream->save(obj1, writeStream);
-
-						if (saveret == false)
-						{
-							DumpObject(stdout, obj1);
-							HexAsciiModule::print_hexview(stdout, (char*)rawsubstream->content(), rawsubstream->size());
-							HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-							ASCENT_HARDWARE_BREAKPOINT;
-						}
-
-						if(memcmp(writeStream.content(), rawsubstream->content(), rawsubstream->size()))
-						{
-							DumpObject(stdout, obj1);
-							HexAsciiModule::print_hexview(stdout, (char*)rawsubstream->content(), rawsubstream->size());
-							HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-							ASCENT_HARDWARE_BREAKPOINT;
-						}
-#endif//MARSHAL_REMARSHAL
-
 						Dump(fp, obj1, deep+4);
 						obj1->DecRef();
 					}
@@ -350,26 +329,6 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			PyObject* obj1 = substream->load(*rawsubstream);
 			if (obj1 != NULL)
 			{
-#ifdef MARSHAL_REMARSHAL
-				WriteStream writeStream(rawsubstream->size());
-				bool saveret = substream->save(obj1, writeStream);
-
-				if (saveret == false)
-				{
-					DumpObject(stdout, obj1);
-					HexAsciiModule::print_hexview(stdout, (char*)rawsubstream->content(), rawsubstream->size());
-					HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-					ASCENT_HARDWARE_BREAKPOINT;
-				}
-
-				if(memcmp(writeStream.content(), rawsubstream->content(), rawsubstream->size()))
-				{
-					DumpObject(stdout, obj1);
-					HexAsciiModule::print_hexview(stdout, (char*)rawsubstream->content(), rawsubstream->size());
-					HexAsciiModule::print_hexview(stdout, (char*)writeStream.content(), writeStream.size());
-					//ASCENT_HARDWARE_BREAKPOINT;
-				}
-#endif//MARSHAL_REMARSHAL
 				Dump(fp, obj1, deep + 4);
 				obj1->DecRef();
 			}
