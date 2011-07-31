@@ -32,20 +32,20 @@
 #  pragma pack(push,1)
 #endif
 
-class blue_DBRowDescriptor : public PyClass
+class blueDBRowDescriptor : public PyClass
 {
 protected:
 public:
-    blue_DBRowDescriptor() : PyClass( "blue.DBRowDescriptor" )
+    blueDBRowDescriptor() : PyClass( "blue.DBRowDescriptor" )
     {
         is_c_api = true; // bleh hack...
     }
 
-    ~blue_DBRowDescriptor() {}
+    ~blueDBRowDescriptor() {}
 
-    blue_DBRowDescriptor* New()
+    blueDBRowDescriptor* New()
     {
-        return new blue_DBRowDescriptor();
+        return new blueDBRowDescriptor();
     }
 
     // comments: format guessed from compiled scripts

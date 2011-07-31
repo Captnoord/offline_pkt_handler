@@ -30,17 +30,17 @@
 #  pragma pack(push,1)
 #endif
 
-class util_KeyVal : public PyClass
+class utilKeyVal : public PyClass
 {
 protected:
 public:
-    util_KeyVal() : PyClass( "util.KeyVal" ) {}
+    utilKeyVal() : PyClass( "util.KeyVal" ) {}
 
-    ~util_KeyVal(){};
+    ~utilKeyVal(){};
 
-    util_KeyVal* New()
+    utilKeyVal* New()
     {
-        return new util_KeyVal();
+        return new utilKeyVal();
     }
 
     /* comments: format guessed from compiled scripts */
@@ -72,17 +72,17 @@ public:
 
 };
 
-class util_Rowset : public PyClass
+class utilRowset : public PyClass
 {
 protected:
 public:
-    util_Rowset() : PyClass( "util.Rowset" ) {}
+    utilRowset() : PyClass( "util.Rowset" ) {}
 
-    ~util_Rowset(){};
+    ~utilRowset(){};
 
-    util_Rowset* New()
+    utilRowset* New()
     {
-        return new util_Rowset();
+        return new utilRowset();
     }
 
     /* comments: format guessed from compiled scripts */

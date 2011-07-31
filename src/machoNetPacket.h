@@ -62,91 +62,91 @@ protected:
 };
 
 /* @note does this need the GetStage call? */
-class macho_CallReq : public MachoPacket
+class machoCallReq : public MachoPacket
 {
 public:
-    macho_CallReq();
+    machoCallReq();
 
-    ~macho_CallReq();
+    ~machoCallReq();
 
-    macho_CallReq* New();
+    machoCallReq* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_CallRsp : public MachoPacket
+class machoCallRsp : public MachoPacket
 {
 public:
-    macho_CallRsp();
+    machoCallRsp();
 
-    ~macho_CallRsp();
+    ~machoCallRsp();
 
-    macho_CallRsp* New();
+    machoCallRsp* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_SessionChangeNotification : public MachoPacket
+class machoSessionChangeNotification : public MachoPacket
 {
 public:
-    macho_SessionChangeNotification();
+    machoSessionChangeNotification();
 
-    ~macho_SessionChangeNotification();
+    ~machoSessionChangeNotification();
 
-    macho_SessionChangeNotification* New();
+    machoSessionChangeNotification* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_SessionInitialStateNotification : public MachoPacket
+class machoSessionInitialStateNotification : public MachoPacket
 {
 public:
-    macho_SessionInitialStateNotification();
+    machoSessionInitialStateNotification();
 
-    ~macho_SessionInitialStateNotification();
+    ~machoSessionInitialStateNotification();
 
-    macho_SessionInitialStateNotification* New();
+    machoSessionInitialStateNotification* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_PingRsp : public MachoPacket
+class machoPingRsp : public MachoPacket
 {
 public:
-    macho_PingRsp();
+    machoPingRsp();
 
-    ~macho_PingRsp();
+    ~machoPingRsp();
 
-    macho_PingRsp* New();
+    machoPingRsp* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_PingReq : public MachoPacket
+class machoPingReq : public MachoPacket
 {
 public:
-    macho_PingReq();
+    machoPingReq();
 
-    ~macho_PingReq();
+    ~machoPingReq();
 
-    macho_PingReq* New();
+    machoPingReq* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_ErrorResponse : public MachoPacket
+class machoErrorResponse : public MachoPacket
 {
 public:
-    macho_ErrorResponse();
+    machoErrorResponse();
 
-    ~macho_ErrorResponse();
+    ~machoErrorResponse();
 
-    macho_ErrorResponse* New();
+    machoErrorResponse* New();
 };
 
 /* @note does this need the GetStage call? */
-class macho_Notification : public MachoPacket
+class machoNotification : public MachoPacket
 {
 public:
-    macho_Notification();
+    machoNotification();
 
-    ~macho_Notification();
+    ~machoNotification();
 
-    macho_Notification* New();
+    machoNotification* New();
 };
 
 #ifdef ENABLE_PACKED_CLASSES

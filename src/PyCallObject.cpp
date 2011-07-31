@@ -45,29 +45,29 @@ CallMgr::CallMgr()
     
     /* utils */
     reg("util.Row",             new util_Row());
-    reg("util.CachedObject",    new util_CachedObject());
-    reg("util.KeyVal",          new util_KeyVal());
-    reg("util.Rowset",          new util_Rowset());
+    reg("util.CachedObject",    new utilCachedObject());
+    reg("util.KeyVal",          new utilKeyVal());
+    reg("util.Rowset",          new utilRowset());
 
     /* dbutil */
-    reg("dbutil.CRowset",       new dbutil_CRowset());
+    reg("dbutil.CRowset",       new dbutilCRowset());
 
     /* blue c api */
-    reg("blue.DBRowDescriptor", new blue_DBRowDescriptor());
+    reg("blue.DBRowDescriptor", new blueDBRowDescriptor());
 
     /* macho */
-    reg("macho.CallReq",        new macho_CallReq());
-    reg("macho.CallRsp",        new macho_CallRsp());
+    reg("macho.CallReq",        new machoCallReq());
+    reg("macho.CallRsp",        new machoCallRsp());
     reg("macho.MachoAddress",   new MachoAddress());
-    reg("macho.SessionInitialStateNotification", new macho_SessionInitialStateNotification());
-    reg("macho.SessionChangeNotification", new macho_SessionChangeNotification());
-    reg("macho.PingRsp",        new macho_PingRsp());
-    reg("macho.PingReq",        new macho_PingReq());
-    reg("macho.ErrorResponse",  new macho_ErrorResponse());
-    reg("macho.Notification",   new macho_Notification());
+    reg("macho.SessionInitialStateNotification", new machoSessionInitialStateNotification());
+    reg("macho.SessionChangeNotification", new machoSessionChangeNotification());
+    reg("macho.PingRsp",        new machoPingRsp());
+    reg("macho.PingReq",        new machoPingReq());
+    reg("macho.ErrorResponse",  new machoErrorResponse());
+    reg("macho.Notification",   new machoNotification());
 
     /* exceptions */
-    reg("exceptions.GPSTransportClosed", new exceptions_GPSTransportClosed());
+    reg("exceptions.GPSTransportClosed", new exceptionsGPSTransportClosed());
 
 }
 

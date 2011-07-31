@@ -33,17 +33,17 @@
 #endif
 
 /* this is done using pure evil bleh, it needs some more cleaning */
-class util_CachedObject : public PyClass
+class utilCachedObject : public PyClass
 {
 protected:
 public:
-    util_CachedObject() : PyClass("util.CachedObject") {}
+    utilCachedObject() : PyClass("util.CachedObject") {}
 
-    ~util_CachedObject(){};
+    ~utilCachedObject(){};
 
-    util_CachedObject* New()
+    utilCachedObject* New()
     {
-        return new util_CachedObject();
+        return new utilCachedObject();
     }
     
     /* comments: format guessed from compiled scripts */

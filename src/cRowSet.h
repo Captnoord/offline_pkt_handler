@@ -32,11 +32,11 @@
 #  pragma pack(push,1)
 #endif
 
-class dbutil_CRowset : public PyClass
+class dbutilCRowset : public PyClass
 {
 protected:
 public:
-    dbutil_CRowset() : PyClass( "dbutil.CRowset" ), mList( NULL )
+    dbutilCRowset() : PyClass( "dbutil.CRowset" ), mList( NULL )
     {
         if (mList != NULL)
             PyDecRef(mList);
@@ -44,14 +44,14 @@ public:
     }
 
     // this of course will never be called
-    ~dbutil_CRowset()
+    ~dbutilCRowset()
     {
         PyDecRef(mList);
     };
 
-    dbutil_CRowset* New()
+    dbutilCRowset* New()
     {
-        return new dbutil_CRowset();
+        return new dbutilCRowset();
     }
 
     // comments: format guessed from compiled scripts
@@ -90,7 +90,7 @@ public:
 
     bool repr( FILE* fp )
     {
-        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        fprintf(fp, "dbutilCRowset needs some dumping love\n");
         return true;
     }
 

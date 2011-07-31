@@ -3,22 +3,22 @@
 #include "Python.h"
 #include "GPS.h"
 
-exceptions_GPSTransportClosed::exceptions_GPSTransportClosed() : PyClass("exceptions.GPSTransportClosed")
+exceptionsGPSTransportClosed::exceptionsGPSTransportClosed() : PyClass("exceptions.GPSTransportClosed")
 {
 
 }
 
-exceptions_GPSTransportClosed::~exceptions_GPSTransportClosed()
+exceptionsGPSTransportClosed::~exceptionsGPSTransportClosed()
 {
 
 }
 
-exceptions_GPSTransportClosed* exceptions_GPSTransportClosed::New()
+exceptionsGPSTransportClosed* exceptionsGPSTransportClosed::New()
 {
-    return new exceptions_GPSTransportClosed();
+    return new exceptionsGPSTransportClosed();
 }
 
-bool exceptions_GPSTransportClosed::init( PyObject* state )
+bool exceptionsGPSTransportClosed::init( PyObject* state )
 {
     if (!PyTuple_Check(state))
         return false;
@@ -39,12 +39,12 @@ bool exceptions_GPSTransportClosed::init( PyObject* state )
     return true;
 }
 
-PyTuple* exceptions_GPSTransportClosed::GetState()
+PyTuple* exceptionsGPSTransportClosed::GetState()
 {
     return NULL;
 }
 
-bool exceptions_GPSTransportClosed::repr( FILE* fp )
+bool exceptionsGPSTransportClosed::repr( FILE* fp )
 {
     fprintf(fp, "dbutil_CRowset needs some dumping love\n");
     return true;

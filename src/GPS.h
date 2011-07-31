@@ -32,15 +32,15 @@
 #  pragma pack(push,1)
 #endif
 
-class exceptions_GPSTransportClosed : public PyClass
+class exceptionsGPSTransportClosed : public PyClass
 {
 protected:
 public:
-    exceptions_GPSTransportClosed();
+    exceptionsGPSTransportClosed();
 
-    ~exceptions_GPSTransportClosed();;
+    ~exceptionsGPSTransportClosed();
 
-    exceptions_GPSTransportClosed* New();
+    exceptionsGPSTransportClosed* New();
 
     /* comments: format guessed from compiled scripts
      * @note not finished yet

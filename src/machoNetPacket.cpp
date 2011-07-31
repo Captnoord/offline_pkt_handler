@@ -128,124 +128,124 @@ bool MachoPacket::repr( FILE* fp )
 }
 
 /************************************************************************/
-/* macho_CallReq                                                        */
+/* machoCallReq                                                        */
 /************************************************************************/
-macho_CallReq::macho_CallReq() : MachoPacket("macho.CallReq")
+machoCallReq::machoCallReq() : MachoPacket("macho.CallReq")
 {
     params.push_back("payload");
 }
 
-macho_CallReq::~macho_CallReq() {}
+machoCallReq::~machoCallReq() {}
 
-macho_CallReq* macho_CallReq::New()
+machoCallReq* machoCallReq::New()
 {
-    return new macho_CallReq();
+    return new machoCallReq();
 }
 
-macho_CallRsp::macho_CallRsp() : MachoPacket("macho.CallRsp")
+machoCallRsp::machoCallRsp() : MachoPacket("macho.CallRsp")
 {
     params.push_back("payload");
 }
 
-macho_CallRsp::~macho_CallRsp()
+machoCallRsp::~machoCallRsp()
 {
 
 }
 
-macho_CallRsp* macho_CallRsp::New()
+machoCallRsp* machoCallRsp::New()
 {
-    return new macho_CallRsp();
+    return new machoCallRsp();
 }
 
-macho_SessionChangeNotification::macho_SessionChangeNotification() : MachoPacket("macho.SessionChangeNotification")
+machoSessionChangeNotification::machoSessionChangeNotification() : MachoPacket("macho.SessionChangeNotification")
 {
     params.push_back("change");
     params.push_back("nodesOfInterest");
 }
 
-macho_SessionChangeNotification::~macho_SessionChangeNotification()
+machoSessionChangeNotification::~machoSessionChangeNotification()
 {
 
 }
 
-macho_SessionChangeNotification* macho_SessionChangeNotification::New()
+machoSessionChangeNotification* machoSessionChangeNotification::New()
 {
-    return new macho_SessionChangeNotification();
+    return new machoSessionChangeNotification();
 }
 
-macho_SessionInitialStateNotification::macho_SessionInitialStateNotification() : MachoPacket("macho.SessionInitialStateNotification")
+machoSessionInitialStateNotification::machoSessionInitialStateNotification() : MachoPacket("macho.SessionInitialStateNotification")
 {
     params.push_back("initialstate");
 }
 
-macho_SessionInitialStateNotification::~macho_SessionInitialStateNotification()
+machoSessionInitialStateNotification::~machoSessionInitialStateNotification()
 {
 
 }
 
-macho_SessionInitialStateNotification* macho_SessionInitialStateNotification::New()
+machoSessionInitialStateNotification* machoSessionInitialStateNotification::New()
 {
-    return new macho_SessionInitialStateNotification();
+    return new machoSessionInitialStateNotification();
 }
 
-macho_PingRsp::macho_PingRsp() : MachoPacket("macho.PingRsp")
-{
-    params.push_back("times");
-}
-
-macho_PingRsp::~macho_PingRsp()
-{
-
-}
-
-macho_PingRsp* macho_PingRsp::New()
-{
-    return new macho_PingRsp();
-}
-
-macho_PingReq::macho_PingReq() : MachoPacket("macho.PingReq")
+machoPingRsp::machoPingRsp() : MachoPacket("macho.PingRsp")
 {
     params.push_back("times");
 }
 
-macho_PingReq::~macho_PingReq()
+machoPingRsp::~machoPingRsp()
 {
 
 }
 
-macho_PingReq* macho_PingReq::New()
+machoPingRsp* machoPingRsp::New()
 {
-    return new macho_PingReq();
+    return new machoPingRsp();
 }
 
-macho_ErrorResponse::macho_ErrorResponse() : MachoPacket("macho.ErrorResponse")
+machoPingReq::machoPingReq() : MachoPacket("macho.PingReq")
+{
+    params.push_back("times");
+}
+
+machoPingReq::~machoPingReq()
+{
+
+}
+
+machoPingReq* machoPingReq::New()
+{
+    return new machoPingReq();
+}
+
+machoErrorResponse::machoErrorResponse() : MachoPacket("macho.ErrorResponse")
 {
     params.push_back("originalCommand");
     params.push_back("code");
     params.push_back("payload");
 }
 
-macho_ErrorResponse::~macho_ErrorResponse()
+machoErrorResponse::~machoErrorResponse()
 {
 
 }
 
-macho_ErrorResponse* macho_ErrorResponse::New()
+machoErrorResponse* machoErrorResponse::New()
 {
-    return new macho_ErrorResponse();
+    return new machoErrorResponse();
 }
 
-macho_Notification::macho_Notification() : MachoPacket("macho.Notification")
+machoNotification::machoNotification() : MachoPacket("macho.Notification")
 {
     params.push_back("payload");
 }
 
-macho_Notification::~macho_Notification()
+machoNotification::~machoNotification()
 {
 
 }
 
-macho_Notification* macho_Notification::New()
+machoNotification* machoNotification::New()
 {
-    return new macho_Notification();
+    return new machoNotification();
 }
