@@ -24,8 +24,6 @@
 */
 
 #include "ascent.h"
-#include "Python.h"
-
 
 #include "machoNetAddress.h"
 
@@ -33,10 +31,8 @@ MachoAddress::MachoAddress() : PyClass( "macho.MachoAddress" ) {}
 
 MachoAddress::~MachoAddress()
 {
-    sLog.Debug("MachoAddress", "destructor");
+    printf("destructor");
 }
-
-void MachoAddress::destruct() {}
 
 MachoAddress* MachoAddress::New()
 {

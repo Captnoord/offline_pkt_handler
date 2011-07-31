@@ -24,6 +24,11 @@
 */
 
 #include "PyObjectDumper.h"
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
 
 class util_KeyVal : public PyClass
 {
@@ -32,7 +37,6 @@ public:
     util_KeyVal() : PyClass( "util.KeyVal" ) {}
 
     ~util_KeyVal(){};
-    void destruct() {}
 
     util_KeyVal* New()
     {
@@ -75,7 +79,6 @@ public:
     util_Rowset() : PyClass( "util.Rowset" ) {}
 
     ~util_Rowset(){};
-    void destruct() {}
 
     util_Rowset* New()
     {
@@ -122,3 +125,7 @@ public:
     // todo implement 'Row'
     //RowClass = Row
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif

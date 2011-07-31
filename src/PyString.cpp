@@ -24,15 +24,12 @@
 */
 
 #include "EvemuPCH.h"
-#include "PyString.h"
-
+#include "Python.h"
 
 /************************************************************************/
 /* PyString code                                                        */
 /************************************************************************/
-PyString::PyString() : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
-{
-}
+PyString::PyString() : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0) {}
 
 PyString::PyString(const char* str) : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
@@ -53,7 +50,6 @@ PyString::PyString(std::string& str) : PyObject(PyTypeString), mStr(NULL),  mStr
 PyString::~PyString()
 {
 	SafeFree(mStr);
-
 
 	mStrLen = 0;
 }

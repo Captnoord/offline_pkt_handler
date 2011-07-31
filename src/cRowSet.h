@@ -22,8 +22,15 @@
 	------------------------------------------------------------------------------------
 	Author:		Captnoord
 */
-
+#include "Python.h"
 #include "PyObjectDumper.h"
+
+#ifndef cRowSet_h__
+#define cRowSet_h__
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
 
 class dbutil_CRowset : public PyClass
 {
@@ -37,12 +44,10 @@ public:
     }
 
     // this of course will never be called
-    ~dbutil_CRowset() {};
-
-    void destruct()
+    ~dbutil_CRowset()
     {
         PyDecRef(mList);
-    }
+    };
 
     dbutil_CRowset* New()
     {
@@ -93,3 +98,10 @@ public:
     /* this object derives from a PyList.... we hack it this way for now... */
     PyList * mList;
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
+
+#endif // cRowSet_h__
+

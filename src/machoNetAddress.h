@@ -57,6 +57,12 @@
 #ifndef machoNetAddress_h__
 #define machoNetAddress_h__
 
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
 enum ADDRESS_TYPES {
     ADDRESS_TYPE_NODE = 1,
     ADDRESS_TYPE_CLIENT = 2,
@@ -70,7 +76,6 @@ public:
     MachoAddress();
 
     ~MachoAddress();
-    void destruct();
 
     MachoAddress* New();
 
@@ -90,4 +95,9 @@ public:
 
     bool repr( FILE* fp );
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
+
 #endif // machoNetAddress_h__

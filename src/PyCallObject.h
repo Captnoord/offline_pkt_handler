@@ -27,6 +27,11 @@
 #define PYCALLOBJECT_H
 
 #include "PyObjectDumper.h"
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
 
 
 /*  PyClass
@@ -43,12 +48,11 @@ class util_Row : public PyClass
 {
 public:
     util_Row() : PyClass( "util.Row" ) {}
+
     util_Row* New()
     {
         return new util_Row();
     }
-
-    void destruct() {}
 
     /* this is a stub that needs to be implemented */
     int UpdateDict(PyObject* bases)
@@ -73,9 +77,11 @@ public:
         fprintf(fp, "dbutil_CRowset needs some dumping love\n");
         return true;
     }
-
-    
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
 
 
 

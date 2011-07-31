@@ -346,55 +346,10 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 
 	case PyTypeClass:
 		{
-			PyClass * klass = (PyClass*) obj;
+			PyClass * pyclass_obj = (PyClass*) obj;
 
-            klass->repr(fp);
-
-#if 0
-            {
-                //fputs("PyClass\n", fp);
-                fprintf(fp, "%s", klass->getname()->content());
-
-                /* if our class is a itr, we need to read it as a part of a tuple/string/dict. So we need to add 2 spaces extra */
-                if (isItr == true)
-                    deep+=DUMP_ITR_SPACE;
-
-                //if (klass->getname())
-                //	Dump(fp, (PyObject*)klass->getname(), deep+DUMP_ITR_SPACE);
-
-                if (klass->getdict() && ( !klass->getbases() &&  !klass->getDirDict() && !klass->getDirList()) )
-                {
-                    fprintf(fp, "( ");
-
-                    for (PyDict::iterator itr = klass->getdict()->begin(); itr != klass->getdict()->end(); itr++)
-                    {
-                        Dump(fp, (*itr).second->obj, -1, true);
-                        fprintf(fp, "/* ");
-                        Dump(fp, (*itr).second->key, -1, true);
-                        fprintf(fp, " */, ");
-                    }
-                }
-                else
-                {
-                    if (klass->getbases())
-                        Dump(fp, (PyObject*)klass->getbases(), deep+DUMP_ITR_SPACE);
-
-                    if (klass->getdict())
-                        Dump(fp, (PyObject*)klass->getdict(), deep+DUMP_ITR_SPACE);
-
-                    if (klass->getDirDict())
-                        Dump(fp, (PyObject*)klass->getDirDict(), deep+DUMP_ITR_SPACE);
-
-                    if(klass->getDirList())
-                        Dump(fp, (PyObject*)klass->getDirList(), deep+DUMP_ITR_SPACE);
-                }
-            }
-#endif
+            pyclass_obj->repr(fp);
 		}
-		break;
-
-	case PyTypeDeleted:
-		assert(false); // this should never happen... fact.....
 		break;
 
 	case PyTypePackedRow:

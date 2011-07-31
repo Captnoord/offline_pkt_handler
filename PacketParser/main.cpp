@@ -89,11 +89,12 @@ int main(int argc, char ** argv)
 		strcpy(in_file_path,argv[1]);
 	}
 
-	DWORD tiet = GetTickCount();
+    TimeMeasure stop_watch;
+    stop_watch.get_time();
 
     HandleFile(in_file_path, out_file_path);
 
-	printf("File parsing took: %u ms\n", GetTickCount() - tiet);
+	printf("File parsing took: %f ms\n", stop_watch.get_delta_time() * 1000.0);
 
     // dono if I should delete this one....:P
 	//delete PyMarshalStringTable::getSingletonPtr();

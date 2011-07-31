@@ -1873,11 +1873,9 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			ASCENT_HARDWARE_BREAKPOINT;
 		} break;
 
-	case PyTypeDeleted: {assert(false);} break;
-
 	default:
-		uint8 sjaak = object->GetType();
-		Log.Error("MarshalStream","marshalling unhandled tag[0x%X].... sometying borked..", sjaak);
+		uint8 obj_type = object->GetType();
+		Log.Error("MarshalStream", "marshalling unhandled tag[0x%X].... something went wrong..", obj_type);
 		
 		Dump(stdout, object, 0);
 		ASCENT_HARDWARE_BREAKPOINT;

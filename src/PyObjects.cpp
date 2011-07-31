@@ -825,8 +825,6 @@ PyClass::PyClass( const char* class_name ) : PyObject( PyTypeClass ), mDict( new
 
 PyClass::~PyClass()
 {
-    destruct();
-
 	if (mName)
 	{
 		PyDecRef(mName);

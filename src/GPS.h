@@ -23,54 +23,39 @@
 	Author:		Captnoord
 */
 
+#ifndef GPS_h__
+#define GPS_h__
+
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
 class exceptions_GPSTransportClosed : public PyClass
 {
 protected:
 public:
-    exceptions_GPSTransportClosed() : PyClass("exceptions.GPSTransportClosed") {}
+    exceptions_GPSTransportClosed();
 
-    ~exceptions_GPSTransportClosed(){};
-    void destruct() {}
+    ~exceptions_GPSTransportClosed();;
 
-    exceptions_GPSTransportClosed* New()
-    {
-        return new exceptions_GPSTransportClosed();
-    }
+    exceptions_GPSTransportClosed* New();
 
     /* comments: format guessed from compiled scripts
      * @note not finished yet
      */
-    bool init(PyObject* state)
-    {
-        if (!PyTuple_Check(state))
-            return false;
-
-        PyTuple * pState = (PyTuple*)state;
-
-        // TODO: add item count check...
-
-        /*mDict->set_item("reason", pState->GetItem(0));
-        mDict->set_item("reasonCode", pState->GetItem(1));
-        mDict->set_item("reasonArgs", pState->GetItem(2));
-        */
-
-        /*args = {'reason': getattr(self, 'reason', None),
-            'reasonCode': getattr(self, 'reasonCode', None),
-            'reasonArgs': getattr(self, 'reasonArgs', None),
-            'exception': self}*/
-        return true;
-    }
+    bool init(PyObject* state);
 
     /* this is a stub that needs to be implemented */
-    PyTuple* GetState()
-    {
-        return NULL;
-    };
+    PyTuple* GetState();
 
-    bool repr( FILE* fp )
-    {
-        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
-        return true;
-    }
-
+    bool repr( FILE* fp );
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
+
+#endif // GPS_h__
+

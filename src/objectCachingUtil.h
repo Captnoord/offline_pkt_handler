@@ -23,6 +23,15 @@
 	Author:		Captnoord
 */
 
+#ifndef objectCachingUtil_h__
+#define objectCachingUtil_h__
+
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
 /* this is done using pure evil bleh, it needs some more cleaning */
 class util_CachedObject : public PyClass
 {
@@ -31,7 +40,6 @@ public:
     util_CachedObject() : PyClass("util.CachedObject") {}
 
     ~util_CachedObject(){};
-    void destruct() {}
 
     util_CachedObject* New()
     {
@@ -66,5 +74,10 @@ public:
         fprintf(fp, "dbutil_CRowset needs some dumping love\n");
         return true;
     }
-
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
+
+#endif // objectCachingUtil_h__

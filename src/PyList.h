@@ -23,6 +23,8 @@
 	Author:		Captnoord
 */
 
+#include "Python.h"
+
 #ifdef ENABLE_PACKED_CLASSES
 #  pragma pack(push,1)
 #endif

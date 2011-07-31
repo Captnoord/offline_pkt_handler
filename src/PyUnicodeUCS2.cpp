@@ -24,6 +24,7 @@
 */
 
 #include "EvemuPCH.h"
+#include "Python.h"
 
 /************************************************************************/
 /* Py Unicode object                                                    */

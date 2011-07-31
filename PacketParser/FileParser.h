@@ -242,7 +242,11 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 		
 		ReadStream readstream(packetBuf, length);
         MarshalStream stream;
+
+        //TimeMeasure stop_watch;
+        //stop_watch.get_time();
 		PyObject* henk = stream.load(readstream);
+        //printf("dt: %f\n", stop_watch.get_delta_time());
 
         /*
         transports = self._GetTransports(packet.destination)

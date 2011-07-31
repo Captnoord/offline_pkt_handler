@@ -26,9 +26,6 @@
 #ifndef _PYOBJECTS_H
 #define _PYOBJECTS_H
 
-#define ENABLE_PACKED_CLASSES
-
-
 enum PyType
 {
 	PyTypeNone,			//0
@@ -46,7 +43,6 @@ enum PyType
 	PyTypeModule,		//12
 	PyTypePackedRow,	//13
 	PyTypeSubStruct,	//14
-	PyTypeDeleted,		//15 // must be last, and can max be 16...
 };
 
 #define PyIncRef(x) (x)->IncRef();
@@ -407,9 +403,6 @@ class PyClass : public PyObject
 public:
 	PyClass( const char* class_name );
 	virtual ~PyClass();
-
-    /* .... hmm check this.. */
-    virtual void destruct() {};
 
     uint32 hash();
 

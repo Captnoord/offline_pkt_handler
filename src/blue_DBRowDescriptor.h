@@ -23,6 +23,15 @@
 	Author:		Captnoord
 */
 
+#ifndef blue_DBRowDescriptor_h__
+#define blue_DBRowDescriptor_h__
+
+#include "Python.h"
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(push,1)
+#endif
+
 class blue_DBRowDescriptor : public PyClass
 {
 protected:
@@ -32,11 +41,7 @@ public:
         is_c_api = true; // bleh hack...
     }
 
-    ~blue_DBRowDescriptor()
-    {
-    };
-
-    void destruct() {}
+    ~blue_DBRowDescriptor() {}
 
     blue_DBRowDescriptor* New()
     {
@@ -102,3 +107,9 @@ public:
     std::vector <int32>         mTableTypes;
     std::vector <uint32>        mTableSizes;
 };
+
+#ifdef ENABLE_PACKED_CLASSES
+#  pragma pack(pop)
+#endif
+
+#endif // blue_DBRowDescriptor_h__

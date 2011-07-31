@@ -358,6 +358,10 @@
 				Name="PyCallObjects"
 				>
 				<File
+					RelativePath="..\src\GPS.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\GPS.h"
 					>
 				</File>
