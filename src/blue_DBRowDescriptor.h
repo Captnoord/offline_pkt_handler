@@ -47,7 +47,7 @@ public:
     bool init(PyObject* state)
     {
         // TODO split Class and CClass
-        if (state->gettype() == PyTypeClass)
+        if (PyClass_Check(state))
         {
             // not implemented yet
             ASCENT_HARDWARE_BREAKPOINT;

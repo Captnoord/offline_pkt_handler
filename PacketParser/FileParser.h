@@ -28,6 +28,8 @@
 
 #include <stdio.h>
 
+#include "machoNetPacket.h"
+
 FILE* fp_in;
 FILE* fp_out;
 
@@ -74,6 +76,135 @@ char* GetBuffer(size_t len)
 	return buff;
 }
 
+/* this class represents a macho transport connection...
+ */
+class MachoTransport
+{
+public:
+    MachoTransport()   {}
+
+    bool write( PyObject* message )
+    {
+        /*
+        if hasattr(self, 'userID'):
+            message.userID = self.userID
+        if ((message.source.addressType == const.ADDRESS_TYPE_ANY) and (not (message.command % 2))):
+            message.source.nodeID = self.machoNet.nodeID
+            message.source.addressType = const.ADDRESS_TYPE_NODE
+            message.Changed()
+        elif ((message.source.addressType == const.ADDRESS_TYPE_NODE) and (message.source.nodeID is None)):
+            message.source.nodeID = self.machoNet.nodeID
+            message.Changed()
+        */
+
+        /* if we got our own userID, force the message userID */
+
+        //macho.CallReq
+        if(!PyClass_Check(message))
+            return false;
+
+        MachoPacket* macho_message = (MachoPacket*)message;
+
+        /*
+        int src_addr_type = macho_message->get_src_addr()->get_addr_type();
+        if ( src_addr_type == ADDRESS_TYPE_ANY && macho_message->get_command() % 2)
+        {
+            //message.source.nodeID = self.machoNet.nodeID
+            //message.source.addressType = const.ADDRESS_TYPE_NODE
+            //message.Changed()
+        }
+        else if (src_addr_type == ADDRESS_TYPE_NODE && message)
+        {
+
+        }
+        */
+
+
+
+
+
+        return true;
+    }
+
+    /*bool read(  )*/
+
+private:
+    uint64 userID;
+    /**
+
+    * holds the ID of this transport
+    transportID
+
+    * could be the transport socket or something... I dono....
+    transport
+
+    * the name of this transport
+    transportName
+
+    @note I wonder how this will end up with design wise
+    if (self.transportName == 'tcp:packet:client'):
+        self.userID = None
+
+    * dono... does this transport represents a client? if so whats the clientID
+    clientID
+
+    * dono.. its a list of clientID's maybe a node that has {clientIDs} connected to it..
+    clientIDs
+
+    * unk and not in the mood to check what it is
+    dependants
+
+    * list of sessions that belong to this transport
+    sessions
+
+    * list of calls.... dono
+    calls
+
+    * even unknown.... how this would work
+    currentReaders
+
+    * if we are a client then limit the amount of reader threads, if we are not a client then we can handle 20
+    desiredReaders
+    if (self.transportName == 'tcp:packet:client'):
+        self.desiredReaders = 2
+    else:
+        self.desiredReaders = 20
+
+    * holds time stamp of last ping time
+    lastping
+
+    * unknown
+    pinging
+
+    * estimated roundtrip time and timeout
+    estimatedRTT
+
+    @note http://vidyaprasar.dei.ac.in/wiki/index.php/TCP_Roundtrip_Time_and_Timeout
+
+    * dono
+    timeDiff
+
+    * constant when to compress a packet... default 200 bytes ( optional: read from settings )
+    compressionThreshold
+
+    * a compressed packet is only valid when we can compress with to 75% of its original size ( optional: read from settings )
+    compressionPercentageThreshold
+
+    * something related to ddossing a server node
+    largePacketLogSpamThreshold
+
+    * something related to ddossing a server node default 5000000
+    dropPacketThreshold
+    */
+};
+
+MachoTransport transports[100];
+
+bool _GetTransports( PyObject* address, std::vector<MachoTransport*> &transport )
+{
+    return true;
+}
+
 void HandleFile(const char* in_file_path, const char* out_file_path)
 {
 	std::string out_path;
@@ -113,10 +244,19 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
         MarshalStream stream;
 		PyObject* henk = stream.load(readstream);
 
+        /*
+        transports = self._GetTransports(packet.destination)
+        for each in transports:
+            each.Write(packet)
+            each.TagPacketSizes(packet)
+        */
+
+
+
 		if (henk != NULL)
 		{
 			DumpObject(fp_out, henk);
-			henk->DecRef();
+			PyDecRef(henk);
 		}
 
 		ASCENT_FREE(packetBuf);

@@ -43,13 +43,13 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 		printf("Can not dump NULL object\n");
 		return;
 	}
-	//printf("Deep: %d, PyObject type: 0x%X, filtered: 0x%X\n", deep, obj->gettype(), obj->gettype());
+	//printf("Deep: %d, PyObject type: 0x%X, filtered: 0x%X\n", deep, obj->GetType(), obj->GetType());
 
 	/* this one makes sure that we have slightly formatted output (important for readability) */
 	if(isItr == false && deep != -1)
 		WriteSpacer(fp, deep);
 
-	switch(obj->gettype())
+	switch(obj->GetType())
 	{
 	case PyTypeNone:
 		//if (dict_trick == false)
@@ -152,7 +152,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 					if (obj1 != NULL)
 					{
 						Dump(fp, obj1, deep+4);
-						obj1->DecRef();
+						PyDecRef(obj1);
 					}
 					else
 					{
@@ -330,7 +330,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			if (obj1 != NULL)
 			{
 				Dump(fp, obj1, deep + 4);
-				obj1->DecRef();
+				PyDecRef(obj1);
 			}
 			else
 				ASCENT_HARDWARE_BREAKPOINT;
@@ -456,7 +456,7 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 		break;
 
 	default:
-		printf("PyDump whelp: unhandled opcode: %u from object: 0x%p", obj->gettype(), obj);
+		printf("PyDump whelp: unhandled opcode: %u from object: 0x%p", obj->GetType(), obj);
 		assert(false);
 		break;
 	}

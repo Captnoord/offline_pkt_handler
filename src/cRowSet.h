@@ -41,7 +41,7 @@ public:
 
     void destruct()
     {
-        mList->DecRef();
+        PyDecRef(mList);
     }
 
     dbutil_CRowset* New()
@@ -70,7 +70,7 @@ public:
           //  return false;
 
         // TODO check if this has any data in it... it should be empty
-        //mDict->DecRef();
+        //PyDecRef(mDict);
 
         // replace the current dict with that one to init...
         //mDict = (PyDict*)state; state->IncRef();

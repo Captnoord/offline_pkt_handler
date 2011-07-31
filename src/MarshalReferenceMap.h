@@ -72,7 +72,7 @@ public:
 	{
 		for (uint32 i = 0; i < mExpectedObjectsCount; i++)
 		{
-			mReferenceObjects[i]->DecRef();
+			PyDecRef(mReferenceObjects[i]);
 		}
 
 		mReferenceObjects.clear();

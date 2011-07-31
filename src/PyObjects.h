@@ -52,10 +52,6 @@ enum PyType
 #define PyIncRef(x) (x)->IncRef();
 #define PyDecRef(x) (x)->DecRef();
 
-// object hash function
-//#define hashfunc(x) uint32 (*x)(void);
-typedef uint32 (*hashfunc)(void);
-
 class PyInt;
 class PyDict;
 class PyList;
@@ -90,8 +86,8 @@ public:
     PyObject(PyType type);
     virtual ~PyObject();
     virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
-    virtual size_t size() {
-        
+    virtual size_t size()
+    {
         // debug assert to make sure its only called by objects that really have size shit.....
         switch(mType)
         {
@@ -114,20 +110,18 @@ public:
         case PyTypeSubStruct:
             ASCENT_HARDWARE_BREAKPOINT;
             break;
-
         }
         return -1;
     }; // most objects have a size function....
 
-	uint8 gettype();
+	uint8 GetType();
 	void IncRef();
 	void DecRef();
     size_t GetRef();
-    
-	
+
 private:
-    uint8 mType;
-	size_t mRefcnt;
+    volatile uint8 mType;
+	volatile size_t mRefcnt;
 };
 
 /**
@@ -318,6 +312,8 @@ public:
     ~PyDict();
     uint32 hash();
 
+#define alloc_new_dict_entry (PyDictEntry*)malloc( sizeof( PyDictEntry ) )
+
     bool    mMappingMode;
     uint32  mMappingIndex;
 
@@ -334,42 +330,11 @@ public:
     template<typename T>
     bool set_item(const char* key_name, T* obj)
     {
-        if (key_name == NULL || obj == NULL)
-        {
-            /* something broke so debug it */
-            ASCENT_HARDWARE_BREAKPOINT;
-            return false;
-        }
-
-        /*if (mMappingMode == true)
-        {
-            // create a new dictionary entry
-            PyDictEntry * entry = new PyDictEntry;
-            entry->key = (PyObject*)new PyString(key_name);
-            entry->obj = (PyObject*)obj;
-            mDict.insert(std::make_pair(mMappingIndex++, entry));
-            obj->IncRef();
-        }
-        else
-        {
-            // IMPLEMENT THIS ONE..... 
-            //ASCENT_HARDWARE_BREAKPOINT;
-            // do the same as the set_item function that takes a PyObject as a key, but do some tricks with it 
-
-            // NOTE: not used.
-            //size_t str_len = strlen(key_name);
-
-            // test this and check these 
-            //uint32 hsh = Utils::Hash::sdbm_hash(key_name, (int)str_len);
-            //uint32 hsh1 = Utils::Hash::sdbm_hash(key_name);
-        }*/
-
-        set_item((PyObject*)new PyString(key_name),(PyObject*)obj);
-
-        return true;
+        return set_item((PyObject*)new PyString(key_name),(PyObject*)obj);
     }
 
-    __forceinline bool set_item(PyObject* key, PyObject* obj);
+    bool set_item(PyObject* key, PyObject* obj);
+
     PyObject* get_item(PyObject* key);
     PyObject* get_item(const char* key_name);
     PyObject* get_item(const char* key_name, PyObject* default_obj);
@@ -769,7 +734,7 @@ static bool _PyLong_AsInt64(PyObject* number, int64& dst_num)
 	if (number == NULL)
 		return false;
 
-	if (number->gettype() != PyTypeLong)
+	if (number->GetType() != PyTypeLong)
 		return false;
 	
 	dst_num = ((PyLong*)number)->get_value();
@@ -791,7 +756,7 @@ uint64 PyNumberGetValue(PyObject* obj);
 
 
 
-#define PyObject_TypeCheck(ob, tp) ((ob)->gettype() == (tp))
+#define PyObject_TypeCheck(ob, tp) ((ob)->GetType() == (tp))
 #define PyTuple_Check(op) PyObject_TypeCheck(op, PyTypeTuple)
 #define PyList_Check(op) PyObject_TypeCheck(op, PyTypeList)
 

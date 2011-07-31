@@ -519,8 +519,8 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 					dict.set_item(keyName, keyPayload);
 
-					keyPayload->DecRef();
-					keyName->DecRef();
+					PyDecRef(keyPayload);
+					PyDecRef(keyName);
 				}
 
 				MARSHALSTREAM_RETURN(&dict);
@@ -551,7 +551,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PySubStruct * obj = new PySubStruct();
 				PyObject * tobj = unmarshal(stream);
 				assert(obj->setPyObject(tobj));
-				tobj->DecRef();
+				PyDecRef(tobj);
                 // PyObject_CallFunctionObjArgs
 				
 				MARSHALSTREAM_RETURN(obj);
@@ -709,13 +709,13 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
     if (class_object == NULL)
     {
-        module_name->DecRef();
+        PyDecRef(module_name);
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    if (class_object->gettype() != PyTypeClass)
+    if (!PyClass_Check(class_object))
     {
-        module_name->DecRef();
+        PyDecRef(module_name);
         MARSHALSTREAM_RETURN_NULL;
     }
 
@@ -732,7 +732,7 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
     if (new_instance == NULL)
     {
-        module_name->DecRef();
+        PyDecRef(module_name);
         MARSHALSTREAM_RETURN_NULL;
     }
 
@@ -740,8 +740,8 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
     {
         if (mReferencedObjectsMap.StoreReferencedObject(new_instance) == -1)
         {
-            module_name->DecRef();
-            new_instance->DecRef();
+            PyDecRef(module_name);
+            PyDecRef(new_instance);
             MARSHALSTREAM_RETURN_NULL;
         }
     }
@@ -754,8 +754,8 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
      */
     if (bases == NULL)
     {
-        module_name->DecRef();
-        new_instance->DecRef();
+        PyDecRef(module_name);
+        PyDecRef(new_instance);
         MARSHALSTREAM_RETURN_NULL;
     }
 
@@ -778,18 +778,18 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 	if(!classObj->setname(module_name))
 	{
 		ASCENT_HARDWARE_BREAKPOINT;
-		module_name->DecRef();
-		classObj->DecRef();
-		bases->DecRef();
+		PyDecRef(module_name);
+		PyDecRef(classObj);
+		PyDecRef(bases);
 		MARSHALSTREAM_RETURN_NULL;
 	}
 
 	if(!classObj->setbases(bases))
 	{
 		ASCENT_HARDWARE_BREAKPOINT;
-		module_name->DecRef();
-		classObj->DecRef();
-		bases->DecRef();
+		PyDecRef(module_name);
+		PyDecRef(classObj);
+		PyDecRef(bases);
 		MARSHALSTREAM_RETURN_NULL;
 	}*/
 
@@ -821,18 +821,18 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
     if(!classObj->setname(className))
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        className->DecRef();
-        classObj->DecRef();
-        bases->DecRef();
+        PyDecRef(className);
+        PyDecRef(classObj);
+        PyDecRef(bases);
         MARSHALSTREAM_RETURN_NULL;
     }
 
     if(!classObj->setbases(bases))
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        className->DecRef();
-        classObj->DecRef();
-        bases->DecRef();
+        PyDecRef(className);
+        PyDecRef(classObj);
+        PyDecRef(bases);
         MARSHALSTREAM_RETURN_NULL;
     }*/
 
@@ -861,18 +861,18 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
     /*if(!classObj->setname(className))
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        className->DecRef();
-        classObj->DecRef();
-        bases->DecRef();
+        PyDecRef(className);
+        PyDecRef(classObj);
+        PyDecRef(bases);
         MARSHALSTREAM_RETURN_NULL;
     }*/
 
     /*if(!classObj->setbases(bases))
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        className->DecRef();
-        classObj->DecRef();
-        bases->DecRef();
+        PyDecRef(className);
+        PyDecRef(classObj);
+        PyDecRef(bases);
         MARSHALSTREAM_RETURN_NULL;
     }*/
 
@@ -899,15 +899,15 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
     PyObject * method = bases->get_item(0);
     if (method == NULL)
     {
-        bases->DecRef();
+        PyDecRef(bases);
         MARSHALSTREAM_RETURN_NULL;
     }
 
     PyObject * args = bases->get_item(1);
     if (args == NULL)
     {
-        bases->DecRef();
-        method->DecRef();
+        PyDecRef(bases);
+        PyDecRef(method);
         MARSHALSTREAM_RETURN_NULL
     }
 
@@ -964,14 +964,14 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     PyTuple* call_root = object_root->GetItem_asPyTuple(0);
     if (call_root == NULL)
     {
-        object_root->DecRef();
+        PyDecRef(object_root);
         MARSHALSTREAM_RETURN_NULL;
     }
 
     PyClass* class_instance = call_root->GetItem_asPyClass(0);
     if (class_instance == NULL)
     {
-        object_root->DecRef();
+        PyDecRef(object_root);
         MARSHALSTREAM_RETURN_NULL;
     }*/
 
@@ -1013,14 +1013,14 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     PyTuple* call_root = object_root->GetItem_asPyTuple(0);
     if (call_root == NULL)
     {
-        object_root->DecRef();
+        PyDecRef(object_root);
         MARSHALSTREAM_RETURN_NULL;
     }
 
     PyClass* class_instance = call_root->GetItem_asPyClass(0);
     if (class_instance == NULL)
     {
-        object_root->DecRef();
+        PyDecRef(object_root);
         MARSHALSTREAM_RETURN_NULL;
     }
 
@@ -1052,21 +1052,21 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 	packedRow = new PyPackedRow();
 	packedRow->init((PyObject*)obj1);
 
-	assert(obj1->gettype() == PyTypeClass);
+	assert(PyClass_Check(obj1));
 		
 	size_t size;
 	if (!stream.readSizeEx(size))
 	{
-		obj1->DecRef();
-		packedRow->DecRef();
+		PyDecRef(obj1);
+		PyDecRef(packedRow);
 		MARSHALSTREAM_RETURN_NULL;
 	}
 
 	uint8* data;
 	if (!stream.readBuffer(&data, size))
 	{
-		obj1->DecRef();
-		packedRow->DecRef();
+		PyDecRef(obj1);
+		PyDecRef(packedRow);
 		MARSHALSTREAM_RETURN_NULL;
 	}
 
@@ -1094,7 +1094,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 		{
 			SafeFree(outbuff);
 
-			obj1->DecRef();
+			PyDecRef(obj1);
 			Log.Error("MarshalStream", "error happened in the 'Rle' decoder");
 			MARSHALSTREAM_RETURN_NULL;
 		}
@@ -1177,13 +1177,13 @@ PyObject* MarshalStream::ReadSubStream( ReadStream & stream )
 	uint8* data;
 	if (!stream.readBuffer(&data, size))
 	{
-		object->DecRef();
+		PyDecRef(object);
 		MARSHALSTREAM_RETURN_NULL;
 	}
 
 	if(!object->set(data, size))
 	{
-		object->DecRef();
+		PyDecRef(object);
 		MARSHALSTREAM_RETURN_NULL;
 	}
 
@@ -1419,8 +1419,8 @@ bool MarshalStream::ReadNewObjDict( ReadStream & stream, PyClass & obj )
 		PyObject * keyName = unmarshal(stream);
 
 		dict->set_item(dictItr, keyName);
-		keyName->DecRef();
-		dictItr->DecRef();
+		PyDecRef(keyName);
+		PyDecRef(dictItr);
 	}
 
 	obj.setDirDict(dict);
@@ -1484,7 +1484,7 @@ bool marshalString(const char* str, WriteStream & stream)
 
 bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 {
-	uint8 object_type = ((PyInt*)object)->gettype();
+	uint8 object_type = ((PyInt*)object)->GetType();
 	
 	switch (object_type)
 	{
@@ -1623,9 +1623,6 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 	case PyTypeUnicode:
 		{
-			/*
-			v32 = PyUnicodeUCS2_AsUTF8String(ArgList);
-			*/
 			PyUnicodeUCS2 & str = *(PyUnicodeUCS2*)object;
 			size_t str_len = str.size();
 			if (str_len == 0)
@@ -1646,7 +1643,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 				{
 					if (!stream.writeOpcode(Op_PyUnicodeUTF8String))
 					{
-						utf8str->DecRef();
+						PyDecRef(utf8str);
 						return false;
 					}
 
@@ -1879,7 +1876,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 	case PyTypeDeleted: {assert(false);} break;
 
 	default:
-		uint8 sjaak = object->gettype();
+		uint8 sjaak = object->GetType();
 		Log.Error("MarshalStream","marshalling unhandled tag[0x%X].... sometying borked..", sjaak);
 		
 		Dump(stdout, object, 0);
@@ -1924,7 +1921,7 @@ ASCENT_INLINE bool MarshalStream::WriteVarInteger( WriteStream& stream, PyObject
 	if (number == NULL)
 		return false;
 
-	if (number->gettype() != PyTypeLong)
+	if (!PyLong_Check(number))
 		return false;
 
 	int64 num = ((PyLong*)number)->get_value();

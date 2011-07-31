@@ -298,6 +298,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\Python.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\PyUnicodeUCS2.cpp"
 					>
 				</File>
@@ -355,6 +359,18 @@
 				>
 				<File
 					RelativePath="..\src\GPS.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\machoNetAddress.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\machoNetAddress.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\machoNetPacket.cpp"
 					>
 				</File>
 				<File

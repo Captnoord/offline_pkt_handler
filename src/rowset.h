@@ -42,11 +42,11 @@ public:
     /* comments: format guessed from compiled scripts */
     bool init(PyObject* state)
     {
-        if (state->gettype() != PyTypeDict)
+        if (state->GetType() != PyTypeDict)
             return false;
         
         // TODO check if this has any data in it... it should be empty
-        mDict->DecRef();
+        PyDecRef(mDict);
 
         // replace the current dict with that one to init...
         mDict = (PyDict*)state;
@@ -97,7 +97,7 @@ public:
             return false;
 
         // TODO check if this has any data in it... it should be empty
-        mDict->DecRef();
+        PyDecRef(mDict);
 
         // replace the current dict with that one to init...
         mDict = (PyDict*)state;

@@ -29,6 +29,8 @@
 #include "PyCallObject.h"
 
 #include "machoNetPacket.h"
+#include "machoNetAddress.h"
+
 #include "objectCachingUtil.h"
 #include "rowset.h"
 #include "cRowSet.h"
@@ -56,7 +58,7 @@ CallMgr::CallMgr()
     /* macho */
     reg("macho.CallReq",        new macho_CallReq());
     reg("macho.CallRsp",        new macho_CallRsp());
-    reg("macho.MachoAddress",   new macho_MachoAddress());
+    reg("macho.MachoAddress",   new MachoAddress());
     reg("macho.SessionInitialStateNotification", new macho_SessionInitialStateNotification());
     reg("macho.SessionChangeNotification", new macho_SessionChangeNotification());
     reg("macho.PingRsp",        new macho_PingRsp());
@@ -72,11 +74,8 @@ CallMgr::CallMgr()
 CallMgr::~CallMgr()
 {
     CallMapItr itr = mCallMap.begin();
-    for (; itr != mCallMap.end(); itr++) {
-
-        itr->second->DecRef();
-
-    }
+    for (; itr != mCallMap.end(); itr++)
+        PyDecRef(itr->second);
 }
 
 bool CallMgr::reg( const char* guid, PyClass* module )

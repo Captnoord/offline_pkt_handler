@@ -478,8 +478,8 @@ PyDict::~PyDict()
         assert(entry->key);
         assert(entry->obj);
 
-        entry->key->DecRef();
-        entry->obj->DecRef();
+        PyDecRef(entry->key);
+        PyDecRef(entry->obj);
         SafeFree(entry);
         i++;
     }
@@ -501,7 +501,7 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         return false;
     }
 
-    /*if (key->gettype() == PyTypeNone || obj->gettype() == PyTypeNone)
+    /*if (key->GetType() == PyTypeNone || obj->GetType() == PyTypeNone)
     {
         ASCENT_HARDWARE_BREAKPOINT;
         return false;
@@ -530,8 +530,7 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         if (itr == mDict.end())
         {
             /* create a new dictionary entry */
-            //PyDictEntry * entry = new PyDictEntry();
-            PyDictEntry * entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));
+            PyDictEntry * entry = alloc_new_dict_entry;
             entry->key = key;
             entry->obj = obj;
             mDict.insert(std::make_pair(hsh, entry));
@@ -572,7 +571,7 @@ PyObject* PyDict::get_item(const char* key_name)
     if (entry == NULL)
     {
         ASCENT_HARDWARE_BREAKPOINT;
-        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry;
+        entry = alloc_new_dict_entry;
         entry->key = (PyObject*)new PyString(key_name);
         entry->obj = NULL;
         mDict[hsh] = entry;
@@ -584,26 +583,29 @@ PyObject* PyDict::get_item(const char* key_name)
 PyObject* PyDict::get_item(const char* key_name, PyObject* default_obj)
 {
     //ASCENT_HARDWARE_BREAKPOINT;
-    if (key_name == NULL || *key_name == '\0')
-    {
-        default_obj->DecRef();
+    if (key_name == NULL || *key_name == '\0') {
+        PyDecRef(default_obj);
         return NULL;
     }
 
     uint32 hsh = Utils::Hash::sdbm_hash(key_name);
 
-    PyDictEntry * entry = mDict[hsh];
-    if (entry == NULL)
+    PyDict::iterator itr = mDict.find(hsh);
+    PyDictEntry * entry = NULL;
+    if (itr == mDict.end())
     {
-        //ASCENT_HARDWARE_BREAKPOINT;
-        entry = (PyDictEntry*)malloc(sizeof( PyDictEntry ));//new PyDictEntry();
+        entry = alloc_new_dict_entry;
         entry->key = (PyObject*)new PyString(key_name);
         entry->obj = default_obj; PyIncRef(default_obj);
-        mDict[hsh] = entry;
+        mDict.insert(std::make_pair(hsh, entry));
+    }
+    else
+    {
+        entry = (*itr).second;
     }
 
-    // another wierd exception
-    if (entry->obj == NULL)
+    // another weird but possible exception
+    if (entry == NULL || entry->obj == NULL)
         ASCENT_HARDWARE_BREAKPOINT;
 
     PyDecRef(default_obj);
@@ -724,7 +726,7 @@ bool PyDict::get_buffer( const char * keyName, char* dst, size_t dst_len )
     if (foundObject == NULL)
         return false;
 
-    if (foundObject->gettype() != PyTypeString)
+    if (foundObject->GetType() != PyTypeString)
         return false;
 
     PyString * str = (PyString *)foundObject;
@@ -827,30 +829,30 @@ PyClass::~PyClass()
 
 	if (mName)
 	{
-		mName->DecRef();
+		PyDecRef(mName);
 		mName = NULL;
 	}
 	if (mBases)
 	{
-		mBases->DecRef();
+		PyDecRef(mBases);
 		mBases = NULL;
 	}
 	
 	if (mDict)
 	{
-		mDict->DecRef();
+		PyDecRef(mDict);
 		mDict = NULL;
 	}
 	
 	if (mWeakRefList)
 	{
-		mWeakRefList->DecRef();
+		PyDecRef(mWeakRefList);
 		mWeakRefList = NULL;
 	}
 
 	if (mInDict)
 	{
-		mInDict->DecRef();
+		PyDecRef(mInDict);
 		mInDict = NULL;
 	}
 }
@@ -875,7 +877,7 @@ bool PyClass::setdict( PyDict* dict )
 	if (dict == NULL)
 		return false;
 
-	if (dict->gettype() != PyTypeDict)
+	if (dict->GetType() != PyTypeDict)
 		return false;
 
 	mDict = dict;
@@ -885,7 +887,7 @@ bool PyClass::setdict( PyDict* dict )
 bool PyClass::setDirList( PyList * list )
 {
 	ASCENT_ASSERT(mWeakRefList == NULL);
-	//assert(list->gettype() == PyTypeList);
+	//assert(list->GetType() == PyTypeList);
 	if (list == NULL)
 		return false;
 	mWeakRefList = list;
@@ -977,7 +979,7 @@ void PyObject::DecRef()
         delete this;
 }
 
-uint8 PyObject::gettype()
+uint8 PyObject::GetType()
 {
     return mType;
 }
@@ -1058,7 +1060,7 @@ uint32 PyPackedRow::hash()
 
 bool PyPackedRow::setheader( PyClass * obj )
 {
-	if (obj->gettype() != PyTypeClass)
+	if (obj->GetType() != PyTypeClass)
 		return false;
 
 	mHeader = obj;
@@ -1140,7 +1142,7 @@ PySubStruct::PySubStruct() : PyObject(PyTypeSubStruct), payload(NULL) {}
 PySubStruct::~PySubStruct()
 {
 	if (payload)
-		payload->DecRef();
+		PyDecRef(payload);
 }
 
 PyObject * PySubStruct::getPyObject()
