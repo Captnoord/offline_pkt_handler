@@ -27,88 +27,102 @@
 #include "ascent.h"
 #include "RleModule.h"
 
-bool RleModule::decode( unsigned char* src, const size_t src_len, unsigned char* dst, size_t* dst_len )
+bool RleModule::unpack( unsigned char* in, const int in_size, unsigned char* out, int* out_size )
 {
-	bool has_second_part;
-	unsigned int read_index;
-	unsigned int write_index;
-	int rle_opcode;
-	int chunkSize;
-	int blockSize;
-	bool temp_has_second_part;
+    int in_ix = 0;
+	int out_ix = 0;
+	int count;
+	int run = 0;
+	int nibble = 0;
 
-	size_t dst_size = *dst_len;
-
-	has_second_part = false;
-	write_index = 0;
-	read_index = 0;
-
-	if ( src_len )
+	while(in_ix < in_size)
 	{
-		while ( write_index < dst_size )
+		nibble = !nibble;
+		if(nibble)
 		{
-			if ( has_second_part == true )
-			{
-				rle_opcode = rle_opcode >> 4;
-			}
-			else
-			{
-				rle_opcode = src[read_index++];
-			}
+			run = (unsigned char)in[in_ix++];
+			count = (run & 0x0f) - 8;
+		}
+		else
+			count = (run >> 4) - 8;
 
-			chunkSize = (rle_opcode & 0xF) - 8;
-			temp_has_second_part = has_second_part == false;
-			if ( chunkSize < 0 )
-			{
-				if ( write_index - chunkSize > dst_size )
-				{
-					Log.Error("RleModule", "Invalid RLE string");
+		if(count >= 0)
+		{
+			if (out_ix + count + 1 > *out_size)
+				return 0;
 
-					// this needs some love...
-					ASCENT_HARDWARE_BREAKPOINT;
+			while(count-- >= 0)
+				out[out_ix++] = 0;
+		}
+		else
+		{
+			if (out_ix - count > *out_size)
+				return 0;
 
-					return false;
-				}
-
-				while ( 1 )
-				{
-					++chunkSize;
-					if ( read_index >= src_len )
-						goto LABEL_2;
-					dst[write_index++] = src[read_index++];
-					if ( !chunkSize )
-						goto LABEL_17;
-				}
-			}
-
-			if ( chunkSize + write_index + 1 > dst_size )
-			{
-				Log.Error("RleModule", "Invalid RLE string");
-
-				// this needs some love...
-				ASCENT_HARDWARE_BREAKPOINT;
-
-				return false;
-			}
-
-			blockSize = chunkSize + 1;
-			memset(&dst[write_index], 0, blockSize);
-			write_index += blockSize;
-LABEL_17:
-			if ( read_index >= src_len )
-				goto LABEL_2;
-			has_second_part = temp_has_second_part;
+			while(count++ && in_ix < in_size)
+				out[out_ix++] = in[in_ix++];
 		}
 	}
-	else
-	{
-LABEL_2:
-		if ( write_index < dst_size )
-			memset(&dst[write_index], 0, dst_size - write_index);
-	}
 
-	/* I think this is correct.... but I actually don't know hehe */
-	*dst_len = write_index;
+	while(out_ix < *out_size)
+		out[out_ix++] = 0;
 
-	return true;
+	return 1;
+}
+
+void RleModule::pack( char *in, int in_size, char *out, int *out_size )
+{
+    int nibble = 0;
+    int nibble_ix = 0;
+    int in_ix = 0;
+    int out_ix = 0;
+    int start, end, count;
+    int zerochains = 0;
+
+    while(in_ix < in_size)
+    {
+        if(!nibble)
+        {
+            nibble_ix = out_ix++;
+            out[nibble_ix] = 0;
+        }
+
+        start = in_ix;
+        end = in_ix+8;
+        if(end > in_size)
+            end = in_size;
+
+        if(in[in_ix])
+        {
+            zerochains = 0;
+            do {
+                out[out_ix++] = in[in_ix++];
+            } while(in_ix<end && in[in_ix]);
+            count = start - in_ix + 8;
+        }
+        else
+        {
+            zerochains++;
+            while(in_ix<end && !in[in_ix])
+                in_ix++;
+            count = in_ix - start + 7;
+        }
+
+        if(nibble)
+            out[nibble_ix] |= (count << 4);
+        else
+            out[nibble_ix] = count;
+        nibble = !nibble;
+    }
+
+    if(nibble && zerochains)
+        zerochains++;
+
+    while(zerochains>1)
+    {
+        zerochains -= 2;
+        out_ix -= 1;
+    }
+
+    *out_size = out_ix;
 }

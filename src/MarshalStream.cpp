@@ -1090,7 +1090,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 		outbuff = (uint8*)ASCENT_MALLOC(outsize);
 		assert(outbuff);
 
-		if (!RleModule::decode(data, size, outbuff, &outsize))
+		if (!RleModule::unpack(data, size, outbuff, (int*)&outsize))
 		{
 			SafeFree(outbuff);
 
