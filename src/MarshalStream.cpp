@@ -165,9 +165,9 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(&PyNone);
 			}
 
-            case Op_PyModule:
+            case Op_PyGlobal:
 			{
-				unmarshalState(Op_PyModule, stream);
+				unmarshalState(Op_PyGlobal, stream);
 				MARSHALSTREAM_RETURN(ReadClassString(stream, (opcode & 0x40) != 0));
 			}
 
@@ -214,16 +214,16 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(&PyIntMinusOne);
 			}
 			
-			case Op_PyZeroInteger:
+			case Op_PyZero:
 			{
-				unmarshalState(Op_PyZeroInteger, stream);
+				unmarshalState(Op_PyZero, stream);
                 PyIncRef(&PyIntZero);
 				MARSHALSTREAM_RETURN(&PyIntZero);
 			}
 			
-			case Op_PyOneInteger:
+			case Op_PyOne:
 			{
-				unmarshalState(Op_PyOneInteger, stream);
+				unmarshalState(Op_PyOne, stream);
                 PyIncRef(&PyIntOne);
 				MARSHALSTREAM_RETURN(&PyIntOne);
 			}
@@ -237,9 +237,9 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(PyFloat_FromDouble(number));
 			}
 
-			case Op_PyZeroFloat:
+			case Op_PyFloat0:
 			{
-				unmarshalState(Op_PyZeroFloat, stream);
+				unmarshalState(Op_PyFloat0, stream);
                 PyIncRef(&PyFloatZero);
 				MARSHALSTREAM_RETURN(&PyFloatZero);
 			}
@@ -527,27 +527,27 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			}
 
 			/* read a object, it also has a check for reference mapping */
-			case Op_PyGlobalObject:
+			case Op_PyInstance:
 			{
                 //ASCENT_HARDWARE_BREAKPOINT;
-				unmarshalState(Op_PyGlobalObject, stream);
+				unmarshalState(Op_PyInstance, stream);
 				MARSHALSTREAM_RETURN(ReadGlobalInstance(stream, (opcode >> 6) & 1));
 			}
 
 			/* unknown isn't handled but what we know of them is that its related to the cPickle system */
-			case Op_PyBinairy:
+			case Op_PyBlue:
 			{
-				unmarshalState(Op_PyBinairy, stream);
+				unmarshalState(Op_PyBlue, stream);
 				MARSHALSTREAM_RETURN_NULL;
 			}
 			
 			/* need to implement custom callbacks and reading stuff... but for the server this doesn't seem to usefull.. */
-			case Op_PyClassInstance:
+			case Op_PyCallback:
 			{
 				/* Unmarshal stream contains custom data but I have no callback method */
                 ASCENT_HARDWARE_BREAKPOINT;
 
-				unmarshalState(Op_PyClassInstance, stream);
+				unmarshalState(Op_PyCallback, stream);
 				PySubStruct * obj = new PySubStruct();
 				PyObject * tobj = unmarshal(stream);
 				assert(obj->setPyObject(tobj));
@@ -567,29 +567,29 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN_NULL;
 			}
 		
-			case Op_cPicked:
+			case Op_PycPicked:
 			{
                 ASCENT_HARDWARE_BREAKPOINT;
-				unmarshalState(Op_cPicked, stream);
+				unmarshalState(Op_PycPicked, stream);
 				MARSHALSTREAM_RETURN_NULL;
 			}
 
-			case Op_PySavedStreamElement:
+			case Op_PyRef:
 			{
-				unmarshalState(Op_PySavedStreamElement, stream);
+				unmarshalState(Op_PyRef, stream);
 				uint32 index;
 				if (!stream.readSizeEx(index))
 					MARSHALSTREAM_RETURN_NULL;
 				PyObject* obj;
 				if (!mReferencedObjectsMap.GetStoredObject(index,&obj))
 				{
-					Log.Error("MarshalStream", "(Op_PySavedStreamElement)there seems to be a Invalid TY_REFECENCE in the stream");
+					Log.Error("MarshalStream", "(Op_PyRef)there seems to be a Invalid TY_REFECENCE in the stream");
 					MARSHALSTREAM_RETURN_NULL;
 				}
 
 				if (obj == NULL)
 				{
-					Log.Error("MarshalStream", "(Op_PySavedStreamElement)GetStoredObject returned a NULL object... HUH oO wtf is happening");
+					Log.Error("MarshalStream", "(Op_PyRef)GetStoredObject returned a NULL object... HUH oO wtf is happening");
 					MARSHALSTREAM_RETURN_NULL;
 				}
 
@@ -619,12 +619,12 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				}
 			}
 
-			case Op_OldStyleClass:
-				unmarshalState(Op_OldStyleClass, stream);
+			case Op_PyReduce:
+				unmarshalState(Op_PyReduce, stream);
 				MARSHALSTREAM_RETURN(ReadOldStyleClass(stream, (opcode >> 6) & 1));
 
-			case Op_NewStyleClass:
-				unmarshalState(Op_NewStyleClass, stream);
+			case Op_PyNewObj:
+				unmarshalState(Op_PyNewObj, stream);
 				MARSHALSTREAM_RETURN(ReadNewStyleClass(stream, (opcode >> 6) & 1));
 
 			case Op_PyDBRow:
@@ -634,9 +634,9 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
                 /* embeded marshal stream... not a sub stream.. 
                  * "blue.MarshalStream"
                  */
-			case Op_PySubStream:
-				unmarshalState(Op_PySubStream, stream);
-				MARSHALSTREAM_RETURN(ReadSubStream(stream));
+			case Op_PyStream:
+				unmarshalState(Op_PyStream, stream);
+				MARSHALSTREAM_RETURN(ReadStream(stream));
 
 			case Op_PyVarInteger:
 				unmarshalState(Op_PyVarInteger, stream);
@@ -1167,7 +1167,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 	MARSHALSTREAM_RETURN(packedRow);
 }
 
-PyObject* MarshalStream::ReadSubStream( ReadStream & stream )
+PyObject* MarshalStream::ReadStream( ReadStream & stream )
 {
 	uint32 size = 0;
 	if (!stream.readSizeEx(size))
@@ -1531,11 +1531,11 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			}
 			else if (val == 0)
 			{
-				return stream.writeOpcode(Op_PyZeroInteger);
+				return stream.writeOpcode(Op_PyZero);
 			}
 			else if (val == 1)
 			{
-				return stream.writeOpcode(Op_PyOneInteger);
+				return stream.writeOpcode(Op_PyOne);
 			}
 			else if ( val + 0x80u > 0xFF )
 			{
@@ -1565,7 +1565,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			PyFloat & number = *(PyFloat*)object;
 			double val = number.get_value();
 			if (val == 0.0)
-				return stream.writeOpcode(Op_PyZeroFloat);
+				return stream.writeOpcode(Op_PyFloat0);
 
 			if (!stream.writeOpcode(Op_PyFloat))
 				return false;
@@ -1722,7 +1722,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
                 uint32 ref_index = 0;
                 if ( RefFindOrInsert(object, ref_index) == true )
                 {
-                    if (!stream.writeOpcode(Op_PySavedStreamElement))
+                    if (!stream.writeOpcode(Op_PyRef))
                         return false;
                     return stream.writeSizeEx(ref_index);
                 }
@@ -1808,7 +1808,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 		{
 			PySubStream & substream = *(PySubStream*)object;
 
-			if(!stream.writeOpcode(Op_PySubStream))
+			if(!stream.writeOpcode(Op_PyStream))
 				return false;
 
 			if (!stream.writeSizeEx(substream.size()))
@@ -1825,7 +1825,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
                 uint32 ref_index = 0;
                 if ( RefFindOrInsert(object, ref_index) == true )
                 {
-                    if (!stream.writeOpcode(Op_PySavedStreamElement))
+                    if (!stream.writeOpcode(Op_PyRef))
                         return false;
                     return stream.writeSizeEx(ref_index);
                 }
@@ -1847,13 +1847,13 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
                 classObject->getDirList() == NULL
                 )
             {
-                if (!stream.writeOpcode(Op_PyModule | flag))
+                if (!stream.writeOpcode(Op_PyGlobal | flag))
                     return false;
 
                 return marshal((PyObject*)classObject->getname(), stream);
             }
 
-            if (!stream.writeOpcode(Op_PyGlobalObject | flag))
+            if (!stream.writeOpcode(Op_PyInstance | flag))
 				return false;
 			
 			if(!marshal((PyObject*)classObject->getname(), stream))

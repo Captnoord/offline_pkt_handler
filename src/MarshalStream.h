@@ -214,7 +214,7 @@ private:
 	 * @param[out]
 	 * @return
 	 */
-	ASCENT_INLINE PyObject* ReadSubStream(ReadStream & stream);
+	ASCENT_INLINE PyObject* ReadStream(ReadStream & stream);
 
 	/**
 	 * \brief
