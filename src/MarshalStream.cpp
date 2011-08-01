@@ -636,7 +636,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
                  */
 			case Op_PyStream:
 				unmarshalState(Op_PyStream, stream);
-				MARSHALSTREAM_RETURN(ReadStream(stream));
+				MARSHALSTREAM_RETURN(ReadPyStream(stream));
 
 			case Op_PyVarInteger:
 				unmarshalState(Op_PyVarInteger, stream);
@@ -1167,7 +1167,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 	MARSHALSTREAM_RETURN(packedRow);
 }
 
-PyObject* MarshalStream::ReadStream( ReadStream & stream )
+PyObject* MarshalStream::ReadPyStream( ReadStream & stream )
 {
 	uint32 size = 0;
 	if (!stream.readSizeEx(size))
