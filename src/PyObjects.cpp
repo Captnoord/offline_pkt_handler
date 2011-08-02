@@ -480,12 +480,12 @@ PyDict::~PyDict()
     for (; itr != mDict.end(); itr++)
     {
         PyDictEntry * entry = itr->second;
-        assert(entry);
-        assert(entry->key);
-        assert(entry->obj);
+        //assert(entry);
+        //assert(entry->key);
+        //assert(entry->obj);
 
-        PyDecRef(entry->key);
-        PyDecRef(entry->obj);
+        PySafeDecRef(entry->key);
+        PySafeDecRef(entry->obj);
         SafeFree(entry);
         i++;
     }
@@ -573,7 +573,6 @@ PyObject* PyDict::get_item(const char* key_name)
     PyDictEntry * entry = mDict[hsh];
     if (entry == NULL)
     {
-        ASCENT_HARDWARE_BREAKPOINT;
         entry = alloc_new_dict_entry;
         entry->key = (PyObject*)new PyString(key_name);
         entry->obj = NULL;

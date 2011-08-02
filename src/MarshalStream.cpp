@@ -1231,7 +1231,7 @@ PyObject* MarshalStream::ReadVarInteger( ReadStream & stream, BOOL shared )
 	if (shared != FALSE)
 	{
 		if (mReferencedObjectsMap.StoreReferencedObject(object) == -1)
-            ASCENT_HARDWARE_BREAKPOINT;
+            MARSHALSTREAM_RETURN_NULL;
 	}
 
 	MARSHALSTREAM_RETURN(object);
