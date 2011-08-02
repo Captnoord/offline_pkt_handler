@@ -531,6 +531,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ascent-shared\MersenneTwister.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ascent-shared\MersenneTwister.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ascent-shared\NGLog.cpp"
 				>
 			</File>

@@ -134,7 +134,6 @@ bool MachoAddress::init( PyObject* state )
     }
     else
     {
-        ASCENT_HARDWARE_BREAKPOINT;
         return false;
     }
     return true;
@@ -143,12 +142,17 @@ bool MachoAddress::init( PyObject* state )
 bool MachoAddress::repr( FILE* fp )
 {
     PyInt* addressType = (PyInt*)mDict->get_item("addressType");
+    if (!addressType || !PyNumber_Check(addressType))
+        return false;
 
     if (*addressType == ADDRESS_TYPE_CLIENT)
     {
         PyObject* _clientID =  mDict->get_item("clientID");
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
+
+        if (!PyNumber_Check(callID) || !PyString_Check(service))
+            return false;
 
         uint64 clientID = PyNumberGetValue(_clientID);
 
@@ -177,7 +181,8 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        assert(( PyInt_Check(nodeID) || PyNone_Check(nodeID)) && PyLong_Check(callID) || PyNone_Check(callID));
+        if (( !PyNumber_Check(nodeID) || !PyNone_Check(nodeID)) || (!PyNumber_Check(callID) || !PyNone_Check(callID)))
+            return false;
 
         fprintf(fp, "Address::Node(");
 
@@ -203,7 +208,8 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        assert(PyLong_Check(callID) || PyNone_Check(callID));
+        if(!PyNumber_Check(callID) || !PyNone_Check(callID))
+            return false;
 
         fprintf(fp, "Address::Any(");
 
@@ -228,7 +234,8 @@ bool MachoAddress::repr( FILE* fp )
         PyObject* narrowcast = mDict->get_item("narrowcast");
         PyString* idtype =     (PyString*)mDict->get_item("idtype");
 
-        //assert(PyString_Check(idtype) && PyString_Check(broadcastID));
+        if(!PyString_Check(idtype) || PyString_Check(broadcastID))
+            return false;
 
         fprintf(fp, "Address::BroadCast(");
 

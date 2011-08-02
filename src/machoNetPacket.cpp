@@ -81,8 +81,11 @@ bool MachoPacket::init( PyObject* state )
     if (params.size() != 0) {
 
         PyTuple* body = (PyTuple*)mDict->get_item("body");
+        if (!PyTuple_Check(body))
+            return false;
 
-        assert(params.size() == body->size());
+        if(params.size() != body->size())
+            return false;
 
         for (unsigned int i = 0; i < params.size(); i++)
         {

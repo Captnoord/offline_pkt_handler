@@ -84,9 +84,12 @@ public:
 		if (location == 0 || (location-1) > mStoredObjectCount )
 			return false;
 
+        if (mReferenceObjects.size() < location)
+            return false;
+
 		*object = mReferenceObjects[location-1];
-        if (mReferenceObjects[location-1] == NULL)
-            ASCENT_HARDWARE_BREAKPOINT;
+        if (*object == NULL)
+            return false;
 
 		return true;
 	}

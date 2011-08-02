@@ -90,6 +90,8 @@ uint32 PyLong::hash()
 		sign = -1;
 		i = -(i);
 	}
+
+    i = 8; // hack fix
 #define LONG_BIT_PyLong_SHIFT	(8*sizeof(uint32) - PyLong_SHIFT)
 	/* The following loop produces a C long x such that (unsigned long)x
 	is congruent to the absolute value of v modulo ULONG_MAX.  The
@@ -161,7 +163,6 @@ PyTuple::PyTuple( size_t elementCount ) : PyObject(PyTypeTuple)
 	if (elementCount > PY_TUPLE_ELEMENT_MAX)
 	{
 		Log.Error("PyTuple", "constructor is requested to allocate a stupid amount of elements: %d", elementCount);
-		assert(false);
 		return;
 	}
 	
@@ -239,7 +240,8 @@ PyObject* PyTuple::get_item( const int index )
 	if (index < 0)
 		return NULL;
 
-    if (index > (int)size())
+    /* if we try to get 0 and our size is 0 then return NULL */
+    if (index >= (int)size())
         return NULL;
 
     return mTuple[index];
@@ -249,7 +251,7 @@ int32 PyTuple::GetItem_asInt( const int index )
 {
     PyInt* obj = (PyInt*)get_item(index);
 
-    if (!PyInt_Check(obj))
+    if (!obj || !PyInt_Check(obj))
         return 0;
 
     return obj->get_value();
@@ -260,7 +262,7 @@ PyTuple* PyTuple::GetItem_asPyTuple( const int index )
     PyTuple* obj = (PyTuple*)get_item(index);
 
     /* throw exception? */
-    if (!PyTuple_Check(obj))
+    if (!obj || !PyTuple_Check(obj))
         return NULL;
 
     return obj;
@@ -271,7 +273,7 @@ PyList* PyTuple::GetItem_asPyList( const int index )
     PyList* obj = (PyList*)get_item(index);
 
     /* throw exception? */
-    if (!PyList_Check(obj))
+    if (!obj || !PyList_Check(obj))
         return NULL;
 
     return obj;
@@ -282,7 +284,7 @@ PyString* PyTuple::GetItem_asPyString( const int index )
     PyString* obj = (PyString*)get_item(index);
 
     /* throw exception? */
-    if (!PyString_Check(obj))
+    if (!obj || !PyString_Check(obj))
         return NULL;
 
     return obj;
@@ -293,7 +295,7 @@ PySubStream* PyTuple::GetItem_asPySubStream( const int index )
     PySubStream* obj = (PySubStream*)get_item(index);
 
     /* throw exception? */
-    if (!PySubStream_Check(obj))
+    if (!obj || !PySubStream_Check(obj))
         return NULL;
 
     return obj;
@@ -304,7 +306,7 @@ PyClass* PyTuple::GetItem_asPyClass( const int index )
     PyClass* obj = (PyClass*)get_item(index);
 
     /* throw exception? */
-    if (!PyClass_Check(obj))
+    if (!obj || !PyClass_Check(obj))
         return NULL;
 
     return obj;
@@ -547,7 +549,6 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         else
         {
             /* update/replace a already existing entry ( bit tricky ) */
-            ASCENT_HARDWARE_BREAKPOINT;
             PyDictEntry * entry = itr->second;
             PyDecRef(entry->obj);
             entry->obj = obj;

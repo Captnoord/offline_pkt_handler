@@ -83,14 +83,13 @@ bool PyMarshalStringTable::LookupString(uint8 index, std::string &str)
 bool PyMarshalStringTable::LookupPyString( uint8 index, PyString *&str )
 {
 	mLock.Acquire();
-	if (index > StringTableSize)
+	if (index > StringTableSize || index == 0)
 	{
 		*str = ""; //this is a crasher...
 		mLock.Release();
 		return false;
 	}
 
-	assert(index > 0);
 	str = &mPyStringTable[index-1];
 	PyIncRef(str);
 	mLock.Release();

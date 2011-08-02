@@ -759,6 +759,7 @@ uint64 PyNumberGetValue(PyObject* obj);
 #define PyDict_Check(op) PyObject_TypeCheck(op, PyTypeDict)
 #define PyInt_Check(op) PyObject_TypeCheck(op, PyTypeInt)
 #define PyLong_Check(op) PyObject_TypeCheck(op, PyTypeLong)
+#define PyNumber_Check(op) (PyObject_TypeCheck(op, PyTypeLong) || PyObject_TypeCheck(op, PyTypeInt))
 #define PyString_Check(op) PyObject_TypeCheck(op, PyTypeString)
 #define PyUnicode_Check(op) PyObject_TypeCheck(op, PyTypeUnicode)
 #define PyNone_Check(op) PyObject_TypeCheck(op, PyTypeNone)

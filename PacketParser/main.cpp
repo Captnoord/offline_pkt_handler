@@ -26,6 +26,7 @@
 #include "EvemuPCH.h"
 #include "FileParser.h"
 #include "ascent_getopt.h"
+#include "MersenneTwister.h"
 
 int main(int argc, char ** argv)
 {
@@ -89,6 +90,8 @@ int main(int argc, char ** argv)
 		strcpy(in_file_path,argv[1]);
 	}
 
+    InitRandomNumberGenerators();
+
     TimeMeasure stop_watch;
     stop_watch.get_time();
 
@@ -103,6 +106,8 @@ int main(int argc, char ** argv)
 		delete [] out_file_path;
 	if (in_file_path)
 		delete [] in_file_path;
+
+    CleanupRandomNumberGenerators();
 
 	//_CrtDumpMemoryLeaks();
 	//system("pause");

@@ -1,16 +1,26 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PacketParser", "PacketParser\PacketParser.vcproj", "{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OfflinePacketHandler", "PacketParser\PacketParser.vcproj", "{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Debug|Win32.ActiveCfg = Debug|Win32
 		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Debug|Win32.Build.0 = Debug|Win32
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Release|Any CPU.ActiveCfg = Release|Win32
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Release|Win32.ActiveCfg = Release|Win32
 		{174E7BD5-AD30-41DA-88B8-D5BA1EFF3297}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
