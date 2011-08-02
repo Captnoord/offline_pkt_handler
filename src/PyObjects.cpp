@@ -126,7 +126,7 @@ double PyFloat::get_value()
 // hashing a float? lol....
 uint32 PyFloat::hash()
 {
-	ASCENT_HARDWARE_BREAKPOINT;
+	return *(uint64*)&mNumber % 0xFFFFFFFF;
 }
 
 /************************************************************************/
@@ -146,7 +146,7 @@ PyBool::~PyBool()
 
 uint32 PyBool::hash()
 {
-    ASCENT_HARDWARE_BREAKPOINT;
+    return mCheck;
 }
 
 
@@ -193,7 +193,11 @@ uint32 PyTuple::hash()
     uint32 hash = 5381;
     for (int i = 0; i < (int)tuple.size(); i++)
     {
-        uint32 hashChunk = PyObject_Hash(tuple.get_item(i));
+        PyObject * obj = tuple.get_item(i);
+        if (obj == NULL)
+            return 0xFFFFFFFF;
+
+        uint32 hashChunk = PyObject_Hash(obj);
         hash = (hash << 3) + hashChunk;
     }
     return hash;
@@ -999,10 +1003,9 @@ createFileSingleton( PyBaseNone );
 
 PyBaseNone::PyBaseNone() : PyObject(PyTypeNone) {}
 
-// hash a none object? your seriouse?
+// hash a none object? your serious?
 uint32 PyBaseNone::hash()
 {
-    ASCENT_HARDWARE_BREAKPOINT;
 	return Utils::Hash::sdbm_hash("PyNone");
 }
 
