@@ -38,7 +38,7 @@
 #include "PyObjectDumper.h"
 
 /* macro's that help debugging exceptions */
-#define EVEMU_EXTRA_DEBUG
+//#define EVEMU_EXTRA_DEBUG
 #ifdef _DEBUG
 #  ifdef EVEMU_EXTRA_DEBUG
 #    define MARSHALSTREAM_RETURN_NULL {ASCENT_HARDWARE_BREAKPOINT; return NULL;}
@@ -79,7 +79,7 @@ PyObject* MarshalStream::load(ReadStream & stream)
 		return NULL;
 
 	if (checkAndInflate(stream) == false)
-		MARSHALSTREAM_RETURN_NULL;
+		return NULL;
 
 	/* second time check for byte code because its possible it was zipped */
 	if (checkForBytecode(stream) == true)
@@ -118,8 +118,11 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 	if (sharedObjectCount <= 0)
 		return true;
 
-	mReferencedObjectsMap.SetOrderMapSize(sharedObjectCount);
-	mReferencedObjectsMap.SetSharedObjectCount(sharedObjectCount);
+	if (!mReferencedObjectsMap.SetOrderMapSize(sharedObjectCount))
+        return false;
+
+	if (!mReferencedObjectsMap.SetSharedObjectCount(sharedObjectCount))
+        return false;
 	
 	size_t tReadIndex2 = stream.tell();
 	if ( (signed int)(stream.size() - tReadIndex2) / 4 < sharedObjectCount ) {
@@ -127,7 +130,8 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 		return false;
 	}
 
-	stream.setpayloadsize(stream.size() - (4 * sharedObjectCount));
+	if (!stream.setpayloadsize(stream.size() - (4 * sharedObjectCount)))
+        return false;
 
 	size_t sharedObjectIndex = stream.buffersize() - 4 * sharedObjectCount;
 
@@ -258,14 +262,6 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(&Py_ZeroStruct);
 			}
 			
-			/* seems to be uncorrect */
-			case Op_PyLongString:
-			{
-				ASCENT_HARDWARE_BREAKPOINT;
-				unmarshalState(Op_PyLongString, stream);
-				MARSHALSTREAM_RETURN(ReadBuffer(stream));
-			}
-			
 			case Op_PyEmptyString:
 			{
 				unmarshalState(Op_PyEmptyString, stream);
@@ -355,9 +351,11 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(PyUnicodeUCS2_DecodeUTF8(strptr, strlen));
 			}
 
-			case Op_PyLongString_Shared:
+            case Op_PyLongString:
+                // fall through, deprecated since machoVersion 213
+			case Op_PyBuffer:
 			{
-				unmarshalState(Op_PyLongString_Shared, stream);
+				unmarshalState(Op_PyBuffer, stream);
 				PyObject * str_obj = ReadBuffer(stream);
 				if ((opcode & 0x40) != 0)
 				{
@@ -430,7 +428,9 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				{
 					PyObject* Itr = unmarshal(stream);
 					assert(Itr != (PyObject*)&tuple);
-					tuple.set_item(i, Itr);
+
+					if (!tuple.set_item(i, Itr))
+                        MARSHALSTREAM_RETURN_NULL;
 				}
 
 				MARSHALSTREAM_RETURN(&tuple);
@@ -455,11 +455,14 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 						MARSHALSTREAM_RETURN_NULL;
 				}
 
+                PyObject* obj = unmarshal(stream);
+
 				// recursive function...
-				list.set_item(0, unmarshal(stream));
+				if (!list.set_item(0, obj))
+                    MARSHALSTREAM_RETURN_NULL;
 
                 /* check for adding self */
-				assert(list.get_item(0) != (PyObject*)&list);
+				assert(obj != (PyObject*)&list);
 
 				MARSHALSTREAM_RETURN(&list);
 			}
@@ -489,7 +492,8 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					if (obj == NULL)
 						MARSHALSTREAM_RETURN_NULL;
 
-					list.set_item(i, obj);
+					if(!list.set_item(i, obj))
+                        MARSHALSTREAM_RETURN_NULL;
 				}
 				MARSHALSTREAM_RETURN(&list);
 			}
@@ -515,9 +519,11 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 					PyObject* keyPayload = unmarshal(stream);			// Payload
 					PyObject* keyName = unmarshal(stream);				// the keyname
 
-					assert(keyName);
+                    if (keyPayload == NULL || keyName == NULL)
+                        MARSHALSTREAM_RETURN_NULL
 
-					dict.set_item(keyName, keyPayload);
+					if(!dict.set_item(keyName, keyPayload))
+                        MARSHALSTREAM_RETURN_NULL;
 
 					PyDecRef(keyPayload);
 					PyDecRef(keyName);
@@ -542,37 +548,39 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			}
 			
 			/* need to implement custom callbacks and reading stuff... but for the server this doesn't seem to usefull.. */
-			case Op_PyCallback:
-			{
-				/* Unmarshal stream contains custom data but I have no callback method */
-                ASCENT_HARDWARE_BREAKPOINT;
 
-				unmarshalState(Op_PyCallback, stream);
-				PySubStruct * obj = new PySubStruct();
-				PyObject * tobj = unmarshal(stream);
-				assert(obj->setPyObject(tobj));
-				PyDecRef(tobj);
-                // PyObject_CallFunctionObjArgs
-				
-				MARSHALSTREAM_RETURN(obj);
-			}
+// 			case Op_PyCallback:
+// 			{
+// 				/* Unmarshal stream contains custom data but I have no callback method */
+//                 ASCENT_HARDWARE_BREAKPOINT;
+// 
+// 				unmarshalState(Op_PyCallback, stream);
+// 				PySubStruct * obj = new PySubStruct();
+// 				PyObject * tobj = unmarshal(stream);
+// 				assert(obj->setPyObject(tobj));
+// 				PyDecRef(tobj);
+//                 // PyObject_CallFunctionObjArgs
+// 				
+// 				MARSHALSTREAM_RETURN(obj);
+// 			}
 
 			/**/
-			case Op_PyLoadcPickledObject:
-			{
-                ASCENT_HARDWARE_BREAKPOINT;
-				unmarshalState(Op_PyLoadcPickledObject, stream);
-				/* |extended size|stream| */
-				//MARSHALSTREAM_RETURN(PyObject_CallMethod(unpickledObject, "load", 0);
-				MARSHALSTREAM_RETURN_NULL;
-			}
-		
+// 			case Op_PyLoadcPickledObject:
+// 			{
+//                 ASCENT_HARDWARE_BREAKPOINT;
+// 				unmarshalState(Op_PyLoadcPickledObject, stream);
+// 				/* |extended size|stream| */
+// 				//MARSHALSTREAM_RETURN(PyObject_CallMethod(unpickledObject, "load", 0);
+// 				MARSHALSTREAM_RETURN_NULL;
+// 			}
+/*
 			case Op_PycPicked:
 			{
                 ASCENT_HARDWARE_BREAKPOINT;
 				unmarshalState(Op_PycPicked, stream);
 				MARSHALSTREAM_RETURN_NULL;
 			}
+*/
 
 			case Op_PyRef:
 			{
@@ -704,17 +712,17 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
     /* we assume that what we get is always valid */
     PyString * module_name = (PyString *)unmarshal(stream);
+    if (module_name == NULL)
+        MARSHALSTREAM_RETURN_NULL;
 
     PyClass* class_object = sPyCallMgr.find(module_name);
 
-    if (class_object == NULL)
-    {
+    if (class_object == NULL) {
         PyDecRef(module_name);
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    if (!PyClass_Check(class_object))
-    {
+    if (!PyClass_Check(class_object)) {
         PyDecRef(module_name);
         MARSHALSTREAM_RETURN_NULL;
     }
@@ -885,15 +893,14 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
     int shared_object_index = 0;
     //ASCENT_HARDWARE_BREAKPOINT;
 
-    if (shared != FALSE)
-    {
+    if (shared != FALSE) {
         shared_object_index = mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL);
         if(shared_object_index == -1)
-            ASCENT_HARDWARE_BREAKPOINT;
+            MARSHALSTREAM_RETURN_NULL;
     }
 
 	PyTuple * bases = (PyTuple *)unmarshal(stream);
-	if (bases == NULL)
+	if (bases == NULL || !PyTuple_Check(bases))
 		MARSHALSTREAM_RETURN_NULL;
 
     PyObject * method = bases->get_item(0);
@@ -913,9 +920,9 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
 
     PyObject* call_result = PyObject_CallObject(method, args);
 
-    if(shared)
-    {
-        mReferencedObjectsMap.UpdateReferencedObject(shared_object_index, call_result);        
+    if(shared == TRUE) {
+        if (!mReferencedObjectsMap.UpdateReferencedObject(shared_object_index, call_result))
+            MARSHALSTREAM_RETURN_NULL;
     }
 
     // if the tuple hs more than 2 elements
@@ -1004,11 +1011,16 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     {
         shared_obj_index = mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL);
         if(shared_obj_index == -1)
-            ASCENT_HARDWARE_BREAKPOINT;
+            MARSHALSTREAM_RETURN_NULL;
     }
 
     // here new code starts 
     PyTuple * object_root = (PyTuple *)unmarshal(stream);
+    if (object_root == NULL)
+        MARSHALSTREAM_RETURN_NULL;
+
+    if (!PyTuple_Check(object_root))
+        MARSHALSTREAM_RETURN_NULL;
 
     PyTuple* call_root = object_root->GetItem_asPyTuple(0);
     if (call_root == NULL)
@@ -1052,7 +1064,9 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 	packedRow = new PyPackedRow();
 	packedRow->init((PyObject*)obj1);
 
-	assert(PyClass_Check(obj1));
+	if (!PyClass_Check(obj1))
+        MARSHALSTREAM_RETURN_NULL;
+
 		
 	size_t size;
 	if (!stream.readSizeEx(size))
@@ -1084,7 +1098,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 
 		size_t guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->get_item(1));
 
-		outsize = guessedSize+200;
+		outsize = guessedSize+20;
 		size_t bufferSize = outsize;
 
 		outbuff = (uint8*)ASCENT_MALLOC(outsize);
@@ -1197,7 +1211,8 @@ PyObject* MarshalStream::ReadVarInteger( ReadStream & stream, BOOL shared )
 		MARSHALSTREAM_RETURN_NULL;
 	
 	/* we don't have big int implemented so crash if it goes crazy */
-	ASCENT_ASSERT(len <= 8);
+    if (len > 8)
+        MARSHALSTREAM_RETURN_NULL; 
 	
 	PyLong* object = NULL;
 	if(len == 0)
@@ -1227,7 +1242,8 @@ PyObject* MarshalStream::ReadClassString( ReadStream & stream, BOOL shared )
 	PyString* objectName = (PyString*)ReadBuffer(stream);
 
     PyClass* class_object = sPyCallMgr.find(objectName);
-    assert(class_object);
+    if (class_object == NULL)
+        MARSHALSTREAM_RETURN_NULL;
 	
 	if (shared != FALSE)
 	{
@@ -1472,7 +1488,7 @@ bool marshalString(const char* str, WriteStream & stream)
 	}*/
     else
     {
-        if (!stream.writeOpcode(Op_PyLongString_Shared))
+        if (!stream.writeOpcode(Op_PyBuffer))
             return false;
         if (!stream.writeSizeEx(str_len))
             return false;
@@ -1612,7 +1628,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
                 //if (object->GetRef() > 1)
                 //Op_PyLongString
 
-                if (!stream.writeOpcode(Op_PyLongString_Shared))
+                if (!stream.writeOpcode(Op_PyBuffer))
                     return false;
 
                 if (!stream.writeSizeEx(str_len))

@@ -61,27 +61,17 @@ public:
 	{
         ASCENT_HARDWARE_BREAKPOINT;
 		assert(false);
-		//if (objectCount == 0)
-			//return;
-		//assert(expectedObjectsCount < 0x100); // kinda normal..... 256 referenced objects otherwise crash
-		//mReferenceObjects = new PyObject*[expectedObjectsCount];
-		//mReferenceObjects = (PyObject**)ASCENT_MALLOC(sizeof(PyObject*) * (expectedObjectsCount+1));
 	}
 
 	~UnmarshalReferenceMap()
 	{
-		for (uint32 i = 0; i < mExpectedObjectsCount; i++)
-		{
-			PyDecRef(mReferenceObjects[i]);
-		}
+        if (mReferenceObjects.size() > 0) {
+		    for (uint32 i = 0; i < mExpectedObjectsCount; i++) {
+			    PySafeDecRef(mReferenceObjects[i]);
+		    }
+        }
 
 		mReferenceObjects.clear();
-
-		//if (mReferenceObjects)
-		//	SafeFree(mReferenceObjects);
-		//SafeDeleteArray(mReferenceObjects);
-		//SafeDelete(mReferenceObjects);
-		//delete mReferenceObjects;
 	}
 
 	/**
@@ -109,10 +99,14 @@ public:
 	template<typename T>
 	int StoreReferencedObject(T* object)
 	{
-		assert(mStoreObjectIndex < mExpectedObjectsCount);
+        if (object == NULL)
+            return -1;
+
+        if (mExpectedObjectsCount == 0)
+            return -1;
+
 		if (mStoreObjectIndex > mExpectedObjectsCount)
-			return (int)-1;
-		
+			return -1;
 
 		uint32 objectloc = mOrderMap[mStoreObjectIndex] - 1;
 		assert(objectloc >= 0);
@@ -167,9 +161,12 @@ public:
 		return mExpectedObjectsCount;
 	}
 
-	void SetOrderMapSize(int size)
+	bool SetOrderMapSize(int size)
 	{
+        if (size > 0x1000)
+            return false;
 		mOrderMap.resize(size+1);
+        return true;
 	}
 
 	void SetObjectOrder(int index, int order)
@@ -184,8 +181,10 @@ public:
 	 *
 	 * @param[in]
 	 */
-	void SetSharedObjectCount(uint32 sharedObjectCount)
+	bool SetSharedObjectCount(uint32 sharedObjectCount)
 	{
+        if (sharedObjectCount > 0x1000)
+            return false;
 		// this shouldn't happen and if it does.. this prop will generate a crash...
 		//if(mReferenceObjects != NULL)
 		//	SafeFree(mReferenceObjects)
@@ -197,6 +196,7 @@ public:
 		//mReferenceObjects = new PyObject*[expectedObjectsCount+1];
 		//mReferenceObjects = (PyObject**)ASCENT_MALLOC(sizeof(PyObject*) * (expectedObjectsCount+1));
 		mExpectedObjectsCount = sharedObjectCount;
+        return true;
 	}
 
 protected:

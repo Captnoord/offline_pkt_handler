@@ -48,7 +48,7 @@ typedef enum _PyRepOpcodes
 	Op_PyShortString		= 0x10u,	//16
 	Op_PyStringTableItem	= 0x11u,	//17
 	Op_PyUnicodeString		= 0x12u,	//18	| full unicode string
-	Op_PyLongString_Shared	= 0x13u,	//19
+	Op_PyBuffer	            = 0x13u,	//19
 	Op_PyTuple				= 0x14u,	//20
 	Op_PyList				= 0x15u,	//21
 	Op_PyDict				= 0x16u,	//22

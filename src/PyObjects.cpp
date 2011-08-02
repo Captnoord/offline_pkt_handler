@@ -182,7 +182,7 @@ void PyTuple::clear()
 {
 	iterator itr = mTuple.begin();
 	for (; itr != mTuple.end(); itr++)
-		PyDecRef(*itr);
+		PySafeDecRef(*itr);
 
     mTuple.clear();
 }
@@ -310,6 +310,9 @@ bool PyTuple::set_item( const int index, PyObject *object )
 {
 	if (index < 0)
 		return false;
+
+    if (object == NULL)
+        return false;
 
     /* object stored at index 0 is the first object so size = 1 */
     if (index+1 > (int)size()) 
@@ -443,6 +446,9 @@ bool PyList::clear()
 
 bool PyList::set_item( size_t index, PyObject* obj )
 {
+    if (obj == NULL)
+        return false;
+
     /* we have to check if we already have a object at the index position */
     PyObject* tobj = mList[index];
 
@@ -456,7 +462,7 @@ bool PyList::set_item( size_t index, PyObject* obj )
 PyObject* PyList::get_item( size_t index )
 {
     /* return NULL because I don't want to  */
-    if (index > mList.size())
+    if (index > mList.size() || index < 0)
         return NULL;
 
     return mList[index];
@@ -496,10 +502,7 @@ size_t PyDict::size()
 bool PyDict::set_item( PyObject* key, PyObject* obj )
 {
     if (key == NULL || obj == NULL)
-    {
-        ASCENT_HARDWARE_BREAKPOINT;
         return false;
-    }
 
     /*if (key->GetType() == PyTypeNone || obj->GetType() == PyTypeNone)
     {

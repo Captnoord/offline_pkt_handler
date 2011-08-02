@@ -96,10 +96,7 @@ static PyUnicodeUCS2* PyUnicodeUCS2_DecodeUTF8(const char* str, size_t len)
 	size_t newSize = mbstowcs(retstr->content(), str, nlen);
 	retstr->content()[nlen] = '\0';
 	
-	if (newSize != nlen)
-	{
-		// check if this ever happens
-		ASCENT_HARDWARE_BREAKPOINT;
+	if (newSize != nlen) {
 		PyDecRef(retstr);
 		return NULL;
 	}
@@ -109,7 +106,7 @@ static PyUnicodeUCS2* PyUnicodeUCS2_DecodeUTF8(const char* str, size_t len)
 
 static PyObject *PyUnicode_AsUTF8String(PyObject *unicode)
 {
-	if (unicode == NULL || unicode->GetType() != PyTypeUnicode)
+	if (unicode == NULL || !PyUnicode_Check(unicode))
 		return NULL;
 
 	PyUnicodeUCS2 * str = (PyUnicodeUCS2 *)unicode;
@@ -119,10 +116,7 @@ static PyObject *PyUnicode_AsUTF8String(PyObject *unicode)
 		
 	size_t ret_len = wcstombs((char*)&res->content()[0], str->content(), str->size());
 
-	if (ret_len != str->size())
-	{
-		// check if this ever happens
-		ASCENT_HARDWARE_BREAKPOINT;
+	if (ret_len != str->size()) {
 		PyDecRef(res);
 		return NULL;
 	}

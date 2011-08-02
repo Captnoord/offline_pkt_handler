@@ -95,6 +95,9 @@ PyClass* CallMgr::find( const char* module )
         ASCENT_HARDWARE_BREAKPOINT;
     */
 
+    if (module == NULL)
+        return NULL;
+
     CallMapItr itr = mCallMap.find(module);
     if (itr != mCallMap.end()) {
 
@@ -104,12 +107,17 @@ PyClass* CallMgr::find( const char* module )
     } else {
 
         printf("unable to find module: %s\n", module);
-        ASCENT_HARDWARE_BREAKPOINT;
         return NULL;
     }
 }
 
 PyClass* CallMgr::find( PyString* module )
 {
+    if (module == NULL)
+        return NULL;
+
+    if (!PyString_Check(module))
+        return NULL;
+
     return find(module->content());
 }

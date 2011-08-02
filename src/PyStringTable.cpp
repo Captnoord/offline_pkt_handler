@@ -85,7 +85,6 @@ bool PyMarshalStringTable::LookupPyString( uint8 index, PyString *&str )
 	mLock.Acquire();
 	if (index > StringTableSize)
 	{
-		ASCENT_HARDWARE_BREAKPOINT;
 		*str = ""; //this is a crasher...
 		mLock.Release();
 		return false;

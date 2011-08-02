@@ -48,6 +48,8 @@ enum PyType
 #define PyIncRef(x) (x)->IncRef();
 #define PyDecRef(x) (x)->DecRef();
 
+#define PySafeDecRef(x) if ((x) != NULL) PyDecRef(x)
+
 class PyInt;
 class PyDict;
 class PyList;
@@ -79,7 +81,7 @@ typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 class PyObject
 {
 public:
-    PyObject(PyType type);
+    inline PyObject(PyType type);
     virtual ~PyObject();
     virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
     virtual size_t size()
@@ -111,8 +113,8 @@ public:
     }; // most objects have a size function....
 
 	uint8 GetType();
-	void IncRef();
-	void DecRef();
+	inline void IncRef();
+	inline void DecRef();
     size_t GetRef();
 
 private:
@@ -758,6 +760,7 @@ uint64 PyNumberGetValue(PyObject* obj);
 #define PyInt_Check(op) PyObject_TypeCheck(op, PyTypeInt)
 #define PyLong_Check(op) PyObject_TypeCheck(op, PyTypeLong)
 #define PyString_Check(op) PyObject_TypeCheck(op, PyTypeString)
+#define PyUnicode_Check(op) PyObject_TypeCheck(op, PyTypeUnicode)
 #define PyNone_Check(op) PyObject_TypeCheck(op, PyTypeNone)
 
 
