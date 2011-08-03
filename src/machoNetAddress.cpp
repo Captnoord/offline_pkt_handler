@@ -151,7 +151,7 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if (!PyNumber_Check(callID) || !PyString_Check(service))
+        if (!callID || !service || !PyNumber_Check(callID) || !PyString_Check(service))
             return false;
 
         uint64 clientID = PyNumberGetValue(_clientID);
@@ -181,7 +181,7 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if (( !PyNumber_Check(nodeID) || !PyNone_Check(nodeID)) || (!PyNumber_Check(callID) || !PyNone_Check(callID)))
+        if (!nodeID || !callID || !PyNumber_Check(nodeID) || !PyNone_Check(nodeID) || !PyNumber_Check(callID) || !PyNone_Check(callID))
             return false;
 
         fprintf(fp, "Address::Node(");
@@ -208,7 +208,7 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if(!PyNumber_Check(callID) || !PyNone_Check(callID))
+        if(!callID || !PyNumber_Check(callID) || !PyNone_Check(callID))
             return false;
 
         fprintf(fp, "Address::Any(");
@@ -234,7 +234,7 @@ bool MachoAddress::repr( FILE* fp )
         PyObject* narrowcast = mDict->get_item("narrowcast");
         PyString* idtype =     (PyString*)mDict->get_item("idtype");
 
-        if(!PyString_Check(idtype) || PyString_Check(broadcastID))
+        if(!idtype || !PyString_Check(idtype) || !broadcastID || !PyString_Check(broadcastID))
             return false;
 
         fprintf(fp, "Address::BroadCast(");
