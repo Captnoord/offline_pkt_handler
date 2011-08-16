@@ -25,7 +25,7 @@
 #include "Common.h"
 #include "CThreads.h"
 
-CThread::CThread() : ThreadContext()
+CThread::CThread() : ThreadContext(), ThreadId(0)
 {
 	ThreadState = THREADSTATE_AWAITING;
 	start_time  = 0;

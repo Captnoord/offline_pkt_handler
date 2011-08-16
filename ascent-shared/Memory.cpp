@@ -25,8 +25,6 @@
 
 #include "Common.h"
 
-#include "../Tools/DbgHeap/DbgHeap.h"
-
 //#ifndef DBG_HEAP_CHECK
 //#define DBG_HEAP_CHECK
 /*

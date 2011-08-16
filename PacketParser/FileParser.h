@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "machoNetPacket.h"
+#include "MersenneTwister.h"
 
 FILE* fp_in;
 FILE* fp_out;
@@ -70,7 +71,7 @@ uint64 Getuint64()
 
 char* GetBuffer(size_t len)
 {
-	char* buff = (char*)ASCENT_MALLOC(len);
+	char* buff = static_cast<char*>(ASCENT_MALLOC(len));
 	assert(buff);
 	fread(buff, len,1,fp_in);
 	return buff;
@@ -205,6 +206,13 @@ bool _GetTransports( PyObject* address, std::vector<MachoTransport*> &transport 
     return true;
 }
 
+void randmize(char* in, size_t len)
+{
+    for (size_t  i = 0; i < len; i++) {
+        in[i] = RandomUInt(10) + 1;
+    }
+}
+
 void HandleFile(const char* in_file_path, const char* out_file_path)
 {
 	std::string out_path;
@@ -236,9 +244,14 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 		int length = Getint32();
 		char* packetBuf = GetBuffer(length);
 
+        //int offset = rand() % length;
+
+        // hmmm fuckup testing...
+        //randmize(packetBuf + offset, length - offset);
+
 		//fprintf(fp_out, "\n{%s} FileOffset:0x%X, Packet Nr:%u, length:%u, time:%u\n\n", (direction ? "SERVER" : "CLIENT"), FileOffset, i, length, uint32(timestamp & 0xFFFFFFFF));
 
-        fprintf(fp_out, "\n\n");
+        //fprintf(fp_out, "\n\n");
 		
 		ReadStream readstream(packetBuf, length);
         MarshalStream stream;
@@ -257,6 +270,7 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 			DumpObject(fp_out, henk);
 			PyDecRef(henk);
 		}
+        
 
 		ASCENT_FREE(packetBuf);
 		

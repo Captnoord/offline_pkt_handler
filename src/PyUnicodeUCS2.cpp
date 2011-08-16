@@ -30,20 +30,20 @@
 /* Py Unicode object                                                    */
 /************************************************************************/
 PyUnicodeUCS2::PyUnicodeUCS2() : PyObject(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0) {}
-PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str) : PyObject(PyTypeUnicode), mStrLen(0), mStr(NULL), mHashValue(0)
+PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str) : PyObject(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0)
 {
 	size_t len = wcslen(str);
-	set(str, len);
+	(void)set(str, len);
 }
 
-PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str, size_t len) : PyObject(PyTypeUnicode), mStr(NULL), mHashValue(0)
+PyUnicodeUCS2::PyUnicodeUCS2(const wchar_t* str, const size_t len) : PyObject(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	set(str, len);
+	(void)set(str, len);
 }
 
-PyUnicodeUCS2::PyUnicodeUCS2(std::wstring& str) : PyObject(PyTypeUnicode), mStr(NULL), mHashValue(0)
+PyUnicodeUCS2::PyUnicodeUCS2(const std::wstring& str) : PyObject(PyTypeUnicode), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	set(str.c_str(), str.length());
+	(void)set(str.c_str(), str.length());
 }
 
 PyUnicodeUCS2::~PyUnicodeUCS2()
@@ -67,11 +67,9 @@ bool PyUnicodeUCS2::set( const wchar_t* str, size_t len )
 bool PyUnicodeUCS2::resize(size_t newsize)
 {
 	if (mStr != NULL)
-		mStr = (wchar_t*)ASCENT_REALLOC(mStr,(newsize+1) * 2);
+		mStr = static_cast<wchar_t*>(ASCENT_REALLOC(mStr,(newsize+1) * 2));
 	else
-		mStr = (wchar_t*)ASCENT_MALLOC((newsize+1) * 2);
-
-	mStrLen = newsize;
+		mStr = static_cast<wchar_t*>(ASCENT_MALLOC((newsize+1) * 2));
 
 	if (mStr == NULL)
 	{
@@ -79,15 +77,17 @@ bool PyUnicodeUCS2::resize(size_t newsize)
 		return false;
 	}
 
+    mStrLen = newsize;
+
 	return true;
 }
 
-wchar_t* PyUnicodeUCS2::content()
+wchar_t* PyUnicodeUCS2::content() const
 {
 	return mStr;
 }
 
-size_t PyUnicodeUCS2::size()
+size_t PyUnicodeUCS2::size() const
 {
 	return mStrLen;
 }
@@ -103,8 +103,6 @@ uint32 PyUnicodeUCS2::hash()
 			mHashValue = Utils::Hash::sdbm_hash("PyUnicodeUCS2::EmptyString");
 		return mHashValue;
 	}
-	else
-	{
-		return mHashValue;
-	}
+
+    return mHashValue;
 }

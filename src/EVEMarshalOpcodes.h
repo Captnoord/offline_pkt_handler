@@ -31,7 +31,6 @@ typedef enum _PyRepOpcodes
 	Op_PyNone				= 0x01u,	//1
 	Op_PyGlobal		        = 0x02u,	//2		usually a type, function or class object, but just the name,
                                         //      so it has to exist for this to decode properly.
-
 	Op_PyLongLong			= 0x03u,	//3
 	Op_PyLong				= 0x04u,	//4
 	Op_PySignedShort		= 0x05u,	//4

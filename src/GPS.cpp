@@ -23,7 +23,7 @@ bool exceptionsGPSTransportClosed::init( PyObject* state )
     if (!PyTuple_Check(state))
         return false;
 
-    PyTuple * pState = (PyTuple*)state;
+    //PyTuple * pState = (PyTuple*)state;
 
     // TODO: add item count check...
 

@@ -26,15 +26,13 @@
 #include "Common.h"
 #include "WriteStream.h"
 
-WriteStream::WriteStream() : mWriteIndex(0), mSize(WS_DEFAULT_BUFF_SIZE)
+WriteStream::WriteStream() : mWriteIndex(0), mSize(WS_DEFAULT_BUFF_SIZE), mBuffer(static_cast<uint8*>(ASCENT_MALLOC(mSize)))
 {
-	mBuffer = (uint8*)ASCENT_MALLOC(mSize);
 	ASCENT_ASSERT(mBuffer);
 }
 
-WriteStream::WriteStream( size_t len ) : mWriteIndex(0), mSize(len)
+WriteStream::WriteStream( const size_t len ) : mWriteIndex(0), mSize(len), mBuffer(static_cast<uint8*>(ASCENT_MALLOC(mSize)))
 {
-	mBuffer = (uint8*)ASCENT_MALLOC(mSize);
 	ASCENT_ASSERT(mBuffer);
 }
 
@@ -45,23 +43,24 @@ WriteStream::~WriteStream()
 
 bool WriteStream::writeOpcode( uint8 opcode )
 {
-	reserve(1);
+	if (!reserve(1))
+        return false;
+
 	mBuffer[mWriteIndex++] = opcode;
 	return true;
 }
 
-bool WriteStream::writeSizeEx( size_t size )
+bool WriteStream::writeSizeEx( size_t size_ex )
 {
-	bool resizeBuffSuccess = reserve(1);
-    if ( resizeBuffSuccess == false )
+    if ( !reserve(1) )
         return false;
 
-	if (size > 0xFE)
+	if (size_ex > 0xFE)
 	{
 		mBuffer[mWriteIndex++] = uint8(-1);
-		if ( reserve(4) == true )
+		if ( reserve(4) )
 		{
-			*((uint32*)(&mBuffer[mWriteIndex])) = (uint32)size;
+			*((uint32*)(&mBuffer[mWriteIndex])) = (uint32)size_ex;
 			mWriteIndex+=4;
 			return true;
 		}
@@ -72,12 +71,12 @@ bool WriteStream::writeSizeEx( size_t size )
 	}
 	else
 	{
-		mBuffer[mWriteIndex++] = (uint8)size;
+		mBuffer[mWriteIndex++] = (uint8)size_ex;
 		return true;
 	}
 }
 
-size_t WriteStream::tell()
+const size_t WriteStream::tell() const
 {
 	return mWriteIndex;
 }
@@ -103,15 +102,13 @@ bool WriteStream::seek( int32 offset, int origin )
 		} return true;
 	case SEEK_END:
 		{
-			if (mSize - offset >= 0)
+			if (int32(mSize) - offset >= 0)
 				mWriteIndex = mSize - offset;
 			else
 				return false;
 		} return true;
 	default:
-		{
-			ASCENT_ASSERT(false);
-		} return false;
+        return false;
 	}
 }
 
@@ -120,30 +117,30 @@ bool WriteStream::write( const char* buffer, const size_t len )
 	if (buffer == NULL || len <= 0)
 		return false;
 
-	if (reserve(len) == false)
+	if (!reserve(len))
 		return false;
 	
-	uint8* dest = &mBuffer[mWriteIndex];
+	void* dest = static_cast<void*>(&mBuffer[mWriteIndex]);
 	ASCENT_MEMCPY(dest, buffer, len);
 	mWriteIndex+=len;
 	return true;
 }
 
-bool WriteStream::reserve( size_t size )
+bool WriteStream::reserve( const size_t reserve_len )
 {
 	/* if the current allocated amount of memory is enough */
-	if (mSize > mWriteIndex + size)
+	if (mSize > mWriteIndex + reserve_len)
 		return true;
 
 	/* @todo plan nice memory tricks here */
-	mSize = mWriteIndex + size;
-	mBuffer = (uint8*)ASCENT_REALLOC(mBuffer, mSize);
+	mSize = mWriteIndex + reserve_len;
+	mBuffer = static_cast<uint8*>(ASCENT_REALLOC(mBuffer, mSize));
 	if (mBuffer == NULL)
 		return false;
 	return true;
 }
 
-bool WriteStream::insert( uint8* buff, size_t buff_len, size_t index )
+bool WriteStream::insert( const uint8* buff, size_t buff_len, size_t index )
 {
     size_t data_size = size();
 
@@ -152,7 +149,7 @@ bool WriteStream::insert( uint8* buff, size_t buff_len, size_t index )
         return false;
 
     /* the amount of data that needs to be moved */
-    size_t delta_size = data_size - index;
+    const int delta_size = data_size - index;
 
     /* shouldn't be able to move negative count of data */
     if (delta_size < 0)
@@ -162,8 +159,8 @@ bool WriteStream::insert( uint8* buff, size_t buff_len, size_t index )
     if(reserve(buff_len) == false)
         return false;
 
-    uint8* begin = &mBuffer[index];
-    uint8* delta = &mBuffer[index + buff_len];
+    void* begin = static_cast<void*>(&mBuffer[index]);
+    void* delta = static_cast<void*>(&mBuffer[index + buff_len]);
 
     /* check if the source and destination is valid */
     if (begin == NULL || delta == NULL)
@@ -190,7 +187,7 @@ size_t WriteStream::size()
 	return mWriteIndex;
 }
 
-size_t WriteStream::allocatedsize()
+size_t WriteStream::allocatedsize() const
 {
 	return mSize;
 }

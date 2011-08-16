@@ -29,11 +29,13 @@
 /**
  * \class MarshalStream
  *
- * @brief this class is a wrapper for the serialization and deserialization of the python marshal protocol.
+ * @brief this class is a wrapper for the serialization and deserialization of the eve-
+ * online python marshal protocol.
  *
- * This class is a wrapper for the serialization and deserialization of the python marshal protocol.
- * For the moment the deserialization is quite complete but not perfect. The serialization still needs
- * loads of love and care but eventually it will get there.
+ * This class is a wrapper for the serialization and deserialization of the eve online
+ * python marshal protocol. For the moment the deserialization is quite complete but not
+ * perfect. The serialization still needs loads of love and care but eventually it will
+ * get there.
  *
  * @author Captnoord
  * @date March 2009
@@ -41,13 +43,12 @@
 class MarshalStream
 {
 public:
+    /** ctor & dtor */
 	MarshalStream();
 	~MarshalStream();
 
 	/**
 	 * \brief load loads and deserializes a marshal stream into python objects.
-	 *
-	 * 
 	 *
 	 * @param[in] stream a data stream containing the serialized data.
 	 * @return the deserialized object or NULL when something went wrong.
@@ -57,18 +58,16 @@ public:
 	/**
 	 * \brief save deserializes a PyObject into a marshal stream.
 	 *
-	 * 
-	 *
 	 * @param[in] object is the python object that requires to be serialized.
 	 * @param[out] stream is the data stream containing the serialized object.
 	 * @return true if successful and false when something went wrong.
 	 */
 	bool save(PyObject * object, WriteStream & stream);
 
-	/* common packet python variable that needs to be public, I think */
+	/* common packet python variable that needs to be public */
 	PyBaseNone PyNone;
 
-protected:
+private:
 	
 	/* common packet python variables */
 	PyInt PyIntZero;
@@ -85,7 +84,6 @@ protected:
 	/* container to keep track of the referenced objects */
 	UnmarshalReferenceMap mReferencedObjectsMap;
 
-private:
 	/**
 	 * \brief unmarshal this function deserializes the python stream.
 	 *
@@ -99,7 +97,7 @@ private:
 	/**
 	 * \brief marshal this function attempts to serialize the python objects to a data stream.
 	 *
-	 * 
+	 * this function serializes the objects to a data stream.
 	 *
 	 * @param[in] object is the object that needs to be serialized.
 	 * @param[out] stream is the data stream that contains the serialized object.
@@ -139,10 +137,10 @@ private:
 	bool ReadMarshalHeader(ReadStream & stream);
 
 	/**
-	 * @brief ReadClassString reads the interface string and returns its instance.
+	 * @brief ReadClassString reads the class id string and returns a instance of it.
 	 * 
-	 * ReadClassString is actually a function that needs to read the string and find the
-	 * global interface instance and return it.
+	 * ReadClassString is a function that reads the class name string and find the
+	 * instance of it and returns a new instance.
 	 *
 	 * @param[in] stream the data stream.
 	 * @param[in] shared is the object this is true, meaning it should be saved.
@@ -151,111 +149,92 @@ private:
 	ASCENT_INLINE PyObject* ReadClassString(ReadStream & stream, BOOL shared);
 
 	/**
-	 * \brief
+	 * \brief ReadGlobalInstance reads what seems like a global instance of a object.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[in] shared is the object this is true, meaning it should be saved.
+	 * @return the deserialized object and NULL if it failed.
+     * @todo check the 'reverence' project about handling this one.
 	 */
 	ASCENT_INLINE PyObject* ReadGlobalInstance(ReadStream & stream, BOOL shared);
 
     /**
-    * \brief
-    *
-    * 
-    *
-    * @param[in]
-    * @param[out]
-    * @return
-    */
+     * \brief ReadInstancedClass reads a static instance of a python class
+     *
+     * @param[in] stream the data stream.
+     * @param[in] shared is the object this is true, meaning it should be saved.
+	 * @return the deserialized object and NULL if it failed.
+     */
     ASCENT_INLINE PyObject* ReadInstancedClass(ReadStream & stream, BOOL shared);
 
 	/**
-	 * \brief
+	 * \brief ReadReducedClass reads reduced python class from the data stream and
+	 * uses it to initiate a instance of that class.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[in] shared is the object this is true, meaning it should be saved.
+	 * @return the deserialized object and NULL if it failed.
 	 */
-	ASCENT_INLINE PyObject* ReadOldStyleClass(ReadStream & stream, BOOL shared);
+	ASCENT_INLINE PyObject* ReadReducedClass(ReadStream & stream, BOOL shared);
 
 	/**
-	 * \brief
+	 * \brief ReadNewStyleClass reads a new style python class and uses it to
+	 * initiate a instance of that class.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[in] shared is the object this is true, meaning it should be saved.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE PyObject* ReadNewStyleClass(ReadStream & stream, BOOL shared);
 
 	/**
-	 * \brief
+	 * \brief ReadPackedRow reads a packed db row from the data stream.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE PyObject* ReadPackedRow(ReadStream & stream);
 
 	/**
-	 * \brief
+	 * \brief ReadPyStream reads a embeded marshal stream from the data stream.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE PyObject* ReadPyStream(ReadStream & stream);
 
 	/**
-	 * \brief
+	 * \brief ReadVarInteger reads a variable size integer from the data stream.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[in] shared is the object this is true, meaning it should be saved.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE PyObject* ReadVarInteger(ReadStream & stream, BOOL shared);
 
 	/**
 	 * \brief ReadBuffer reads the SizeEx chunk of the stream and reads the string accordingly.
 	 *
-	 * 
-	 *
-	 * @param[in] 
+     * @param[in] stream the data stream.
 	 * @return a PyString pointer if successful and NULL if it wasn't.
 	 */
 	ASCENT_INLINE PyObject* ReadBuffer(ReadStream & stream);
 
 	/**
-	 * \brief
+	 * \brief ReadNewObjDict reads all the PyClass list entries from the stream.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[out] obj the object where the list entries are stored in.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE bool ReadNewObjList(ReadStream & stream, PyClass & obj);
 
 	/**
-	 * \brief
+	 * \brief ReadNewObjDict reads all the PyClass dict entries from the stream.
 	 *
-	 * 
-	 *
-	 * @param[in]
-	 * @param[out]
-	 * @return
+     * @param[in] stream the data stream.
+     * @param[out] obj the object where the dict entries are stored in.
+	 * @return the deserialized object and NULL if it failed.
 	 */
 	ASCENT_INLINE bool ReadNewObjDict(ReadStream & stream, PyClass & obj);
 
@@ -271,14 +250,14 @@ private:
 	 */
 	ASCENT_INLINE bool WriteVarInteger(WriteStream& stream, PyObject* number);
 
-	/** ZLIB utility buffer
-	 */
-	uint8 *zlibworkbuffer;
-
-    /* |HASH|ReferenceIndex| */
-    std::tr1::unordered_map<uint32, uint32> mMarshalReferenceMap;
+    /* ReferenceIndexMap
+     * this stores and keeps track of shared objects within a marshal stream.
+     */
     typedef std::tr1::unordered_map<uint32, uint32> MARSHAL_REF_MAP;
     typedef MARSHAL_REF_MAP::iterator RefMapItr;
+
+    MARSHAL_REF_MAP mMarshalReferenceMap;
+
     /** object reference index counter */
     uint32 mMarshalReferenceCounter;
 
@@ -299,7 +278,12 @@ private:
         {
             mMarshalReferenceCounter++; // create a new reference index number.
             mMarshalReferenceMap.insert(std::make_pair(obj_hash, mMarshalReferenceCounter));
-            index = -1; // I haven't got a clue if we need this number.... lol can't remember
+
+            /* we return -1 here because we have inserted a new shared object into the map.
+             * -1 means that we don't need todo special things with it.
+             */
+            index = -1;
+
             return false;
         }
         else
@@ -310,8 +294,6 @@ private:
         }
         /* unreached */
     }
-
-    //mMarshalReferenceMap
 };
 
 #endif //_MARSHALSTREAM_H

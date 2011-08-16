@@ -60,9 +60,9 @@ bool PyString::set(const char* str, size_t len)
 		return false;
 
 	if (mStr != NULL)
-		mStr = (char*)ASCENT_REALLOC(mStr, len+1);
+		mStr = static_cast<char*>(ASCENT_REALLOC(mStr, len+1));
 	else
-		mStr = (char*)ASCENT_MALLOC(len+1);
+		mStr = static_cast<char*>(ASCENT_MALLOC(len+1));
 
 	mStrLen = len;
 	
@@ -144,9 +144,9 @@ bool PyString::resize( size_t size )
 	mStrLen = size;
 
 	if (mStr != NULL)
-		mStr = (char*)ASCENT_REALLOC(mStr, mStrLen+1);
+		mStr = static_cast<char*>(ASCENT_REALLOC(mStr, mStrLen+1));
 	else
-		mStr = (char*)ASCENT_MALLOC(mStrLen+1);
+		mStr = static_cast<char*>(ASCENT_MALLOC(mStrLen+1));
 
 	if (mStr == NULL)
 		return false;

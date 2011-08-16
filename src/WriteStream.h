@@ -49,7 +49,7 @@ public:
 	/** 
 	 * Constructor.
 	 */
-	WriteStream(size_t len);
+	WriteStream(const size_t len);
 
 	/** 
 	 * Destructor.
@@ -150,12 +150,12 @@ public:
 	/**
 	 * returns the amount of allocated memory.
 	 */
-	size_t allocatedsize();
+	size_t allocatedsize() const;
 
 	/**
 	 * returns the current write index.
 	 */
-	size_t tell();
+	const size_t tell() const;
 
 	/**
 	 * allows to change the write index in a similar way as fseek.
@@ -171,12 +171,12 @@ public:
 	 * inserts data into a already existing data stream.
 	 * @todo optimize this function, the hack implementation uses a extra temp buffer which can be removed.
 	 */
-	bool insert(uint8* buff, size_t buff_len, size_t index);
+	bool insert(const uint8* buff, size_t buff_len, size_t index);
 
 	/**
 	 * reserve a amount of mem on top of the current buffer size.
 	 */
-	bool reserve(size_t size);
+	bool reserve(const size_t size);
 private:
 	/** write index */
 	size_t mWriteIndex;

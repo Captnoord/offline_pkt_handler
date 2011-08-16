@@ -27,15 +27,17 @@
 #include "DBRowModule.h"
 #include "PyObjectDumper.h"
 
-struct sortInfo
+class sortInfo
 {
-	sortInfo(){}
+public:
+    sortInfo() : typeSize(0), index(0) {}
 	sortInfo(uint8 xtypeSize, uint32 xindex)
 	{
 		typeSize = xtypeSize;
 		index = xindex;
 	}
 
+/* not protected for a reason */
 	uint8 typeSize;
 	uint32 index;
 };
@@ -81,7 +83,6 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 	{
 		PyTuple& field = *tuple.GetItem_asPyTuple(i);
 		uint32 type = field.GetItem_asInt(1);
-		uint32 index = i;
 
 		henk[i].index = i;
 		henk[i].typeSize = (uint8)GetFieldSizeFromType(type);

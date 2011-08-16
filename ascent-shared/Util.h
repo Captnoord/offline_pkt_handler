@@ -324,7 +324,7 @@ public:
 	 * @param[in] len the size of the string.
 	 * @return djb2 hash of the string.
 	 */
-	static uint32 djb2_hash(const char* str, int len)
+	static uint32 djb2_hash(const char* str, const int len)
 	{
 		uint32 hash = 5381;
 		int c, i;
@@ -405,7 +405,7 @@ public:
 	* @param[in] len length of the string that needs to be hashed.
 	* @return sdbm hash of the string.
 	*/
-	static uint32 sdbm_hash(const char *str, int len)
+	static uint32 sdbm_hash(const char *str, const int len)
 	{
 		uint32 hash = 0;
 		int c;

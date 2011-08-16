@@ -777,7 +777,7 @@ PySubStream::PySubStream( uint8* data, size_t len ) : PyObject(PyTypeSubStream),
 		return;
 
 	mLen = len;
-	mData = ASCENT_MALLOC(mLen+1);
+	mData = static_cast<void*>(ASCENT_MALLOC(mLen+1));
 	ASCENT_MEMCPY(mData, data, mLen);
 }
 
@@ -796,9 +796,9 @@ uint8* PySubStream::content()
 bool PySubStream::set( uint8 * data, size_t len )
 {
 	if (mData != NULL)
-		mData = ASCENT_REALLOC(mData, len+1);
+		mData = static_cast<void*>(ASCENT_REALLOC(mData, len+1));
 	else
-		mData = ASCENT_MALLOC(len+1);
+		mData = static_cast<void*>(ASCENT_MALLOC(len+1));
 	
 	if (mData == NULL)
 	{
@@ -826,12 +826,11 @@ uint32 PySubStream::hash()
 /************************************************************************/
 /* PyClass                                                              */
 /************************************************************************/
-PyClass::PyClass( const char* class_name ) : PyObject( PyTypeClass ), mDict( new PyDict() ), mName( new PyString( class_name ) ), mBases(NULL), mWeakRefList(NULL), mInDict(NULL)
-{
-}
+PyClass::PyClass( const char* class_name ) : PyObject( PyTypeClass ), mDict( new PyDict() ), mName( new PyString( class_name ) ), mBases(NULL), mWeakRefList(NULL), mInDict(NULL) {}
 
 PyClass::~PyClass()
 {
+    printf("~PyClass\n");
 	if (mName)
 	{
 		PyDecRef(mName);
@@ -1013,7 +1012,7 @@ uint32 PyBaseNone::hash()
 /************************************************************************/
 /* PyPackedRow                                                          */
 /************************************************************************/
-PyPackedRow::PyPackedRow() : PyObject(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0), mFlowers( new PyList() ) {}
+PyPackedRow::PyPackedRow() : PyObject(PyTypePackedRow), mHeader(NULL), mRawFieldData(NULL), mRawFieldDataLen(0), mFlowers( new PyList() ), rawPayLoad(NULL) {}
 
 PyPackedRow::~PyPackedRow()
 {
@@ -1117,7 +1116,7 @@ bool PyPackedRow::init( PyObject* header )
 	}
 	else
 	{
-		argumentCount = 1; // I have no clue
+		argumentCount = 1;
 	}
 
 	//mHeader = header;
@@ -1129,8 +1128,7 @@ PyObject* PyPackedRow::GetFieldObject( int index )
 {
 	PyTuple & fieldHelper = *rawPayLoad;
 	PyObject * res = fieldHelper.get_item(index);
-	//f ()
-	return 0;
+	return res;
 }
 
 PyObject* PyPackedRow::GetLeaf( int i )
@@ -1194,9 +1192,14 @@ uint32 PyObject_Hash( PyObject* obj )
 // now we are assuming they always call init and new...
 PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )
 {
-    assert(callable_object);
-    assert(args);
+    if (callable_object == NULL)
+        return NULL;
+
+    if(args == NULL)
+        return NULL;
+    
     PyClass * pClass = (PyClass *)callable_object;
+
     PyClass * pNewClass = pClass->New();
     pNewClass->init(args);
     return pNewClass;
@@ -1211,4 +1214,20 @@ uint64 PyNumberGetValue(PyObject* obj)
     else if (PyLong_Check(obj))
         return ((PyLong*)obj)->get_value();
     return 0xDEADBEEF;
+}
+
+PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t size)
+{
+    /* sanity checks */
+    if (buffer == NULL)
+        return NULL;
+
+    if (size == 0 || size > 8)
+        return NULL;
+
+    int64 intval = (1LL << (8 * size)) - 1;
+    intval &= *((const uint64 *) buffer);
+
+    PyLong * num = new PyLong(intval);
+    return num;
 }

@@ -31,35 +31,31 @@
 #include "EveMarshalOpcodes.h"
 #include "PyStringTable.h"
 #include "PyCallObject.h"
-
-#include <zlib.h>
-
 #include "DBRowModule.h"
 #include "PyObjectDumper.h"
 
-/* macro's that help debugging exceptions */
-//#define EVEMU_EXTRA_DEBUG
-#ifdef _DEBUG
-#  ifdef EVEMU_EXTRA_DEBUG
+#include <zlib.h>
+
+/** macro's that helps to debug various exceptions and help logging them.
+ */
+#define EVEMU_EXTRA_DEBUG
+#ifdef EVEMU_EXTRA_DEBUG
+#  ifdef _DEBUG
 #    define MARSHALSTREAM_RETURN_NULL {ASCENT_HARDWARE_BREAKPOINT; return NULL;}
 #    define MARSHALSTREAM_RETURN(p) {PyObject * x = ((PyObject*)p); assert(x != NULL); return x;}
 //#  define MARSHALSTREAM_RETURN(p) {PyObject * x = ((PyObject*)p); assert(x != NULL); Dump(stdout, (PyObject*)x, 0); return x;}
 //#  define MARSHALSTREAM_RETURN(p) {PyObject * x = ((PyObject*)p); assert(x != NULL); Dump(fp_debug, (PyObject*)x, 0); return x;}
 #  else
-#    define MARSHALSTREAM_RETURN_NULL return NULL;
-#    define MARSHALSTREAM_RETURN(p) return (PyObject*)p;
-# endif//EVEMU_EXTRA_DEBUG
-#else
-#  ifdef EVEMU_EXTRA_DEBUG
 #    define MARSHALSTREAM_RETURN_NULL {sLog.String(__FUNCTION__" :returning NULL"); return NULL;}
 #    define MARSHALSTREAM_RETURN(p) { PyObject * x = ((PyObject*)p); if (x == NULL) {sLog.Error(__FUNCTION__" :returning NULL");} return x; }
-#  else
-#    define MARSHALSTREAM_RETURN_NULL return NULL;
-#    define MARSHALSTREAM_RETURN(p) return (PyObject*)p;
-#  endif//EVEMU_EXTRA_DEBUG
-#endif//_DEBUG
+#  endif//_DEBUG
+#else
+#  define MARSHALSTREAM_RETURN_NULL return NULL;
+#  define MARSHALSTREAM_RETURN(p) return (PyObject*)p;
+#endif//EVEMU_EXTRA_DEBUG
 
-/* macro's that help debugging exceptions */
+/** macro's that help debugging exceptions by logging what state we are within the unmarshal process
+ */
 #ifdef _DEBUG
 //#  define unmarshalState(x, y) {sLog.String("State:"#x"\toffset:0x%X", y.tell());}
 #  define unmarshalState(x, y) /*{x, y}*/
@@ -74,14 +70,14 @@ MarshalStream::~MarshalStream() {}
 
 PyObject* MarshalStream::load(ReadStream & stream)
 {
-	/* first time check for byte code because I don't want to contaminate checkAndInflate */
+	/* first time check for python byte code because I don't want to contaminate checkAndInflate */
 	if (checkForBytecode(stream) == true)
 		return NULL;
 
 	if (checkAndInflate(stream) == false)
 		return NULL;
 
-	/* second time check for byte code because its possible it was zipped */
+	/* second time check for python byte code because its possible it was zipped */
 	if (checkForBytecode(stream) == true)
 		return NULL;
 
@@ -98,23 +94,25 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 {
 	char marshalTilde;
 	if (!stream.read1(marshalTilde)) {
-		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left", 1, 1, stream.size() - stream.tell());
+		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left",
+            1, 1, stream.size() - stream.tell());
 		return false;
 	}
 
 	if (marshalTilde != '~') {
-		//Log.Error("MarshalStream", "[ReadMarshalHeader]invalid marshal header, missing tilde");
-		Log.Error("MarshalStream", "[ReadMarshalHeader]invalid marshal header, missing tilde: 0x%X", marshalTilde);
+		Log.Error("MarshalStream", "[ReadMarshalHeader]invalid marshal header, missing tilde: 0x%X",
+            marshalTilde);
 		return false;
 	}
 
 	int32 sharedObjectCount;
 	if (!stream.read4(sharedObjectCount)) {
-		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left", 1, 4, stream.size() - stream.tell());
+		Log.Error("MarshalStream", "[ReadMarshalHeader]Can't read %d elements of %d bytes, only have %d bytes left",
+            1, 4, stream.size() - stream.tell());
 		return false;
 	}
 
-	/* check if this packet contains referenced objects */
+	/* check if this packet contains referenced objects, if we don't have any we'r done here */
 	if (sharedObjectCount <= 0)
 		return true;
 
@@ -126,13 +124,15 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 	
 	size_t tReadIndex2 = stream.tell();
 	if ( (signed int)(stream.size() - tReadIndex2) / 4 < sharedObjectCount ) {
-		Log.Error("MarshalStream", "[ReadMarshalHeader]Too little data in marshal stream, %u bytes. I really wanted at least %u bytes total, mapcount in header is %d", stream.size(), tReadIndex2 + 4 * sharedObjectCount, sharedObjectCount);
+		Log.Error("MarshalStream", "[ReadMarshalHeader]Too little data in marshal stream, %u bytes. I really wanted at least %u bytes total, mapcount in header is %d",
+            stream.size(), tReadIndex2 + 4 * sharedObjectCount, sharedObjectCount);
 		return false;
 	}
 
 	if (!stream.setpayloadsize(stream.size() - (4 * sharedObjectCount)))
         return false;
 
+    /* the following piece still need a bit of love */
 	size_t sharedObjectIndex = stream.buffersize() - 4 * sharedObjectCount;
 
 	int32* sharedObjectBegin = (int32*)&stream.content()[sharedObjectIndex];
@@ -153,13 +153,17 @@ bool MarshalStream::ReadMarshalHeader( ReadStream & stream )
 
 PyObject* MarshalStream::unmarshal( ReadStream & stream )
 {
+    /* @todo add extra check to limit the max recursive depth */
+
 	if (stream.size() - stream.tell() >= 1)
 	{
 		uint8 opcode;
 		stream.read1(opcode);
+
+/* For debug purposes only
 		if (((opcode >> 6) & 0xFFFFFF01) != 0)
 			printf("ref obj: [0X%x]\n", opcode & 0x3F);
-
+*/
 		switch ( opcode & 0x3F )
 		{
 			case Op_PyNone:
@@ -281,13 +285,13 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyShortString:
 			{
 				unmarshalState(Op_PyShortString, stream);
-				uint8 strlen;
+				uint8 strsize;
 				char* strptr;
-				if (!stream.read1(strlen))
+				if (!stream.read1(strsize))
 					MARSHALSTREAM_RETURN_NULL;
-				if (!stream.readString(&strptr, strlen))
+				if (!stream.readString(&strptr, strsize))
 					MARSHALSTREAM_RETURN_NULL;
-				MARSHALSTREAM_RETURN(PyString_FromStringAndSize(strptr, strlen));
+				MARSHALSTREAM_RETURN(PyString_FromStringAndSize(strptr, strsize));
 			}
 
 			case Op_PyStringTableItem:
@@ -300,26 +304,25 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				PyString * ret = NULL;
 				if (!sPyStringTable.LookupPyString(index, ret) && ret == NULL)
 				{
-					Log.Error("MarshalStream", "Invalid string table index %d", index);
+					Log.Error("MarshalStream", "Invalid string table index %d",
+                        index);
 					MARSHALSTREAM_RETURN_NULL;
 				}
-                //Log.Warning("MarshalDebug", "string: %s", ret->content());
 				MARSHALSTREAM_RETURN(ret);
 			}
 
 			case Op_PyUnicodeString:
 			{
 				unmarshalState(Op_PyUnicodeString, stream);
-				uint32 strlen;
+				uint32 strsize;
 				wchar_t* strptr;
-				if (!stream.readSizeEx(strlen))
+				if (!stream.readSizeEx(strsize))
 					MARSHALSTREAM_RETURN_NULL;
 	
-				if (!stream.readWstring(&strptr, strlen))
+				if (!stream.readWstring(&strptr, strsize))
 					MARSHALSTREAM_RETURN_NULL;
 	
-                //Log.Warning("MarshalDebug", "unicode string: %S", strptr);
-				MARSHALSTREAM_RETURN(PyUnicodeUCS2_FromWideChar(strptr, strlen));
+				MARSHALSTREAM_RETURN(PyUnicodeUCS2_FromWideChar(strptr, strsize));
 			}
 
 			case Op_PyUnicodeEmptyString:
@@ -340,15 +343,15 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyUnicodeUTF8String:
 			{
 				unmarshalState(Op_PyUnicodeUTF8String, stream);
-				uint32 strlen;
+				uint32 strsize;
 				char* strptr = NULL;
-				if (!stream.readSizeEx(strlen))
+				if (!stream.readSizeEx(strsize))
 					MARSHALSTREAM_RETURN_NULL;
 	
-				if (!stream.readString(&strptr, strlen))
+				if (!stream.readString(&strptr, strsize))
 					MARSHALSTREAM_RETURN_NULL;
 	
-				MARSHALSTREAM_RETURN(PyUnicodeUCS2_DecodeUTF8(strptr, strlen));
+				MARSHALSTREAM_RETURN(PyUnicodeUCS2_DecodeUTF8(strptr, strsize));
 			}
 
             case Op_PyLongString:
@@ -381,10 +384,17 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
-				// warning recursive function...
-				PyObject *object = unmarshal(stream);
-				assert(object != (PyObject*)&tuple);
-				tuple.set_item(0, object);
+				PyObject *obj = unmarshal(stream);
+
+                /* whenever we have unmarshaled a entry that is exactly the same as where we store it
+                 * in. This will result in problems so make sure we check for it.
+                 */
+				if (obj == (PyObject*)&tuple)
+                    MARSHALSTREAM_RETURN_NULL;
+
+                if (!tuple.set_item(0, obj))
+                    MARSHALSTREAM_RETURN_NULL;
+
 				MARSHALSTREAM_RETURN(&tuple);
 			}
 
@@ -401,9 +411,12 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				// warning double recursive function...
 				for (int i = 0; i < 2; i++)
 				{
-					PyObject* Itr = unmarshal(stream);
-					assert(Itr != (PyObject*)&tuple);
-					tuple.set_item(i, Itr);
+					PyObject* obj = unmarshal(stream);
+                    if (obj == (PyObject*)&tuple)
+                        MARSHALSTREAM_RETURN_NULL;
+
+                    if (!tuple.set_item(i, obj))
+                        MARSHALSTREAM_RETURN_NULL;
 				}
 
 				MARSHALSTREAM_RETURN(&tuple);
@@ -426,10 +439,11 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				// warning double recursive function...
 				for (uint32 i = 0; i < elementCount; i++)
 				{
-					PyObject* Itr = unmarshal(stream);
-					assert(Itr != (PyObject*)&tuple);
+					PyObject* obj = unmarshal(stream);
+                    if (obj == (PyObject*)&tuple)
+                        MARSHALSTREAM_RETURN_NULL;
 
-					if (!tuple.set_item(i, Itr))
+					if (!tuple.set_item(i, obj))
                         MARSHALSTREAM_RETURN_NULL;
 				}
 
@@ -445,26 +459,25 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			case Op_PyOneList:
 			{
 				unmarshalState(Op_PyOneList, stream);
-				PyList &list = *PyList_New(1);
-				if (&list == NULL)
+				PyList *list = PyList_New(1);
+				if (list == NULL)
 					MARSHALSTREAM_RETURN_NULL;
 				
 				if ((opcode & 0x40) != 0)
 				{
-					if(mReferencedObjectsMap.StoreReferencedObject(&list) == -1)
+					if(mReferencedObjectsMap.StoreReferencedObject(list) == -1)
 						MARSHALSTREAM_RETURN_NULL;
 				}
 
                 PyObject* obj = unmarshal(stream);
 
-				// recursive function...
-				if (!list.set_item(0, obj))
+                if (obj == dynamic_cast<PyObject*>(list))
                     MARSHALSTREAM_RETURN_NULL;
 
-                /* check for adding self */
-				assert(obj != (PyObject*)&list);
+				if (!list->set_item(0, obj))
+                    MARSHALSTREAM_RETURN_NULL;
 
-				MARSHALSTREAM_RETURN(&list);
+				MARSHALSTREAM_RETURN(list);
 			}
 
 			case Op_PyList:
@@ -484,13 +497,15 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
-				// n recursive function call
+				// a 'n' recursive function call
 				for (uint32 i = 0; i < elementCount; i++)
 				{
 					PyObject* obj = unmarshal(stream);
-					assert(obj != (PyObject*)&list);
 					if (obj == NULL)
 						MARSHALSTREAM_RETURN_NULL;
+
+                    if (obj == (PyObject*)&list)
+                        MARSHALSTREAM_RETURN_NULL;
 
 					if(!list.set_item(i, obj))
                         MARSHALSTREAM_RETURN_NULL;
@@ -513,20 +528,23 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 						MARSHALSTREAM_RETURN_NULL;
 				}
 	
-				// whoo tricky stuff....
 				for (uint32 i = 0; i < elementCount; i++)
 				{
 					PyObject* keyPayload = unmarshal(stream);			// Payload
-					PyObject* keyName = unmarshal(stream);				// the keyname
+					PyObject* key = unmarshal(stream);				    // the key
 
-                    if (keyPayload == NULL || keyName == NULL)
+                    if (keyPayload == NULL || key == NULL)
                         MARSHALSTREAM_RETURN_NULL
 
-					if(!dict.set_item(keyName, keyPayload))
+                    /* this one should really never happen */
+                    if (keyPayload == (PyObject*)&dict)
+                        MARSHALSTREAM_RETURN_NULL;
+
+					if(!dict.set_item(key, keyPayload))
                         MARSHALSTREAM_RETURN_NULL;
 
 					PyDecRef(keyPayload);
-					PyDecRef(keyName);
+					PyDecRef(key);
 				}
 
 				MARSHALSTREAM_RETURN(&dict);
@@ -535,20 +553,18 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 			/* read a object, it also has a check for reference mapping */
 			case Op_PyInstance:
 			{
-                //ASCENT_HARDWARE_BREAKPOINT;
 				unmarshalState(Op_PyInstance, stream);
 				MARSHALSTREAM_RETURN(ReadGlobalInstance(stream, (opcode >> 6) & 1));
 			}
 
-			/* unknown isn't handled but what we know of them is that its related to the cPickle system */
+			/* isn't handled but what we know of them is that its related to the cPickle system */
 			case Op_PyBlue:
 			{
 				unmarshalState(Op_PyBlue, stream);
 				MARSHALSTREAM_RETURN_NULL;
 			}
-			
-			/* need to implement custom callbacks and reading stuff... but for the server this doesn't seem to usefull.. */
 
+            /* need to implement custom callbacks and reading stuff... but for the server this doesn't seem to useful.. */
 // 			case Op_PyCallback:
 // 			{
 // 				/* Unmarshal stream contains custom data but I have no callback method */
@@ -588,7 +604,8 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				uint32 index;
 				if (!stream.readSizeEx(index))
 					MARSHALSTREAM_RETURN_NULL;
-				PyObject* obj;
+
+                PyObject* obj;
 				if (!mReferencedObjectsMap.GetStoredObject(index,&obj))
 				{
 					Log.Error("MarshalStream", "(Op_PyRef)there seems to be a Invalid TY_REFECENCE in the stream");
@@ -597,7 +614,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 				if (obj == NULL)
 				{
-					Log.Error("MarshalStream", "(Op_PyRef)GetStoredObject returned a NULL object... HUH oO wtf is happening");
+					Log.Error("MarshalStream", "(Op_PyRef)GetStoredObject returned a NULL object... HUH oO what is happening?");
 					MARSHALSTREAM_RETURN_NULL;
 				}
 
@@ -605,7 +622,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				MARSHALSTREAM_RETURN(obj);
 			}
 
-			/* this is fun as check the clients packet hash.... */
+			/* this is fun as it checks the clients packet hash.... */
 			case Op_PyChecksumedStream:
 			{
 				unmarshalState(Op_PyChecksumedStream, stream);
@@ -613,9 +630,11 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				if (!stream.read4(clientHash))
 					MARSHALSTREAM_RETURN_NULL;
 
+                /* little ugly.. */
 				Bytef* data = &stream.content()[stream.tell()];
 				uInt len = (uInt)stream.buffersize() - stream.tell();
-				uint32 serverHash = adler32(1, data, len);
+
+                uint32 serverHash = adler32(1, data, len);
 				if (clientHash != serverHash)
 				{
 					Log.Error("MarshalStream", "(Op_PyChecksumedStream) the checksum fails... client send us a 'oepsie' or he's just plain stupid");
@@ -629,7 +648,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 			case Op_PyReduce:
 				unmarshalState(Op_PyReduce, stream);
-				MARSHALSTREAM_RETURN(ReadOldStyleClass(stream, (opcode >> 6) & 1));
+				MARSHALSTREAM_RETURN(ReadReducedClass(stream, (opcode >> 6) & 1));
 
 			case Op_PyNewObj:
 				unmarshalState(Op_PyNewObj, stream);
@@ -639,9 +658,6 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 				unmarshalState(Op_PyDBRow, stream);
 				MARSHALSTREAM_RETURN(ReadPackedRow(stream));
 
-                /* embeded marshal stream... not a sub stream.. 
-                 * "blue.MarshalStream"
-                 */
 			case Op_PyStream:
 				unmarshalState(Op_PyStream, stream);
 				MARSHALSTREAM_RETURN(ReadPyStream(stream));
@@ -656,8 +672,8 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 			default:
 			{
-				//Log.Error("MarshalStream", "Invalid type tag %d, '%c' in stream.", opcode, *((char*)&opcode));
-				Log.Error("MarshalStream", "Invalid type tag %d, raw 0x%X, char '%c' at:0x%X", opcode,opcode,*((char*)&opcode), stream.tell());
+				Log.Error("MarshalStream", "Invalid type tag %d, raw 0x%X, char '%c' at:0x%X",
+                    opcode,opcode,*((char*)&opcode), stream.tell());
 				MARSHALSTREAM_RETURN_NULL;
 			}
 		}
@@ -770,7 +786,7 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
     // init the new object instance..
     new_instance->init(bases);
 
-/*
+/* // old stuff.... needs to be double checked and removed if needed.
 	if (shared != FALSE)
 	{
 		if(mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
@@ -853,7 +869,7 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
 
     PyClass * inst_obj = callable_object->New();
 
-    // TODO decrappy this..
+    // TODO make this less ugly
     if (shared != FALSE)
     {
         if(mReferencedObjectsMap.StoreReferencedObject(inst_obj) == -1)
@@ -884,14 +900,15 @@ ASCENT_INLINE PyObject* MarshalStream::ReadInstancedClass( ReadStream & stream, 
         MARSHALSTREAM_RETURN_NULL;
     }*/
 
+    PyDecRef(bases);
+
     MARSHALSTREAM_RETURN(inst_obj);
 }
 
 /* normal python class */
-PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
+PyObject* MarshalStream::ReadReducedClass( ReadStream & stream, BOOL shared )
 {
     int shared_object_index = 0;
-    //ASCENT_HARDWARE_BREAKPOINT;
 
     if (shared != FALSE) {
         shared_object_index = mReferencedObjectsMap.StoreReferencedObject((PyObject*)NULL);
@@ -925,7 +942,7 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
             MARSHALSTREAM_RETURN_NULL;
     }
 
-    // if the tuple hs more than 2 elements
+    // if the tuple has more than 2 elements
     if (bases->size() > 2)
     {
         // implement this..
@@ -948,6 +965,8 @@ PyObject* MarshalStream::ReadOldStyleClass( ReadStream & stream, BOOL shared )
     // this needs to be done in a different way...... updating the class object using the class update functions...
     ReadNewObjList(stream, *(PyClass*)call_result);
     ReadNewObjDict(stream, *(PyClass*)call_result);
+
+    PyDecRef(bases);
 
     MARSHALSTREAM_RETURN(call_result);
 }
@@ -1051,6 +1070,8 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     ReadNewObjList(stream, *(PyClass*)call_result);
     ReadNewObjDict(stream, *(PyClass*)call_result);
 
+    PyDecRef(object_root);
+
     MARSHALSTREAM_RETURN(call_result);
 }
 
@@ -1093,9 +1114,6 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 
 	if (size > 0)
 	{
-        //if (obj1->getbases() == NULL)
-          //  Dump(stdout, obj1, 0);
-
 		size_t guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->get_item(1));
 
 		outsize = guessedSize+20;
@@ -1112,49 +1130,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 			Log.Error("MarshalStream", "error happened in the 'Rle' decoder");
 			MARSHALSTREAM_RETURN_NULL;
 		}
-
-		/*std::vector<uint8> unfuckedup;
 		
-		RleModule::UnpackZeroCompressed(data, size, unfuckedup);
-
-		//printf("unpacked mine:\n");
-		//HexAsciiModule::print_hexview(stdout, outbuff, guessedSize);
-
-		//printf("unpacked there's:\n");
-		//HexAsciiModule::print_hexview(stdout, &unfuckedup[0], unfuckedup.size());
-
-		//printf("packed source:\n");
-		//HexAsciiModule::print_hexview(stdout, data, size);
-
-		std::vector<uint8> fuckedup;
-		size_t dst_len = 0;
-		RleModule::PackZeroCompressed(outbuff, guessedSize, fuckedup, dst_len);
-
-		//printf("packed repacked:\n");
-		//HexAsciiModule::print_hexview(stdout, &fuckedup[0], fuckedup.size());
-
-		if (memcmp(&fuckedup[0], data, dst_len))
-		{
-			printf("unpacked mine:\n");
-			HexAsciiModule::print_hexview(stdout, outbuff, outsize);
-
-			printf("unpacked there's:\n");
-			HexAsciiModule::print_hexview(stdout, &unfuckedup[0], unfuckedup.size());
-
-			printf("packed source:\n");
-			HexAsciiModule::print_hexview(stdout, data, size);
-
-			printf("packed repacked:\n");
-			HexAsciiModule::print_hexview(stdout, &fuckedup[0], dst_len);
-			
-			ASCENT_HARDWARE_BREAKPOINT;
-
-			guessedSize = DBRowModule::GetRawFieldSizeFromHeader(obj1->getbases()->GetItem(1));
-
-			fuckedup.clear();
-			RleModule::PackZeroCompressed(outbuff, guessedSize, fuckedup, dst_len);
-		}*/
-
 		packedRow->mRawFieldData = outbuff;
 		packedRow->mRawFieldDataLen = guessedSize;
 
@@ -1210,9 +1186,12 @@ PyObject* MarshalStream::ReadVarInteger( ReadStream & stream, BOOL shared )
 	if(!stream.readSizeEx(len))
 		MARSHALSTREAM_RETURN_NULL;
 	
-	/* we don't have big int implemented so crash if it goes crazy */
+	/* we don't have big int implemented so ignore if we have larger entries */
     if (len > 8)
+    {
+        sLog.Error("MarshalStream", "we'r unable to handle var integers larger than 8 bytes for now");
         MARSHALSTREAM_RETURN_NULL; 
+    }
 	
 	PyLong* object = NULL;
 	if(len == 0)
@@ -1449,15 +1428,15 @@ bool MarshalStream::save( PyObject * object, WriteStream & stream )
 {
 	if (object == NULL)
 		return false;
+    uint32 refCountPlaceholder = 0;
 
-	stream.write1('~'); // first token
-	uint32 refCountPlaceholder = 0;
+	stream.write1('~'); // first stream token
 	stream.write4(refCountPlaceholder);
 
 	return marshal(object, stream);
 }
 
-/* helper function for me fucking up */
+/* helper function for me */
 bool marshalString(const char* str, WriteStream & stream)
 {
 	size_t str_len = strlen(str);
@@ -1495,8 +1474,6 @@ bool marshalString(const char* str, WriteStream & stream)
         return stream.write(str, str_len);
     }
 }
-
-//#  define unmarshalState(x, y) {sLog.String("State:"#x"\toffset:0x%X", y.tell());}
 
 bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 {

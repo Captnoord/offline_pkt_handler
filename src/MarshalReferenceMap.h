@@ -65,7 +65,7 @@ public:
 
 	~UnmarshalReferenceMap()
 	{
-        if (mReferenceObjects.size() > 0) {
+        if (!mReferenceObjects.empty()) {
 		    for (uint32 i = 0; i < mExpectedObjectsCount; i++) {
 			    PySafeDecRef(mReferenceObjects[i]);
 		    }
@@ -193,7 +193,7 @@ public:
 		//	SafeFree(mReferenceObjects)
 			//SafeDeleteArray(mReferenceObjects);
 
-		assert(mReferenceObjects.size() == 0);
+		assert(mReferenceObjects.empty());
 		mReferenceObjects.resize(sharedObjectCount+1);
 
 		//mReferenceObjects = new PyObject*[expectedObjectsCount+1];

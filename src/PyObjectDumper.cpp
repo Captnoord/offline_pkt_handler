@@ -26,8 +26,6 @@
 #include "EvemuPCH.h"
 #include "zlib.h"
 
-DbgHeap g_Heap;
-
 void DumpObject(FILE * fd, PyObject* obj)
 {
 	Dump(fd, obj, 0);

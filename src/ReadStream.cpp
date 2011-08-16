@@ -33,15 +33,13 @@
 #include "BufferPool.h"
 
 ReadStream::ReadStream() : mBuffer(NULL), mSize(0), mReadIndex(0), mPayloadSize(0), mAllocatedMem(0) {}
-ReadStream::ReadStream( const char* buff, size_t size ) : mBuffer(NULL), mSize(size), mReadIndex(0), mPayloadSize(size), mAllocatedMem(0)
+ReadStream::ReadStream( const char* buff, size_t len ) : mBuffer(NULL), mSize(len), mReadIndex(0), mPayloadSize(len), mAllocatedMem(0)
 {
-    if (size == 0)
+    if (len == 0)
         ASCENT_HARDWARE_BREAKPOINT;
 
-    if (size != 0) {
-	    resize(size);
-	    ASCENT_MEMCPY(mBuffer, buff, size);
-    }
+    if (resize(len))
+        ASCENT_MEMCPY(mBuffer, buff, len);
 }
 
 ReadStream::~ReadStream()
@@ -91,7 +89,14 @@ bool ReadStream::readBuffer( uint8 ** buffer, size_t len )
 	if (mSize < mReadIndex + len)
 		return false;
 
-	*buffer = &mBuffer[mReadIndex];
+    if (mBuffer == NULL)
+        return false;
+
+    uint8* buff = &mBuffer[mReadIndex];
+    if (buff == NULL)
+        return false;
+
+	*buffer = buff;
 	mReadIndex+=len;
 	return true;
 }
@@ -101,7 +106,14 @@ bool ReadStream::readString( char ** buffer, size_t len )
 	if (mSize < mReadIndex + len)
 		return false;
 
-	*buffer = (char*)&mBuffer[mReadIndex];
+    if (mBuffer == NULL)
+        return false;
+
+    char* buff = static_cast<char*>(&mBuffer[mReadIndex]);
+    if (buff == NULL)
+        return false;
+
+    *buffer = buff;
 	mReadIndex+=len;
 	return true;
 }
@@ -111,7 +123,15 @@ bool ReadStream::readWstring( wchar_t ** buffer, size_t len )
 	if (mSize < mReadIndex + len*2)
 		return false;
 
-	*buffer = (wchar_t*)&mBuffer[mReadIndex];
+    if (mBuffer == NULL)
+        return false;
+
+    wchar_t* buff = static_cast<wchar_t*>(&mBuffer[mReadIndex]);
+    if (buff == NULL)
+        return false;
+
+    *buffer = buff;
+
 	mReadIndex+=len*2;
 	return true;
 }
@@ -121,13 +141,15 @@ void ReadStream::reset()
 	mReadIndex = 0;
 }
 
-bool ReadStream::set( uint8* buff, size_t size )
+bool ReadStream::set( uint8* buff, size_t len )
 {
-	if (buff == NULL || size <= 0)
+	if (buff == NULL || len <= 0)
 		return false;
 
-	resize(size);
-	ASCENT_MEMCPY(mBuffer, buff, size);
+	if (!resize(len))
+        return false;
+
+	ASCENT_MEMCPY(mBuffer, buff, len);
 	reset();
 	return true;
 }
@@ -153,19 +175,17 @@ bool ReadStream::seek( int32 offset, int origin )
 		} return true;
 	case SEEK_END:
 		{
-			if (mSize - offset >= 0)
+			if (int(mSize) - offset >= 0)
 				mReadIndex = mSize - offset;
 			else
 				return false;
 		} return true;
 	default:
-		{
-			ASCENT_ASSERT(false);
-		} return false;
+		return false;
 	}
 }
 
-bool ReadStream::readSizeEx( size_t & size )
+bool ReadStream::readSizeEx( size_t & size_ex )
 {
 	size_t _size = 0;
 	if (!read1(_size))
@@ -176,7 +196,7 @@ bool ReadStream::readSizeEx( size_t & size )
 		if(!read4(_size))
 			return false;
 	}
-	size = _size;
+	size_ex = _size;
 	return true;
 }
 
@@ -195,11 +215,11 @@ size_t ReadStream::buffersize()
 	return mSize;
 }
 
-bool ReadStream::setpayloadsize( size_t size )
+bool ReadStream::setpayloadsize( size_t len )
 {
-	if (size > mSize)
+	if (len > mSize)
 		return false;
 
-	mPayloadSize = size;
+	mPayloadSize = len;
 	return true;
 }

@@ -84,7 +84,7 @@ public:
     inline PyObject(PyType type);
     virtual ~PyObject();
     virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
-    virtual size_t size()
+    virtual size_t size() const
     {
         // debug assert to make sure its only called by objects that really have size shit.....
         switch(mType)
@@ -440,7 +440,7 @@ protected:
 	PyDict		*mInDict;
     PyList		*mWeakRefList;
 
-    ternaryfunc tp_call;
+    //ternaryfunc tp_call;
 };
 
 /**
@@ -669,7 +669,7 @@ static bool _PyLong_AsByteArray(PyLong& number, const uint8* buffer, size_t* siz
 		return false;
 
 	if (*size == 0)
-		return 0;
+		return false;
 
 	int64 num = _PyLong_AsInt64(number);
 	
@@ -703,21 +703,7 @@ static bool _PyLong_AsByteArray(PyLong& number, const uint8* buffer, size_t* siz
  * @param[out]
  * @return
  */
-static PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t size)
-{
-	/* sanity checks */
-	if (buffer == NULL)
-		return false;
-	
-	if (size == 0 || size > 8)
-		return 0;
-
-	int64 intval = (1LL << (8 * size)) - 1;
-	intval &= *((const uint64 *) buffer);
-
-	PyLong * num = new PyLong(intval);
-	return num;
-}
+static PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t len);
 
 static PyLong* PyLong_FromLong(int64 number)
 {

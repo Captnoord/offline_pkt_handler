@@ -78,7 +78,7 @@ bool MachoPacket::init( PyObject* state )
         mDict->set_item("compressedPart", oob->get_item("compressedPart", (PyObject*)new PyInt(0))); // default would be PyInt(0);
     }
 
-    if (params.size() != 0) {
+    if (!params.empty()) {
 
         PyTuple* body = (PyTuple*)mDict->get_item("body");
         if (!PyTuple_Check(body))
@@ -115,7 +115,7 @@ bool MachoPacket::repr( FILE* fp )
 
     PyObject* source = mDict->get_item("source");
     PyObject* destination = mDict->get_item("destination");
-    PyObject* payload = mDict->get_item("body"); // naming here is wrong.
+    //PyObject* payload = mDict->get_item("body"); // naming here is wrong.
     PyObject* oob = mDict->get_item("oob");
 
     //fprintf(fp, "Packet::%s (%s,%s,PAYLOAD(%d bytes),%s)",

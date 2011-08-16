@@ -31,7 +31,7 @@ MachoAddress::MachoAddress() : PyClass( "macho.MachoAddress" ) {}
 
 MachoAddress::~MachoAddress()
 {
-    printf("destructor");
+    printf("destructor\n");
 }
 
 MachoAddress* MachoAddress::New()

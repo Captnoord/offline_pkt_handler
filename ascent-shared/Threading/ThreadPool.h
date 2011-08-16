@@ -32,6 +32,8 @@ class SERVER_DECL ThreadController
 public:
 	HANDLE hThread;
 	uint32 thread_id;
+	
+	ThreadController() : hThread(0), thread_id(0) { }
 
 	void Setup(HANDLE h)
 	{

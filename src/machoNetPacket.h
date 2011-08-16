@@ -40,7 +40,7 @@ protected:
 public:
     MachoPacket(const char* derived_name);
     
-    ~MachoPacket();
+    virtual ~MachoPacket();
 
     virtual MachoPacket* New() = 0;
 

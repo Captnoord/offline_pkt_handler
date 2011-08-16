@@ -515,6 +515,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ascent-shared\Common.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ascent-shared\Log.cpp"
 				>
 			</File>

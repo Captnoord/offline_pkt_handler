@@ -242,6 +242,9 @@ public:
 
 	void Deallocate(WorldPacket *pck)
 	{
+		if( pck == NULL )
+			return;
+
 		if( pck->m_bufferPool == -1 )
 		{
 			SafeDelete(pck);

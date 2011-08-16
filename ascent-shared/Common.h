@@ -49,7 +49,7 @@ enum TimeVariables
 	TIME_HOUR   = TIME_MINUTE * 60,
 	TIME_DAY	= TIME_HOUR * 24,
 	TIME_MONTH	= TIME_DAY * 30,
-	TIME_YEAR	= TIME_MONTH * 12,
+	TIME_YEAR	= TIME_MONTH * 12
 };
 
 enum MsTimeVariables
@@ -57,7 +57,7 @@ enum MsTimeVariables
 	MSTIME_SECOND = 1000,
 	MSTIME_MINUTE = MSTIME_SECOND * 60,
 	MSTIME_HOUR   = MSTIME_MINUTE * 60,
-	MSTIME_DAY	= MSTIME_HOUR * 24,
+	MSTIME_DAY	= MSTIME_HOUR * 24
 };
 
 /* 'inlined' functions can improve performance, the compiler will judge how this will be handled.
@@ -107,14 +107,14 @@ enum MsTimeVariables
 #  define MAX_PATH 1024
 #endif
 
-#include "../Tools/DbgHeap/DbgHeap.h"
+//#include "../Tools/DbgHeap/DbgHeap.h"
 
 // Enable invalid memory access detection mode
-extern DbgHeap g_Heap; // the global debug heap object.
+//extern DbgHeap g_Heap; // the global debug heap object.
 
 // fast hack bla bla...
-void* operator new (size_t nSize);
-void operator delete (void* pPtr);
+//void* operator new (size_t nSize);
+//void operator delete (void* pPtr);
 
 
 /*#ifdef min
@@ -431,9 +431,10 @@ Scripting system exports/imports
 #  define SI64FMTD "%lld"
 #endif
 
-#define atol(a) strtoul( a, NULL, 10)
-
-#define STRINGIZE(a) #a
+#ifdef atol
+#  undef atol
+#  define atol(a) strtoul( a, NULL, 10)
+#endif
 
 #if ASCENT_COMPILER == COMPILER_MICROSOFT
 #  if _MSC_VER >= 1400

@@ -35,15 +35,15 @@ class PyUnicodeUCS2 : public PyObject
 public:
 	PyUnicodeUCS2();
 	PyUnicodeUCS2(const wchar_t* str);
-	PyUnicodeUCS2(const wchar_t* str, size_t len);
-	PyUnicodeUCS2(std::wstring& str);
+	PyUnicodeUCS2(const wchar_t* str, const size_t len);
+	PyUnicodeUCS2(const std::wstring& str);
 	~PyUnicodeUCS2();
     uint32 hash();
 
 	bool set(const wchar_t* str, size_t len);
 	bool resize(size_t newsize);
-	wchar_t * content();
-	size_t size();
+	wchar_t * content() const;
+	size_t size() const;
 
 private:
 	wchar_t* mStr;
@@ -60,6 +60,7 @@ private:
 /* fake python api                                                      */
 /************************************************************************/
 
+#if 0
 /**
  * @brief 
  *
@@ -74,6 +75,8 @@ static PyUnicodeUCS2* PyUnicodeUCS2_FromWideChar(const wchar_t* str, size_t len)
 	PyUnicodeUCS2 * string = new PyUnicodeUCS2(str, len);
 	return string;
 }
+
+#endif
 
 /**
  * @brief Python API cloning, converting a UTF8 string to a unicode UCS2 string.

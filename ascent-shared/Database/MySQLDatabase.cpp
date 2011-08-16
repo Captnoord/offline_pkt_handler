@@ -115,7 +115,7 @@ void MySQLDatabase::EscapeLongString(const char * str, uint32 len, stringstream&
 	else
 		ret = a2;
 
-	out.write(a2, (std::streamsize)strlen(a2));
+	out.write(ret, (std::streamsize)strlen(ret));
 	con->Busy.Release();
 }
 

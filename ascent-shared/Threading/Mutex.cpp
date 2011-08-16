@@ -24,9 +24,7 @@
 #  include <pthread.h>                                                            
 #endif//__DragonFly__
 
-LockMutex::LockMutex(Mutex* in_mut, bool iLock) {
-	mut = in_mut;
-	locked = iLock;
+LockMutex::LockMutex(Mutex* in_mut, bool iLock) : mut(in_mut), locked(iLock) {
 	if (locked) {
 		mut->lock();
 	}
