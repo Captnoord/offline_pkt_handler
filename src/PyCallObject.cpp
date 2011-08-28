@@ -69,13 +69,20 @@ CallMgr::CallMgr()
     /* exceptions */
     reg("exceptions.GPSTransportClosed", new exceptionsGPSTransportClosed());
 
+    int henk = 0;
+
 }
 
 CallMgr::~CallMgr()
 {
+    printf("CallMgr cleaning up\n");
     CallMapItr itr = mCallMap.begin();
-    for (; itr != mCallMap.end(); itr++)
+    for (; itr != mCallMap.end(); itr++) {
+        printf("[%u]\t", itr->second->get_ref());
+        assert(itr->second->get_ref() == 1); // this MUST be 1
+        printf("%s\n", itr->first.c_str());        
         PyDecRef(itr->second);
+    }
 }
 
 bool CallMgr::reg( const char* guid, PyClass* module )

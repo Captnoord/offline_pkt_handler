@@ -30,8 +30,12 @@
 
 int main(int argc, char ** argv)
 {
+    VLDDisable();
+
 	char * in_file_path = NULL;     /* required */
 	char * out_file_path = NULL;    /* optional */
+
+    //_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	if (argc <=1)
 	{
@@ -95,7 +99,9 @@ int main(int argc, char ** argv)
     TimeMeasure stop_watch;
     stop_watch.get_time();
 
+    VLDEnable();
     HandleFile(in_file_path, out_file_path);
+    VLDDisable();
 
 	printf("File parsing took: %f ms\n", stop_watch.get_delta_time() * 1000.0);
 
@@ -108,6 +114,10 @@ int main(int argc, char ** argv)
 		delete [] in_file_path;
 
     CleanupRandomNumberGenerators();
+
+    //sLog.flush();
+
+    //system("pause");
 
 	//_CrtDumpMemoryLeaks();
 	//system("pause");

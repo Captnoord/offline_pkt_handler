@@ -41,6 +41,7 @@
 #  include <crtdbg.h>
 #endif
 
+#include <vld.h>
 
 enum TimeVariables
 {

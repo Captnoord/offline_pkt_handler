@@ -40,7 +40,7 @@ protected:
 public:
     MachoPacket(const char* derived_name);
     
-    virtual ~MachoPacket();
+    virtual ~MachoPacket() = NULL;
 
     virtual MachoPacket* New() = 0;
 
@@ -61,10 +61,11 @@ public:
 
     bool repr( FILE* fp );
 
+    void add_param( const char* param );
+
 
 protected:
-    uint8 command;                      // hmmm should we use normal types for this
-    std::vector<std::string> params;    // should we use normal types for this
+    std::vector<std::string*> params;    // should we use normal types for this
 };
 
 /* @note does this need the GetStage call? */

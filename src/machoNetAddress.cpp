@@ -31,7 +31,6 @@ MachoAddress::MachoAddress() : PyClass( "macho.MachoAddress" ) {}
 
 MachoAddress::~MachoAddress()
 {
-    printf("destructor\n");
 }
 
 MachoAddress* MachoAddress::New()
@@ -41,6 +40,7 @@ MachoAddress* MachoAddress::New()
 
 int MachoAddress::UpdateDict( PyObject* bases )
 {
+    sLog.Warning("MachoAddress", "UpdateDict stub");
     return -1;
 }
 
@@ -56,8 +56,10 @@ PyTuple* MachoAddress::getstate()
 
     // this one is a bit crap.... we need to increase ref count?
     // maybe we need todo this if we do MT with shared objects between threads ( which is killing bleh )
-    PyString& addressType = *(PyString*)mDict->get_item("addressType");
-    if (addressType == "C")
+    PyObject* addressType = mDict->get_item("addressType");
+    uint64 addr_type = PyNumberGetValue(addressType);
+
+    if (addr_type == ADDRESS_TYPE_CLIENT)
     {
         state = new PyTuple(4);
         state->set_item(0, mDict->get_item("addressType"));
@@ -65,7 +67,7 @@ PyTuple* MachoAddress::getstate()
         state->set_item(2, mDict->get_item("callID"));
         state->set_item(3, mDict->get_item("service"));
     }
-    else if (addressType == "B")
+    else if (addr_type == ADDRESS_TYPE_BROADCAST)
     {
         state = new PyTuple(4);
         state->set_item(0, mDict->get_item("addressType"));
@@ -73,20 +75,20 @@ PyTuple* MachoAddress::getstate()
         state->set_item(2, mDict->get_item("narrowcast"));
         state->set_item(3, mDict->get_item("idtype"));
     }
-    else if (addressType == "A")
+    else if (addr_type == ADDRESS_TYPE_ANY)
     {
         state = new PyTuple(3);
         state->set_item(0, mDict->get_item("addressType"));
         state->set_item(1, mDict->get_item("service"));
         state->set_item(2, mDict->get_item("callID"));
     }
-    else if (addressType == "N")
+    else if (addr_type == ADDRESS_TYPE_NODE)
     {
-        state = new PyTuple(4);
-        state->set_item(0, mDict->get_item("addressType"));
-        state->set_item(1, mDict->get_item("nodeID"));
-        state->set_item(2, mDict->get_item("service"));
-        state->set_item(3, mDict->get_item("callID"));
+        state = new_tuple(
+            mDict->get_item("addressType"),
+            mDict->get_item("nodeID"),
+            mDict->get_item("service"),
+            mDict->get_item("callID"));
     }
     else
     {
@@ -99,12 +101,15 @@ PyTuple* MachoAddress::getstate()
 
 bool MachoAddress::init( PyObject* state )
 {
-    if (!PyTuple_Check(state))
+    if (!PyTuple_Check(state)) {
+        PyDecRef(state);
+        __asm{int 3};
         return false;
+    }
 
     PyTuple * pState = (PyTuple *)state;
 
-    int addressType = pState->GetItem_asInt(0);
+    int addressType = pState->get_item_int(0);
     if (addressType == ADDRESS_TYPE_CLIENT)
     {
         mDict->set_item("addressType", pState->get_item(0));
@@ -134,16 +139,20 @@ bool MachoAddress::init( PyObject* state )
     }
     else
     {
+        PyDecRef(pState);
         return false;
     }
+    PyDecRef(pState);
     return true;
 }
 
 bool MachoAddress::repr( FILE* fp )
 {
     PyInt* addressType = (PyInt*)mDict->get_item("addressType");
-    if (!addressType || !PyNumber_Check(addressType))
+    if (!addressType || !PyNumber_Check(addressType)) {
+        ASCENT_HARDWARE_BREAKPOINT
         return false;
+    }
 
     if (*addressType == ADDRESS_TYPE_CLIENT)
     {
@@ -151,8 +160,22 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if (!callID || !service || !PyNumber_Check(callID) || !PyString_Check(service))
+        if (!callID || !service) {
+            ASCENT_HARDWARE_BREAKPOINT
             return false;
+        }
+
+        if ( !PyNumber_Check(callID) && !PyNone_Check(callID) )
+        {
+            ASCENT_HARDWARE_BREAKPOINT
+            return false;
+        }
+
+        if ( !PyString_Check(service) && !PyNone_Check(service) )
+        {
+            ASCENT_HARDWARE_BREAKPOINT
+            return false;
+        }
 
         uint64 clientID = PyNumberGetValue(_clientID);
 
@@ -161,14 +184,14 @@ bool MachoAddress::repr( FILE* fp )
         if ( PyNone_Check(_clientID) )
             fprintf(fp, "clientID=\"None\",");
         else
-            fprintf(fp, "clientID=\"I64u\",", clientID);
+            fprintf(fp, "clientID=\"%I64u\",", clientID);
 
         if ( PyNone_Check(callID) )
             fprintf(fp, "callID=\"None\",");
         else
-            fprintf(fp, "callID=\"I64\",", callID->get_value());
+            fprintf(fp, "callID=\"%I64\",", callID->get_value());
 
-        if ( !service || PyNone_Check(service) )
+        if ( PyNone_Check(service) )
             fprintf(fp, "service=\"None\")");
         else
             fprintf(fp, "service=\"%s\")", service->content());
@@ -181,8 +204,15 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if (!nodeID || !callID || !PyNumber_Check(nodeID) || !PyNone_Check(nodeID) || !PyNumber_Check(callID) || !PyNone_Check(callID))
+        if (!nodeID || !callID ) {
+            ASCENT_HARDWARE_BREAKPOINT
             return false;
+        }
+
+        if ((!PyNumber_Check(nodeID) && !PyNone_Check(nodeID)) || (!PyNumber_Check(callID) && !PyNone_Check(callID))) {
+            ASCENT_HARDWARE_BREAKPOINT
+                return false;
+        }
 
         fprintf(fp, "Address::Node(");
 
@@ -208,8 +238,10 @@ bool MachoAddress::repr( FILE* fp )
         PyLong* callID =     (PyLong*)mDict->get_item("callID");
         PyString* service = (PyString*)mDict->get_item("service");
 
-        if(!callID || !PyNumber_Check(callID) || !PyNone_Check(callID))
+        if(!callID || (!PyNumber_Check(callID) && !PyNone_Check(callID))) {
+            ASCENT_HARDWARE_BREAKPOINT
             return false;
+        }
 
         fprintf(fp, "Address::Any(");
 
@@ -234,8 +266,10 @@ bool MachoAddress::repr( FILE* fp )
         PyObject* narrowcast = mDict->get_item("narrowcast");
         PyString* idtype =     (PyString*)mDict->get_item("idtype");
 
-        if(!idtype || !PyString_Check(idtype) || !broadcastID || !PyString_Check(broadcastID))
+        if(!idtype || (!PyString_Check(idtype) && !PyNone_Check(idtype)) || !broadcastID || (!PyString_Check(broadcastID) && PyNone_Check(broadcastID))) {
+            ASCENT_HARDWARE_BREAKPOINT
             return false;
+        }
 
         fprintf(fp, "Address::BroadCast(");
 

@@ -66,6 +66,8 @@ public:
   void SetScreenLoggingLevel(int32 level);
 
   void Color(uint32 colorcode, const char * str, ...);
+
+  void flush();
   
 #ifdef WIN32
   HANDLE stdout_handle, stderr_handle;

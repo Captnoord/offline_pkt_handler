@@ -39,7 +39,9 @@ protected:
 public:
     utilCachedObject() : PyClass("util.CachedObject") {}
 
-    ~utilCachedObject(){};
+    ~utilCachedObject()
+    {        
+    }
 
     utilCachedObject* New()
     {

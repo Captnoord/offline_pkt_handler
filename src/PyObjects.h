@@ -45,8 +45,8 @@ enum PyType
 	PyTypeSubStruct,	//14
 };
 
-#define PyIncRef(x) (x)->IncRef();
-#define PyDecRef(x) (x)->DecRef();
+#define PyIncRef(x) (x)->inc_ref();
+#define PyDecRef(x) (x)->dec_ref();
 
 #define PySafeDecRef(x) if ((x) != NULL) PyDecRef(x)
 
@@ -81,8 +81,9 @@ typedef PyObject * (*ternaryfunc)(PyObject *, PyObject *, PyObject *);
 class PyObject
 {
 public:
-    inline PyObject(PyType type);
-    virtual ~PyObject();
+    virtual ~PyObject() = NULL;
+    PyObject(PyType type);
+    
     virtual uint32 hash() = 0; // pure virtual because different objects have different hash functions...
     virtual size_t size() const
     {
@@ -112,10 +113,12 @@ public:
         return (size_t)-1;
     }; // most objects have a size function....
 
-	uint8 GetType();
-	inline void IncRef();
-	inline void DecRef();
-    size_t GetRef();
+	
+	inline void inc_ref();
+	inline void dec_ref();
+
+    uint8 get_type();
+    size_t get_ref();
 
 private:
     volatile uint8 mType;
@@ -155,7 +158,9 @@ class PyInt : public PyObject
 {
 public:
 	PyInt(int32 num );
+
     ~PyInt(){}
+    
 
 	PyInt &operator = (const int num);
 
@@ -239,14 +244,14 @@ public:
     bool		set_item(const int index, PyObject *object);
 	
 	// utility functions, warning don't use this should without knowing how it works and what it does.
-	int32		GetItem_asInt(const int index);
-	int64		GetItem_asLong(const int index);
-	double		GetItem_asDouble(const int index);
-	PyTuple*	GetItem_asPyTuple(const int index);
-	PyList*		GetItem_asPyList(const int index);
-	PyString*	GetItem_asPyString(const int index);
-	PySubStream*GetItem_asPySubStream(const int index);
-    PyClass*    GetItem_asPyClass(const int index);
+	int32		get_item_int(const int index);
+	int64		get_item_long(const int index);
+	double		get_item_double(const int index);
+	PyTuple*	get_item_tuple(const int index);
+	PyList*		get_item_list(const int index);
+	PyString*	get_item_string(const int index);
+	PySubStream*get_item_substream(const int index);
+    PyClass*    get_item_class(const int index);
 
 	
 
@@ -267,6 +272,16 @@ public:
 private:
 	tuple_vector mTuple;
 };
+
+static PyTuple* new_tuple( PyObject* a, PyObject* b, PyObject* c, PyObject* d )
+{
+    PyTuple * tuple = new PyTuple(4);
+    tuple->set_item(0, a);
+    tuple->set_item(1, b);
+    tuple->set_item(2, c);
+    tuple->set_item(3, d);
+    return tuple;
+}
 
 class PyList : public PyObject
 {
@@ -403,7 +418,7 @@ class PyClass : public PyObject
 {
 public:
 	PyClass( const char* class_name );
-	virtual ~PyClass();
+	virtual ~PyClass() = NULL;
 
     uint32 hash();
 
@@ -674,7 +689,7 @@ static bool _PyLong_AsInt64(PyObject* number, int64& dst_num)
 	if (number == NULL)
 		return false;
 
-	if (number->GetType() != PyTypeLong)
+	if (number->get_type() != PyTypeLong)
 		return false;
 	
 	dst_num = ((PyLong*)number)->get_value();
@@ -696,7 +711,7 @@ uint64 PyNumberGetValue(PyObject* obj);
 
 
 
-#define PyObject_TypeCheck(ob, tp) ((ob)->GetType() == (tp))
+#define PyObject_TypeCheck(ob, tp) ((ob)->get_type() == (tp))
 #define PyTuple_Check(op) PyObject_TypeCheck(op, PyTypeTuple)
 #define PyList_Check(op) PyObject_TypeCheck(op, PyTypeList)
 
@@ -704,7 +719,9 @@ uint64 PyNumberGetValue(PyObject* obj);
 #define PyDict_Check(op) PyObject_TypeCheck(op, PyTypeDict)
 #define PyInt_Check(op) PyObject_TypeCheck(op, PyTypeInt)
 #define PyLong_Check(op) PyObject_TypeCheck(op, PyTypeLong)
-#define PyNumber_Check(op) (PyObject_TypeCheck(op, PyTypeLong) || PyObject_TypeCheck(op, PyTypeInt))
+
+#define PyNumber_Check(op) (PyObject_TypeCheck((op), PyTypeLong) || PyObject_TypeCheck((op), PyTypeInt))
+
 #define PyString_Check(op) PyObject_TypeCheck(op, PyTypeString)
 #define PyUnicode_Check(op) PyObject_TypeCheck(op, PyTypeUnicode)
 #define PyNone_Check(op) PyObject_TypeCheck(op, PyTypeNone)

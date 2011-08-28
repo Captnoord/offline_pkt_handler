@@ -38,6 +38,7 @@ public:
 	PyString(const char* str, size_t len);
 	PyString(std::string& str);
 	~PyString();
+
     uint32 hash();
 	bool set(const char* str, size_t len);
 	const char* content();

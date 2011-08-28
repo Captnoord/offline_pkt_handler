@@ -247,7 +247,7 @@ PyObject* PyTuple::get_item( const int index )
     return mTuple[index];
 }
 
-int32 PyTuple::GetItem_asInt( const int index )
+int32 PyTuple::get_item_int( const int index )
 {
     PyInt* obj = (PyInt*)get_item(index);
 
@@ -257,7 +257,7 @@ int32 PyTuple::GetItem_asInt( const int index )
     return obj->get_value();
 }
 
-PyTuple* PyTuple::GetItem_asPyTuple( const int index )
+PyTuple* PyTuple::get_item_tuple( const int index )
 {
     PyTuple* obj = (PyTuple*)get_item(index);
 
@@ -268,7 +268,7 @@ PyTuple* PyTuple::GetItem_asPyTuple( const int index )
     return obj;
 }
 
-PyList* PyTuple::GetItem_asPyList( const int index )
+PyList* PyTuple::get_item_list( const int index )
 {
     PyList* obj = (PyList*)get_item(index);
 
@@ -279,7 +279,7 @@ PyList* PyTuple::GetItem_asPyList( const int index )
     return obj;
 }
 
-PyString* PyTuple::GetItem_asPyString( const int index )
+PyString* PyTuple::get_item_string( const int index )
 {
     PyString* obj = (PyString*)get_item(index);
 
@@ -290,7 +290,7 @@ PyString* PyTuple::GetItem_asPyString( const int index )
     return obj;
 }
 
-PySubStream* PyTuple::GetItem_asPySubStream( const int index )
+PySubStream* PyTuple::get_item_substream( const int index )
 {
     PySubStream* obj = (PySubStream*)get_item(index);
 
@@ -301,7 +301,7 @@ PySubStream* PyTuple::GetItem_asPySubStream( const int index )
     return obj;
 }
 
-PyClass* PyTuple::GetItem_asPyClass( const int index )
+PyClass* PyTuple::get_item_class( const int index )
 {
     PyClass* obj = (PyClass*)get_item(index);
 
@@ -463,6 +463,7 @@ bool PyList::set_item( size_t index, PyObject* obj )
         PyDecRef(tobj);
 
     mList[index] = obj;
+    PyIncRef(obj);
     return true;
 }
 
@@ -506,7 +507,7 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
     if (key == NULL || obj == NULL)
         return false;
 
-    /*if (key->GetType() == PyTypeNone || obj->GetType() == PyTypeNone)
+    /*if (key->get_type() == PyTypeNone || obj->get_type() == PyTypeNone)
     {
         ASCENT_HARDWARE_BREAKPOINT;
         return false;
@@ -519,8 +520,8 @@ bool PyDict::set_item( PyObject* key, PyObject* obj )
         entry->key = key;
         entry->obj = obj;
         mDict.insert(std::make_pair(mMappingIndex++, entry));
-        key->IncRef();  // we seem to reuse a object that is already in the system so increase its mojo
-        obj->IncRef();
+        key->inc_ref();  // we seem to reuse a object that is already in the system so increase its mojo
+        obj->inc_ref();
     }
     else*/
     {
@@ -729,7 +730,7 @@ bool PyDict::get_buffer( const char * keyName, char* dst, size_t dst_len )
     if (foundObject == NULL)
         return false;
 
-    if (foundObject->GetType() != PyTypeString)
+    if (foundObject->get_type() != PyTypeString)
         return false;
 
     PyString * str = (PyString *)foundObject;
@@ -827,35 +828,34 @@ PyClass::PyClass( const char* class_name ) : PyObject( PyTypeClass ), mDict( new
 
 PyClass::~PyClass()
 {
-    printf("~PyClass\n");
-	if (mName)
-	{
-		PyDecRef(mName);
-		mName = NULL;
-	}
-	if (mBases)
-	{
-		PyDecRef(mBases);
-		mBases = NULL;
-	}
-	
-	if (mDict)
-	{
-		PyDecRef(mDict);
-		mDict = NULL;
-	}
-	
-	if (mWeakRefList)
-	{
-		PyDecRef(mWeakRefList);
-		mWeakRefList = NULL;
-	}
+    if (mName)
+    {
+        PyDecRef(mName);
+        mName = NULL;
+    }
+    if (mBases)
+    {
+        PyDecRef(mBases);
+        mBases = NULL;
+    }
 
-	if (mInDict)
-	{
-		PyDecRef(mInDict);
-		mInDict = NULL;
-	}
+    if (mDict)
+    {
+        PyDecRef(mDict);
+        mDict = NULL;
+    }
+
+    if (mWeakRefList)
+    {
+        PyDecRef(mWeakRefList);
+        mWeakRefList = NULL;
+    }
+
+    if (mInDict)
+    {
+        PyDecRef(mInDict);
+        mInDict = NULL;
+    }
 }
 
 bool PyClass::setbases( PyTuple* tuple )
@@ -878,7 +878,7 @@ bool PyClass::setdict( PyDict* dict )
 	if (dict == NULL)
 		return false;
 
-	if (dict->GetType() != PyTypeDict)
+	if (dict->get_type() != PyTypeDict)
 		return false;
 
 	mDict = dict;
@@ -887,8 +887,10 @@ bool PyClass::setdict( PyDict* dict )
 
 bool PyClass::setDirList( PyList * list )
 {
-	ASCENT_ASSERT(mWeakRefList == NULL);
-	//assert(list->GetType() == PyTypeList);
+    if (mWeakRefList != NULL)
+        __asm{int 3};
+	//ASCENT_ASSERT(mWeakRefList == NULL);
+	//assert(list->get_type() == PyTypeList);
 	if (list == NULL)
 		return false;
 	mWeakRefList = list;
@@ -968,33 +970,31 @@ uint32 PyClass::hash()
 	return hsh;
 }
 
-void PyObject::IncRef()
+void PyObject::inc_ref()
 {
     mRefcnt++;
 }
 
-void PyObject::DecRef()
+void PyObject::dec_ref()
 {
     mRefcnt--;
     if (mRefcnt <= 0)
         delete this;
 }
 
-uint8 PyObject::GetType()
+uint8 PyObject::get_type()
 {
     return mType;
 }
 
-PyObject::~PyObject()
-{
-}
-
 PyObject::PyObject(PyType type) : mType(type), mRefcnt(1) {}
+PyObject::~PyObject() {}
 
-size_t PyObject::GetRef()
+size_t PyObject::get_ref()
 {
     return mRefcnt;
 }
+
 
 createFileSingleton( PyBaseNone );
 
@@ -1060,7 +1060,7 @@ uint32 PyPackedRow::hash()
 
 bool PyPackedRow::setheader( PyClass * obj )
 {
-	if (obj->GetType() != PyTypeClass)
+	if (obj->get_type() != PyTypeClass)
 		return false;
 
 	mHeader = obj;

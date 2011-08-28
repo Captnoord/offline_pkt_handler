@@ -67,8 +67,8 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 
 	assert(PyTuple_Check(&classdata));
 
-	PyTuple& classdataterror = *classdata.GetItem_asPyTuple(1);
-	PyTuple& tuple = *classdataterror.GetItem_asPyTuple(0);
+	PyTuple& classdataterror = *classdata.get_item_tuple(1);
+	PyTuple& tuple = *classdataterror.get_item_tuple(0);
 
 	if (tuple.size() == 0)
 		ASCENT_HARDWARE_BREAKPOINT;
@@ -81,8 +81,8 @@ PyObject* DBRowModule::parseraw( MarshalStream& stream, PyObject* header, uint8 
 
 	for (int i = 0; i < (int)tuple.size(); i++)
 	{
-		PyTuple& field = *tuple.GetItem_asPyTuple(i);
-		uint32 type = field.GetItem_asInt(1);
+		PyTuple& field = *tuple.get_item_tuple(i);
+		uint32 type = field.get_item_int(1);
 
 		henk[i].index = i;
 		henk[i].typeSize = (uint8)GetFieldSizeFromType(type);
@@ -281,11 +281,11 @@ size_t DBRowModule::GetRawFieldSizeFromHeader( PyObject* object )
 	size_t chunkSize = 0;
 	for (int i = 0; i < (int)pTuple->size(); i++)
 	{
-		PyTuple * leaf = pTuple->GetItem_asPyTuple(i);
+		PyTuple * leaf = pTuple->get_item_tuple(i);
 		if (leaf->size() != 2)
 			ASCENT_HARDWARE_BREAKPOINT;
 
-		uint32 fieldtype = leaf->GetItem_asInt(1);
+		uint32 fieldtype = leaf->get_item_int(1);
 		uint8 fieldSize = (uint8)GetFieldSizeFromType(fieldtype);
 		chunkSize+=fieldSize;
 		//printf("db row field type = %u, size = %u\n", fieldtype, fieldSize);

@@ -30,7 +30,16 @@
 #include "machoNetAddress.h"
 
 MachoPacket::MachoPacket( const char* derived_name ) : PyClass(derived_name) {}
-MachoPacket::~MachoPacket() {}
+
+MachoPacket::~MachoPacket()
+{
+    //printf("~MachoPacket: %s\n", PyClass::mName->content());
+    std::vector<std::string*>::iterator itr = params.begin();
+    for (; itr != params.end(); itr++)
+    {
+        delete (*itr);
+    }
+}
 
 bool MachoPacket::setattr( std::string attr_name, PyObject * attr_obj )
 {
@@ -52,13 +61,16 @@ bool MachoPacket::init( PyObject* state )
         return false;
 
     /* check for obj type */
-    if (!PyTuple_Check(state))
+    if (!PyTuple_Check(state)) {
+        PyDecRef(state);
         return false;
+    }
 
     PyTuple * pState = (PyTuple *)state;
 
     if (pState->size() != 6) {
         sLog.Error("machoNetPacket", "payload obj size != 6");
+        PyDecRef(state);
         return false;
     }
 
@@ -81,20 +93,25 @@ bool MachoPacket::init( PyObject* state )
     if (!params.empty()) {
 
         PyTuple* body = (PyTuple*)mDict->get_item("body");
-        if (!PyTuple_Check(body))
+        if (!PyTuple_Check(body)) {
+            PyDecRef(state);
             return false;
+        }
 
-        if(params.size() != body->size())
+        if(params.size() != body->size()) {
+            PyDecRef(state);
             return false;
+        }
 
         for (unsigned int i = 0; i < params.size(); i++)
         {
-            std::string tmp = params[i];
-            size_t offset = tmp.find('?');
+            std::string *tmp = params[i];
+            size_t offset = tmp->find('?');
             assert(offset == size_t(-1));
-            setattr(tmp, body->get_item(i));
+            setattr(*tmp, body->get_item(i));
         }
     }
+    PyDecRef(state);
     return false;
 }
 
@@ -131,12 +148,17 @@ bool MachoPacket::repr( FILE* fp )
     return true;
 }
 
+void MachoPacket::add_param( const char* param )
+{
+    params.push_back(new std::string(param));
+}
+
 /************************************************************************/
 /* machoCallReq                                                        */
 /************************************************************************/
 machoCallReq::machoCallReq() : MachoPacket("macho.CallReq")
 {
-    params.push_back("payload");
+    add_param("payload");
 }
 
 machoCallReq::~machoCallReq() {}
@@ -148,12 +170,11 @@ machoCallReq* machoCallReq::New()
 
 machoCallRsp::machoCallRsp() : MachoPacket("macho.CallRsp")
 {
-    params.push_back("payload");
+    add_param("payload");
 }
 
 machoCallRsp::~machoCallRsp()
 {
-
 }
 
 machoCallRsp* machoCallRsp::New()
@@ -163,13 +184,12 @@ machoCallRsp* machoCallRsp::New()
 
 machoSessionChangeNotification::machoSessionChangeNotification() : MachoPacket("macho.SessionChangeNotification")
 {
-    params.push_back("change");
-    params.push_back("nodesOfInterest");
+    add_param("change");
+    add_param("nodesOfInterest");
 }
 
 machoSessionChangeNotification::~machoSessionChangeNotification()
 {
-
 }
 
 machoSessionChangeNotification* machoSessionChangeNotification::New()
@@ -179,12 +199,12 @@ machoSessionChangeNotification* machoSessionChangeNotification::New()
 
 machoSessionInitialStateNotification::machoSessionInitialStateNotification() : MachoPacket("macho.SessionInitialStateNotification")
 {
-    params.push_back("initialstate");
+    add_param("initialstate");
 }
 
 machoSessionInitialStateNotification::~machoSessionInitialStateNotification()
 {
-
+    
 }
 
 machoSessionInitialStateNotification* machoSessionInitialStateNotification::New()
@@ -194,12 +214,12 @@ machoSessionInitialStateNotification* machoSessionInitialStateNotification::New(
 
 machoPingRsp::machoPingRsp() : MachoPacket("macho.PingRsp")
 {
-    params.push_back("times");
+    add_param("times");
 }
 
 machoPingRsp::~machoPingRsp()
 {
-
+    
 }
 
 machoPingRsp* machoPingRsp::New()
@@ -209,12 +229,12 @@ machoPingRsp* machoPingRsp::New()
 
 machoPingReq::machoPingReq() : MachoPacket("macho.PingReq")
 {
-    params.push_back("times");
+    add_param("times");
 }
 
 machoPingReq::~machoPingReq()
 {
-
+    
 }
 
 machoPingReq* machoPingReq::New()
@@ -224,14 +244,14 @@ machoPingReq* machoPingReq::New()
 
 machoErrorResponse::machoErrorResponse() : MachoPacket("macho.ErrorResponse")
 {
-    params.push_back("originalCommand");
-    params.push_back("code");
-    params.push_back("payload");
+    add_param("originalCommand");
+    add_param("code");
+    add_param("payload");
 }
 
 machoErrorResponse::~machoErrorResponse()
 {
-
+    
 }
 
 machoErrorResponse* machoErrorResponse::New()
@@ -241,12 +261,12 @@ machoErrorResponse* machoErrorResponse::New()
 
 machoNotification::machoNotification() : MachoPacket("macho.Notification")
 {
-    params.push_back("payload");
+    add_param("payload");
 }
 
 machoNotification::~machoNotification()
 {
-
+    
 }
 
 machoNotification* machoNotification::New()

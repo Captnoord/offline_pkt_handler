@@ -36,7 +36,9 @@ protected:
 public:
     utilKeyVal() : PyClass( "util.KeyVal" ) {}
 
-    ~utilKeyVal(){};
+    ~utilKeyVal()
+    {
+    }
 
     utilKeyVal* New()
     {
@@ -46,7 +48,7 @@ public:
     /* comments: format guessed from compiled scripts */
     bool init(PyObject* state)
     {
-        if (state->GetType() != PyTypeDict)
+        if (!PyDict_Check(state))
             return false;
         
         // TODO check if this has any data in it... it should be empty
@@ -60,23 +62,22 @@ public:
 
     bool setstate(PyObject* state)
     {
-        sLog.Warning("util.row", "stub setstate called");
+        sLog.Warning("util.KeyVal", "stub setstate called");
         return true;
     }
 
     /* this is a stub that needs to be implemented */
     PyTuple* getstate()
     {
-        sLog.Warning("utilRowset", "stub getstate called");
+        sLog.Warning("util.KeyVal", "stub getstate called");
         return NULL;
     };
 
     bool repr( FILE* fp )
     {
-        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        fprintf(fp, "util.KeyVal needs some dumping love\n");
         return true;
     }
-
 };
 
 class utilRowset : public PyClass
@@ -85,7 +86,10 @@ protected:
 public:
     utilRowset() : PyClass( "util.Rowset" ) {}
 
-    ~utilRowset(){};
+    ~utilRowset()
+    {
+        
+    };
 
     utilRowset* New()
     {
@@ -118,20 +122,20 @@ public:
 
     bool setstate(PyObject* state)
     {
-        sLog.Warning("util.row", "stub setstate called");
+        sLog.Warning("util.Rowset", "stub setstate called");
         return true;
     }
 
     /* this is a stub that needs to be implemented */
     PyTuple* getstate()
     {
-        sLog.Warning("utilRowset", "stub getstate called");
+        sLog.Warning("util.Rowset", "stub getstate called");
         return NULL;
     }
 
     bool repr( FILE* fp )
     {
-        fprintf(fp, "dbutil_CRowset needs some dumping love\n");
+        fprintf(fp, "util.Rowset needs some dumping love\n");
         return true;
     }
 

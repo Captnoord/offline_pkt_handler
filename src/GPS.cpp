@@ -10,7 +10,6 @@ exceptionsGPSTransportClosed::exceptionsGPSTransportClosed() : PyClass("exceptio
 
 exceptionsGPSTransportClosed::~exceptionsGPSTransportClosed()
 {
-
 }
 
 exceptionsGPSTransportClosed* exceptionsGPSTransportClosed::New()
@@ -21,10 +20,9 @@ exceptionsGPSTransportClosed* exceptionsGPSTransportClosed::New()
 bool exceptionsGPSTransportClosed::init( PyObject* state )
 {
     sLog.Warning("util.row", "init stubb called");
-    return false;
 
-    if (!PyTuple_Check(state))
-        return false;
+    //if (!PyTuple_Check(state))
+        //return false;
 
     //PyTuple * pState = (PyTuple*)state;
 
@@ -39,6 +37,8 @@ bool exceptionsGPSTransportClosed::init( PyObject* state )
     'reasonCode': getattr(self, 'reasonCode', None),
     'reasonArgs': getattr(self, 'reasonArgs', None),
     'exception': self}*/
+
+    PyDecRef(state);
     return true;
 }
 

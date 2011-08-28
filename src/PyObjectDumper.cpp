@@ -41,13 +41,13 @@ void Dump( FILE * fp, PyObject * obj, int deep, bool isItr /*= false*/, bool dic
 		printf("Can not dump NULL object\n");
 		return;
 	}
-	//printf("Deep: %d, PyObject type: 0x%X, filtered: 0x%X\n", deep, obj->GetType(), obj->GetType());
+	//printf("Deep: %d, PyObject type: 0x%X, filtered: 0x%X\n", deep, obj->get_type(), obj->get_type());
 
 	/* this one makes sure that we have slightly formatted output (important for readability) */
 	if(isItr == false && deep != -1)
 		WriteSpacer(fp, deep);
 
-	switch(obj->GetType())
+	switch(obj->get_type())
 	{
 	case PyTypeNone:
 		//if (dict_trick == false)
@@ -346,7 +346,8 @@ void Dump( FILE * fp, PyObject * obj, int deep, bool isItr /*= false*/, bool dic
 		{
 			PyClass * pyclass_obj = (PyClass*) obj;
 
-            pyclass_obj->repr(fp);
+            if (!pyclass_obj->repr(fp))
+                printf("repr of the object has failed\n");
 		}
 		break;
 
@@ -409,7 +410,7 @@ void Dump( FILE * fp, PyObject * obj, int deep, bool isItr /*= false*/, bool dic
 		break;
 
 	default:
-		printf("PyDump whelp: unhandled opcode: %u from object: 0x%p", obj->GetType(), obj);
+		printf("PyDump whelp: unhandled opcode: %u from object: 0x%p", obj->get_type(), obj);
 		assert(false);
 		break;
 	}

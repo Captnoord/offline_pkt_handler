@@ -394,6 +394,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
                 if (!tuple.set_item(0, obj))
                     MARSHALSTREAM_RETURN_NULL;
+                PyDecRef(obj);
 
 				MARSHALSTREAM_RETURN(&tuple);
 			}
@@ -417,6 +418,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
                     if (!tuple.set_item(i, obj))
                         MARSHALSTREAM_RETURN_NULL;
+                    PyDecRef(obj);
 				}
 
 				MARSHALSTREAM_RETURN(&tuple);
@@ -445,6 +447,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 					if (!tuple.set_item(i, obj))
                         MARSHALSTREAM_RETURN_NULL;
+                    PyDecRef(obj);
 				}
 
 				MARSHALSTREAM_RETURN(&tuple);
@@ -476,6 +479,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 				if (!list->set_item(0, obj))
                     MARSHALSTREAM_RETURN_NULL;
+                PyDecRef(obj);
 
 				MARSHALSTREAM_RETURN(list);
 			}
@@ -509,6 +513,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 					if(!list.set_item(i, obj))
                         MARSHALSTREAM_RETURN_NULL;
+                    PyDecRef(obj);
 				}
 				MARSHALSTREAM_RETURN(&list);
 			}
@@ -819,6 +824,9 @@ PyObject* MarshalStream::ReadGlobalInstance( ReadStream & stream, BOOL shared )
 
 	//MARSHALSTREAM_RETURN(class_object);
 
+    PyDecRef(module_name);
+    PyDecRef(bases);
+
     MARSHALSTREAM_RETURN(new_instance);
 }
 
@@ -924,7 +932,7 @@ PyObject* MarshalStream::ReadReducedClass( ReadStream & stream, BOOL shared )
     if (method == NULL)
     {
         PyDecRef(bases);
-        MARSHALSTREAM_RETURN_NULL;
+        MARSHALSTREAM_RETURN_NULL
     }
 
     PyObject * args = bases->get_item(1);
@@ -992,14 +1000,14 @@ PyObject* MarshalStream::ReadNewObj( ReadStream & stream, BOOL shared )
     if (!PyTuple_Check(obj))
         MARSHALSTREAM_RETURN_NULL;
 
-    PyTuple* args = obj->GetItem_asPyTuple(0);
+    PyTuple* args = obj->get_item_tuple(0);
     if (args == NULL)
     {
         PyDecRef(obj);
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    PyClass* cls = args->GetItem_asPyClass(0);
+    PyClass* cls = args->get_item_class(0);
     if (cls == NULL)
     {
         PyDecRef(obj);
@@ -1190,6 +1198,7 @@ PyObject* MarshalStream::ReadClassString( ReadStream & stream, BOOL shared )
 {
 	PyString* objectName = (PyString*)ReadBuffer(stream);
 
+    // here is the unbalanced reference stuff... 
     PyClass* class_object = sPyCallMgr.find(objectName);
     if (class_object == NULL)
         MARSHALSTREAM_RETURN_NULL;
@@ -1199,6 +1208,9 @@ PyObject* MarshalStream::ReadClassString( ReadStream & stream, BOOL shared )
 		if(mReferencedObjectsMap.StoreReferencedObject(class_object) == -1)
             ASCENT_HARDWARE_BREAKPOINT;
 	}
+
+    PyIncRef(class_object);
+    PyDecRef(objectName);
 	
 	MARSHALSTREAM_RETURN(class_object);
 }
@@ -1447,7 +1459,7 @@ bool marshalString(const char* str, WriteStream & stream)
 
 bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 {
-	uint8 object_type = ((PyInt*)object)->GetType();
+	uint8 object_type = object->get_type();
 	
 	switch (object_type)
 	{
@@ -1478,7 +1490,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			}
 			else
 			{
-                if (object->GetRef() > 1)
+                if (object->get_ref() > 1)
                     ASCENT_HARDWARE_BREAKPOINT;
 				return WriteVarInteger(stream, object);
 			}
@@ -1538,7 +1550,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 	case PyTypeString:
 		{
-            //if (object->GetRef() > 1)
+            //if (object->get_ref() > 1)
               //  ASCENT_HARDWARE_BREAKPOINT;
 
             PyString & str = *(PyString*)object;
@@ -1572,7 +1584,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 			}*/
 			else
 			{
-                //if (object->GetRef() > 1)
+                //if (object->get_ref() > 1)
                 //Op_PyLongString
 
                 if (!stream.writeOpcode(Op_PyBuffer))
@@ -1641,7 +1653,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 
 	case PyTypeDict:
 		{
-            if (object->GetRef() > 1)
+            if (object->get_ref() > 1)
                 ASCENT_HARDWARE_BREAKPOINT;
 
             PyDict & dict = *(PyDict*)object;			
@@ -1672,12 +1684,12 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 		{
             PyTuple & tuple = *(PyTuple*)object;
             uint8 flag = 0;
-            if (tuple.GetRef() > 1)
+            if (tuple.get_ref() > 1)
                 ASCENT_HARDWARE_BREAKPOINT;
 
 
             /* if we have more references that 1 we need to check if can save data :D by using reference opcode stuff. */
-            if ( tuple.GetRef() > 1 && tuple.size() != 0)
+            if ( tuple.get_ref() > 1 && tuple.size() != 0)
             {
                 // debug this to see if it works
                 ASCENT_HARDWARE_BREAKPOINT;
@@ -1735,7 +1747,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 	case PyTypeList:
 		{
             /* just crash because we haven't implemented shared object marshaling for this object yet */
-            if (object->GetRef() > 1)
+            if (object->get_ref() > 1)
                 ASCENT_HARDWARE_BREAKPOINT;
 
 			PyList & list = *(PyList*)object;
@@ -1783,7 +1795,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 	case PyTypeClass:
 		{
             uint8 flag = 0;
-            if (object->GetRef() > 1)
+            if (object->get_ref() > 1)
             {
                 uint32 ref_index = 0;
                 if ( RefFindOrInsert(object, ref_index) == true )
@@ -1837,7 +1849,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 		} break;
 
 	default:
-		uint8 obj_type = object->GetType();
+		uint8 obj_type = object->get_type();
 		Log.Error("MarshalStream", "marshalling unhandled tag[0x%X].... something went wrong..", obj_type);
 		
 		Dump(stdout, object, 0);

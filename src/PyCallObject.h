@@ -48,6 +48,9 @@ class util_Row : public PyClass
 {
 public:
     util_Row() : PyClass( "util.Row" ) {}
+    ~util_Row()
+    {        
+    }
 
     util_Row* New()
     {

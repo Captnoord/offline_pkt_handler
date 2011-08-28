@@ -73,7 +73,7 @@
 				AdditionalLibraryDirectories=""
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				AssemblyDebug="0"
+				AssemblyDebug="1"
 				GenerateMapFile="false"
 				MapExports="false"
 				SubSystem="1"
@@ -394,7 +394,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\rowset.h"
+					RelativePath="..\src\rowSet.h"
 					>
 				</File>
 				<Filter

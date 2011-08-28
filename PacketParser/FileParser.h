@@ -280,10 +280,10 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 		//printf("Parsed packet nr: %u | offset: %u, size: %u\n", i, readstream.tell(), readstream.size());
 
 		i++;
-	}
+    }
 
 	fclose(fp_out);
-	fclose (fp_in);
+	fclose(fp_in);
 
 	printf("\nOffline packet handling done: handled:%u packets\n", i);
 }

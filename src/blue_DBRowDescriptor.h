@@ -41,7 +41,9 @@ public:
         is_c_api = true; // bleh hack...
     }
 
-    ~blueDBRowDescriptor() {}
+    ~blueDBRowDescriptor()
+    {        
+    }
 
     blueDBRowDescriptor* New()
     {
@@ -72,8 +74,8 @@ public:
                     
                     assert(itemTuple->size() == 2);
                     // bleh this is evil... aka fucked up..
-                    mTableNames.push_back(itemTuple->GetItem_asPyString(0)->content());
-                    mTableTypes.push_back(itemTuple->GetItem_asInt(1));
+                    mTableNames.push_back(itemTuple->get_item_string(0)->content());
+                    mTableTypes.push_back(itemTuple->get_item_int(1));
                     mTableSizes.push_back(1); // dirty hack I am surely gonna forget... we haven't implemented the shit for gettypesize..
                 }
             }
@@ -90,7 +92,7 @@ public:
 
     bool setstate(PyObject* state)
     {
-        sLog.Warning("util.row", "stub setstate called");
+        sLog.Warning("blueDBRowDescriptor", "stub setstate called");
         return true;
     }
 

@@ -85,19 +85,19 @@ public:
 
     bool setstate(PyObject* state)
     {
-        sLog.Warning("util.row", "stub setstate called");
+        sLog.Warning("dbutil.CRowset", "stub setstate called");
         return true;
     }
 
     PyTuple* getstate()
     {
-        sLog.Warning("utilRowset", "stub getstate called");
+        sLog.Warning("dbutil.CRowset", "stub getstate called");
         return NULL;
     };
 
     bool repr( FILE* fp )
     {
-        fprintf(fp, "dbutilCRowset needs some dumping love\n");
+        fprintf(fp, "dbutil.CRowset needs some dumping love\n");
         return true;
     }
 

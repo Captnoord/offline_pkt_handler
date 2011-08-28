@@ -149,7 +149,7 @@ bool WriteStream::insert( const uint8* buff, size_t buff_len, size_t index )
         return false;
 
     /* the amount of data that needs to be moved */
-    const int delta_size = data_size - index;
+    const int delta_size = (int)data_size - (int)index;
 
     /* shouldn't be able to move negative count of data */
     if (delta_size < 0)

@@ -232,6 +232,14 @@ void oLog::Color(uint32 colorcode, const char * str, ...)
 #endif//#ENABLE_CONSOLE_LOG
 }
 
+void oLog::flush()
+{
+#ifdef WIN32
+    FlushFileBuffers(stderr_handle);
+    FlushFileBuffers(stdout_handle);
+#endif
+}
+
 void SessionLogWriter::write(const char* format, ...)
 {
 	if(!m_file)
