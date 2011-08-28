@@ -20,8 +20,6 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-#include "Common.h"
-
 #ifdef WIN32
 #  define KILL_THIS_PROCESS TerminateProcess(GetCurrentProcess(), 0);
 #else

@@ -173,7 +173,7 @@ public:
 	ASCENT_INLINE void Release()
 	{
 		if((--m_recursiveCount) == 0)
-			InterlockedExchange(&m_lock, 0);
+			(void)InterlockedExchange(&m_lock, 0);
 	}
 };
 

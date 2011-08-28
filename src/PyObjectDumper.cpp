@@ -34,7 +34,7 @@ void DumpObject(FILE * fd, PyObject* obj)
 
 #define DUMP_ITR_SPACE 2
 
-void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool dict_trick /*= false*/ )
+void Dump( FILE * fp, PyObject * obj, int deep, bool isItr /*= false*/, bool dict_trick /*= false*/ )
 {
 	if (obj == NULL)
 	{
@@ -279,16 +279,16 @@ void Dump( FILE * fp, PyObject * obj, size_t deep, bool isItr /*= false*/, bool 
 			{
 				WriteSpacer(fp, deep+DUMP_ITR_SPACE);
 				fprintf(fp,"itr[%d]:", i);
-				PyObject* obj = tuple.get_item(i);
+				PyObject* item = tuple.get_item(i);
 				
 				/* this check only exists because of not complete DBRow unmarshal algorithm */
-				if (obj == NULL) {
+				if (item == NULL) {
 					fputc('\n', fp);
 					continue;
 				}
 				/* commented because: see above comments */
-				//assert(obj);
-				Dump(fp, obj, deep, true);
+				//assert(item);
+				Dump(fp, item, deep, true);
 			}
 		}
 		break;

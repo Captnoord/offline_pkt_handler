@@ -63,12 +63,20 @@ public:
     /* this is a stub that needs to be implemented */
     bool init(PyObject* state)
     {
+        sLog.Warning("util.row", "init stubb called");
         return false;
     }
 
-    /* this is a stub that needs to be implemented */
-    PyTuple* GetState()
+    bool setstate(PyObject* state)
     {
+        sLog.Warning("util.row", "stub setstate called");
+        return true;
+    }
+
+    /* this is a stub that needs to be implemented */
+    PyTuple* getstate()
+    {
+        sLog.Warning("utilRowset", "stub getstate called");
         return NULL;
     }
 

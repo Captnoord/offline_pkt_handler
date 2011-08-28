@@ -109,7 +109,7 @@ bool ReadStream::readString( char ** buffer, size_t len )
     if (mBuffer == NULL)
         return false;
 
-    char* buff = static_cast<char*>(&mBuffer[mReadIndex]);
+    char* buff = reinterpret_cast<char*>(&mBuffer[mReadIndex]);
     if (buff == NULL)
         return false;
 
@@ -126,7 +126,7 @@ bool ReadStream::readWstring( wchar_t ** buffer, size_t len )
     if (mBuffer == NULL)
         return false;
 
-    wchar_t* buff = static_cast<wchar_t*>(&mBuffer[mReadIndex]);
+    wchar_t* buff = reinterpret_cast<wchar_t*>(&mBuffer[mReadIndex]);
     if (buff == NULL)
         return false;
 

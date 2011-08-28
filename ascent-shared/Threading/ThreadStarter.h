@@ -23,7 +23,7 @@
 class SERVER_DECL ThreadContext
 {
 public:
-	ThreadContext() { m_threadRunning = true; }
+    ThreadContext() : THREAD_HANDLE(NULL), m_threadRunning(true) {}
 	virtual ~ThreadContext() {}
 	virtual bool run() = 0;
 

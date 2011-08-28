@@ -35,7 +35,7 @@ string FormatOutputString(const char * Prefix, const char * Description, bool us
 	if(useTimeStamp)
 	{
 		char ftime[100];
-		snprintf(ftime, 100, "-%-4d-%02d-%02d %02d-%02d-%02d", a->tm_year+1900, a->tm_mon+1, a->tm_mday, a->tm_hour, a->tm_min, a->tm_sec);
+		(void)snprintf(ftime, 100, "-%-4d-%02d-%02d %02d-%02d-%02d", a->tm_year+1900, a->tm_mon+1, a->tm_mday, a->tm_hour, a->tm_min, a->tm_sec);
 		strcat(p, ftime);
 	}
 
@@ -59,7 +59,8 @@ void oLog::SetColor(unsigned int color)
 #ifndef WIN32
 	fputs(colorstrings[color], stdout);
 #else
-	SetConsoleTextAttribute(stdout_handle, (WORD)color);
+	if (!SetConsoleTextAttribute(stdout_handle, (WORD)color))
+        printf("oLog::unable to set concole text attribute\n"); // replace this by something better
 #endif
 }
 
@@ -74,8 +75,8 @@ void oLog::String( const char * str, ... )
 	
 	if(m_screenLogLevel >= 0)
 	{
-		vprintf(str, ap);
-		putc('\n', stdout);
+		(void)vprintf(str, ap);
+		(void)putc('\n', stdout);
 	}
 
 	va_end(ap);
@@ -94,8 +95,8 @@ void oLog::Error( const char * err, ... )
 	if(m_screenLogLevel >= 1)
 	{
 		SetColor(TRED);
-		vfprintf(stderr, err, ap);
-		putc('\n', stderr);
+		(void)vfprintf(stderr, err, ap);
+		(void)putc('\n', stderr);
 		SetColor(TNORMAL);
 	}
 
@@ -115,8 +116,8 @@ void oLog::Warning( const char * warning, ... )
 	if(m_screenLogLevel >= 1)
 	{
 		SetColor(TYELLOW);
-		vfprintf(stdout, warning, ap);
-		putc('\n', stdout);
+		(void)vfprintf(stdout, warning, ap);
+		(void)putc('\n', stdout);
 		SetColor(TNORMAL);
 	}
 
@@ -135,8 +136,8 @@ void oLog::Basic( const char * str, ... )
 
 	if(m_screenLogLevel >= 1)
 	{
-		vprintf(str, ap);
-		putc('\n', stdout);
+		(void)vprintf(str, ap);
+		(void)putc('\n', stdout);
 	}
 
 	va_end(ap);
@@ -154,8 +155,8 @@ void oLog::Detail( const char * str, ... )
 
 	if(m_screenLogLevel >= 2)
 	{
-		vprintf(str, ap);
-		putc('\n', stdout);
+		(void)vprintf(str, ap);
+		(void)putc('\n', stdout);
 	}
 
 	va_end(ap);
@@ -173,8 +174,8 @@ void oLog::Debug( const char * str, ... )
 
 	if(m_screenLogLevel >= 3)
 	{
-		vprintf(str, ap);
-		putc('\n', stdout);
+		(void)vprintf(str, ap);
+		(void)putc('\n', stdout);
 	}
 
 	va_end(ap);
@@ -186,7 +187,7 @@ void oLog::Menu( const char * str, ... )
 #ifdef ENABLE_CONSOLE_LOG
 	va_list ap;
 	va_start(ap, str);
-	vprintf( str, ap );
+	(void)vprintf( str, ap );
 	va_end(ap);
 	fflush(stdout);
 #endif//ENABLE_CONSOLE_LOG
@@ -221,11 +222,11 @@ void oLog::Color(uint32 colorcode, const char * str, ...)
 	va_list ap;
 	va_start(ap, str);
 #ifdef WIN32
-	SetConsoleTextAttribute(stdout_handle, WORD(colorcode));
+	(void)SetConsoleTextAttribute(stdout_handle, WORD(colorcode));
 #else
 	printf(colorstrings[colorcode]);
 #endif
-	vprintf( str, ap );
+	(void)vprintf( str, ap );
 	fflush(stdout);
 	va_end(ap);
 #endif//#ENABLE_CONSOLE_LOG
@@ -244,7 +245,7 @@ void SessionLogWriter::write(const char* format, ...)
 	tm* aTm = localtime(&t);
 	sprintf(out, "[%-4d-%02d-%02d %02d:%02d:%02d] ",aTm->tm_year+1900,aTm->tm_mon+1,aTm->tm_mday,aTm->tm_hour,aTm->tm_min,aTm->tm_sec);
 	size_t l = strlen(out);
-	vsnprintf(&out[l], 32768 - l, format, ap);
+	(void)vsnprintf(&out[l], 32768 - l, format, ap);
 
 	fprintf(m_file, "%s\n", out);
 	va_end(ap);

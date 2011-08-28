@@ -20,7 +20,7 @@
 #ifndef SERVER_FRAMEWORK_SINGLETON_H
 #define SERVER_FRAMEWORK_SINGLETON_H
 
-#include "Errors.h"
+//#include "Errors.h"
 
 /// Should be placed in the appropriate .cpp file somewhere
 #define initialiseSingleton( type ) \

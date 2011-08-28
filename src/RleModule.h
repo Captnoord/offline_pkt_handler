@@ -32,7 +32,7 @@ class RleModule
 {
 public:
 
-    static void pack(char *in, int in_size, char *out, int *out_size);
+    static void pack( const char *in, int in_size, char *out, int *out_size );
 
 	/**
 	 * \brief unpack decodes the Zero 'Rle' data.
@@ -42,10 +42,8 @@ public:
 	 * @param[out] dst the destination buffer, needs to be large enough.
 	 * @param[out] dst_len the length of the destination buffer.
 	 * @return true if decoded correctly and false if a error has happened.
-	 * @todo clean this function up, so it doesn't look as ugly as it does now.
-	 * @note as my teacher always screamed at me "DON'T USE GOTO'S AND LABELS".
 	 */
-	static bool unpack(unsigned char* src, const int src_len, unsigned char* dst, int* dst_len);
+	static bool unpack( const unsigned char* src, const int src_len, unsigned char* dst, const int* dst_len );
 
 };
 #endif // _RLEMODULE_H

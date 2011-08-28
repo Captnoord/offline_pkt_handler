@@ -33,8 +33,8 @@ PyMarshalStringTable::PyMarshalStringTable()
 	for (size_t i = 0; i < StringTableSize; i++)
 	{
 		uint32 hashValue = hash(StringTableData[i]);
-        mStringTable.insert( std::make_pair( hashValue, static_cast<uint8>(i) ) );
-		mPyStringTable[i].set( StringTableData[i], strlen( StringTableData[i] ) );
+        (void)mStringTable.insert( std::make_pair( hashValue, static_cast<uint8>(i) ) );
+		(void)mPyStringTable[i].set( StringTableData[i], strlen( StringTableData[i] ) );
 	}
 }
 
@@ -43,7 +43,7 @@ PyMarshalStringTable::~PyMarshalStringTable()
 }
 
 /* lookup a index using a string */
-size_t PyMarshalStringTable::LookupIndex(std::string &str)
+int PyMarshalStringTable::LookupIndex(std::string &str)
 {
 	mLock.Acquire();
 	uint32 hashValue = hash(str);
@@ -58,7 +58,7 @@ size_t PyMarshalStringTable::LookupIndex(std::string &str)
 }
 
 /* lookup a index using a string */
-size_t PyMarshalStringTable::LookupIndex(const char* str)
+int PyMarshalStringTable::LookupIndex(const char* str)
 {
 	// I am lazy... so I do it this way
 	std::string _str(str);

@@ -36,7 +36,7 @@
 class TimeMeasure
 {
 public:
-    TimeMeasure() : m_sampled_time(0.0)
+    TimeMeasure() : m_resolution(0.0), m_sampled_time(0.0), m_start_time(0)
 	{
         int64 freq;
 
@@ -47,7 +47,7 @@ public:
             m_resolution = 1.0 / (double)freq;
 
             // Set start time for timer
-            QueryPerformanceCounter( (LARGE_INTEGER *)&m_start_time );
+            (void)QueryPerformanceCounter( (LARGE_INTEGER *)&m_start_time );
         }
 	}
 
@@ -71,7 +71,8 @@ protected:
         double  t;
         int64 t_64;
 
-        QueryPerformanceCounter( (LARGE_INTEGER *)&t_64 );
+        (void)QueryPerformanceCounter( (LARGE_INTEGER *)&t_64 );
+
         t = (double)(t_64 - m_start_time);
 
         /* Calculate the current time */

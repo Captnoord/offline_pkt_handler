@@ -126,7 +126,13 @@ uint32 RandomUInt()
 }
 
 //////////////////////////////////////////////////////////////////////////
-
+CRandomMersenne::CRandomMersenne( uint32 seed ) : mti(0), RLimit(0), Architecture(LITTLE_ENDIAN1)
+{
+    //lint -e{1566}
+    RandomInit(seed);
+    LastInterval = 0;
+    Architecture = LITTLE_ENDIAN1;
+}
 
 void CRandomMersenne::Init0(uint32 seed) {
 	// Detect computer architecture
@@ -148,9 +154,8 @@ void CRandomMersenne::RandomInit(uint32 seed) {
 	Init0(seed);
 
 	// Randomize some more
-	for (int i = 0; i < 37; i++) BRandom();
+	for (int i = 0; i < 37; i++) (void)BRandom();
 }
-
 
 void CRandomMersenne::RandomInitByArray(uint32 seeds[], int length) {
 	// Seed by more than 32 bits
@@ -176,7 +181,7 @@ void CRandomMersenne::RandomInitByArray(uint32 seeds[], int length) {
 
 	// Randomize some more
 	mti = 0;
-	for (int i = 0; i <= MERS_N; i++) BRandom();
+	for (int h = 0; h <= MERS_N; h++) (void)BRandom();
 }
 
 
@@ -187,6 +192,7 @@ uint32 CRandomMersenne::BRandom() {
 	if (mti >= MERS_N) {
 		// Generate MERS_N words at one time
 		const uint32 LOWER_MASK = (1LU << MERS_R) - 1;       // Lower MERS_R bits
+        //lint -e{648}
 		const uint32 UPPER_MASK = 0xFFFFFFFF << MERS_R;      // Upper (32 - MERS_R) bits
 		static const uint32 mag01[2] = {0, MERS_A};
 
@@ -245,7 +251,7 @@ int CRandomMersenne::IRandom(int min, int max) {
 	// Output random integer in the interval min <= x <= max
 	// Relative error on frequencies < 2^-32
 	if (max <= min) {
-		if (max == min) return min; else return 0x80000000;
+		if (max == min) return min; else return (int)0x80000000;
 	}
 	// Multiply interval with random and truncate
 	int r = int((max - min + 1) * Random()) + min; 
@@ -260,7 +266,7 @@ int CRandomMersenne::IRandomX(int min, int max) {
 	// This is obtained by rejecting certain bit values so that the number
 	// of possible bit values is divisible by the interval length
 	if (max <= min) {
-		if (max == min) return min; else return 0x80000000;
+		if (max == min) return min; else return (int)0x80000000;
 	}
 
 	// 64 bit integers available. Use multiply and shift method

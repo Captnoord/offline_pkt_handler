@@ -335,7 +335,11 @@ enum MsTimeVariables
 
    // hacky stuff for vc++
 #  define snprintf _snprintf
-#  define vsnprintf _vsnprintf
+#  ifdef vsnprintf
+#    undef vsnprintf
+#    define vsnprintf _vsnprintf
+#  endif
+
 #  define strtok_r strtok_s
 #elif ASCENT_COMPILER == COMPILER_INTEL
 #  define HM_NAMESPACE std
@@ -461,7 +465,7 @@ static ASCENT_FORCEINLINE uint32 int32abs2uint32( const int value )
 static ASCENT_FORCEINLINE int float2int32(const float value)
 {
 #if !defined(X64) && ASCENT_COMPILER == COMPILER_MICROSOFT 
-	int i;
+	int i = 0;
 	__asm {
 		fld value
 		frndint
@@ -480,7 +484,7 @@ static ASCENT_FORCEINLINE int float2int32(const float value)
 static ASCENT_FORCEINLINE int double2int32(const double value)
 {
 #if !defined(X64) && ASCENT_COMPILER == COMPILER_MICROSOFT
-	int i;
+	int i = 0;
 	__asm {
 		fld value
 		frndint

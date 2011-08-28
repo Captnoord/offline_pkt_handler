@@ -58,7 +58,7 @@ public:
 	 * @param[in] string that needs a lookup for a index nr.
 	 * @return the index number of the string that was given, returns -1 if string is not found.
 	 */
-	size_t LookupIndex(std::string &str);
+	int LookupIndex(std::string &str);
 
 	/**
 	* @brief lookup a index nr using a string
@@ -68,7 +68,7 @@ public:
 	* @param[in] string that needs a lookup for a index nr.
 	* @return the index number of the string that was given, returns -1 if string is not found.
 	*/
-	size_t LookupIndex(const char* str);
+	int LookupIndex(const char* str);
 
 	/**
 	 * @brief lookup a string using a index
@@ -107,31 +107,31 @@ private:
 	{
 		const char * str = oStr.c_str();
 
-		uint32 hash = 5381;
+		uint32 hash_number = 5381;
 		int c;
 
 		while (c = *str++)
-			hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+			hash_number = ((hash_number << 5) + hash_number) + c; /* hash_number * 33 + c */
 
-		return hash;
+		return hash_number;
 	}
 
     uint32 hash(char* str)
     {
-        uint32 hash = 5381;
+        uint32 hash_number = 5381;
         uint32 c;
 
         //while (c = *str++)
-            //hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+            //hash_number = ((hash_number << 5) + hash_number) + c; /* hash_number * 33 + c */
         int i = 0;
         do {
             //c = *str++;
             c = str[i++];
             printf("0x%X, %c\n", c, (char)c);
-            hash = ((hash << 5) + hash) + c;
+            hash_number = ((hash_number << 5) + hash_number) + c;
         } while (c != '\0');
 
-        return hash;
+        return hash_number;
     }
 
 private:

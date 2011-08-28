@@ -66,10 +66,6 @@ public:
 	bool operator==(const char *str1);
 	PyString &operator=(const char *str);
 
-    /**
-     * @note we need this operator?
-     */
-	//char &operator[](const int index);
 private:
 
 	char* mStr;

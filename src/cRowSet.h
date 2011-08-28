@@ -83,8 +83,15 @@ public:
         return true;
     }
 
-    PyTuple* GetState()
+    bool setstate(PyObject* state)
     {
+        sLog.Warning("util.row", "stub setstate called");
+        return true;
+    }
+
+    PyTuple* getstate()
+    {
+        sLog.Warning("utilRowset", "stub getstate called");
         return NULL;
     };
 

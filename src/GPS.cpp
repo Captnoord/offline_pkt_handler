@@ -20,6 +20,9 @@ exceptionsGPSTransportClosed* exceptionsGPSTransportClosed::New()
 
 bool exceptionsGPSTransportClosed::init( PyObject* state )
 {
+    sLog.Warning("util.row", "init stubb called");
+    return false;
+
     if (!PyTuple_Check(state))
         return false;
 
@@ -39,8 +42,9 @@ bool exceptionsGPSTransportClosed::init( PyObject* state )
     return true;
 }
 
-PyTuple* exceptionsGPSTransportClosed::GetState()
+PyTuple* exceptionsGPSTransportClosed::getstate()
 {
+    sLog.Warning("utilRowset", "stub getstate called");
     return NULL;
 }
 

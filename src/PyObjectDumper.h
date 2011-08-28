@@ -26,7 +26,7 @@
 #ifndef _PYOBJECTDUMPER_H
 #define _PYOBJECTDUMPER_H
 
-void Dump(FILE * fp, PyObject * obj, size_t deep, bool isItr = false, bool convertNull = false);
+void Dump(FILE * fp, PyObject * obj, int deep, bool isItr = false, bool convertNull = false);
 void DumpObject(FILE * fd, PyObject* obj);
 
 /** checks if a string contains printable characters

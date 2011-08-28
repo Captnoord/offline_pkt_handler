@@ -60,7 +60,6 @@ private:
 /* fake python api                                                      */
 /************************************************************************/
 
-#if 0
 /**
  * @brief 
  *
@@ -76,8 +75,6 @@ static PyUnicodeUCS2* PyUnicodeUCS2_FromWideChar(const wchar_t* str, size_t len)
 	return string;
 }
 
-#endif
-
 /**
  * @brief Python API cloning, converting a UTF8 string to a unicode UCS2 string.
  *
@@ -91,20 +88,24 @@ static PyUnicodeUCS2* PyUnicodeUCS2_FromWideChar(const wchar_t* str, size_t len)
  */
 static PyUnicodeUCS2* PyUnicodeUCS2_DecodeUTF8(const char* str, size_t len)
 {
-	// implementation like these sucks....
-	size_t nlen = len;
+	PyUnicodeUCS2 * result = new PyUnicodeUCS2();
+
+    if (!result->resize(len)) {
+        PyDecRef(result);
+        //lint -e{429} suppress "Custodial pointer has not been freed or returned"
+        return NULL;
+    }
+
+	size_t newSize = mbstowcs(result->content(), str, len);
+	result->content()[len] = '\0';
 	
-	PyUnicodeUCS2 * retstr = new PyUnicodeUCS2();
-	retstr->resize(nlen);
-	size_t newSize = mbstowcs(retstr->content(), str, nlen);
-	retstr->content()[nlen] = '\0';
-	
-	if (newSize != nlen) {
-		PyDecRef(retstr);
+	if (newSize != len) {
+		PyDecRef(result);
+        //lint -e{429} suppress "Custodial pointer has not been freed or returned"
 		return NULL;
 	}
 
-	return retstr;
+	return result;
 }
 
 static PyObject *PyUnicode_AsUTF8String(PyObject *unicode)
@@ -115,12 +116,17 @@ static PyObject *PyUnicode_AsUTF8String(PyObject *unicode)
 	PyUnicodeUCS2 * str = (PyUnicodeUCS2 *)unicode;
 
 	PyString * res = new PyString();
-	res->resize(str->size());
+    if (!res->resize(str->size())) {
+        PyDecRef(res);
+        //lint -e{429} suppress "Custodial pointer has not been freed or returned"
+        return NULL;
+    }
 		
 	size_t ret_len = wcstombs((char*)&res->content()[0], str->content(), str->size());
 
 	if (ret_len != str->size()) {
 		PyDecRef(res);
+        //lint -e{429} suppress "Custodial pointer has not been freed or returned"
 		return NULL;
 	}
 

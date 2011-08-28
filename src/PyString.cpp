@@ -34,17 +34,17 @@ PyString::PyString() : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValu
 PyString::PyString(const char* str) : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
 	size_t len = strlen(str);
-	set(str, len);
+	(void)set(str, len);
 }
 
 PyString::PyString(const char* str, size_t len) : PyObject(PyTypeString), mStr(NULL), mStrLen(0), mHashValue(0)
 {
-	set(str, len);
+	(void)set(str, len);
 }
 
 PyString::PyString(std::string& str) : PyObject(PyTypeString), mStr(NULL),  mStrLen(0), mHashValue(0)
 {
-	set(str.c_str(), str.size());
+	(void)set(str.c_str(), str.size());
 }
 
 PyString::~PyString()
@@ -100,7 +100,7 @@ PyString& PyString::append( const std::string& str, size_t pos, size_t n )
 			n = str.size();
 
 		// we can use the set function as we are empty
-		set(str.c_str(), n);
+		(void)set(str.c_str(), n);
 		return *this;
 	}
 	else // we aren't a empty string... complicated
@@ -109,14 +109,18 @@ PyString& PyString::append( const std::string& str, size_t pos, size_t n )
 		assert(mStr); // we should have a existing piece of memory
 
 		mStr = (char*)ASCENT_REALLOC(mStr, newSize + 1); // realloc... it may move memory around...
+
+        /* this would mean a huge fail */
+        if (mStr == NULL)
+            return *this;
 		
 		// the point where its added
-		char* crossA = &mStr[pos];
+		char* crossA = reinterpret_cast<char*>(&mStr[pos]);
 
 		// the point where it sends
-		char* crossB = &mStr[pos + n];
+		char* crossB = reinterpret_cast<char*>(&mStr[pos + n]);
 
-		// chunk size
+		// chunk new_size
 		size_t crossSize = mStrLen - pos;
 
 		// first move that chunk
@@ -131,17 +135,17 @@ PyString& PyString::append( const std::string& str, size_t pos, size_t n )
 	}
 }
 
-bool PyString::resize( size_t size )
+bool PyString::resize( size_t new_size )
 {
 	/* handling rare conditions separately */
-	if (mStr != NULL && size == 0)
+	if (mStr != NULL && new_size == 0)
 	{
 		SafeFree(mStr);
-		mStrLen = size;
+		mStrLen = new_size;
 		return true;
 	}
 
-	mStrLen = size;
+	mStrLen = new_size;
 
 	if (mStr != NULL)
 		mStr = static_cast<char*>(ASCENT_REALLOC(mStr, mStrLen+1));
@@ -158,17 +162,17 @@ bool PyString::resize( size_t size )
 
 bool PyString::operator==( const char *str1 )
 {
-	char* yup = strstr(mStr, str1);
-	if (yup == NULL)
-		return false;
+    if (str1 == NULL || mStr == NULL)
+        return false;
 
-	return true;
+	return (strncmp(mStr, str1, mStrLen) == 0);
 }
 
 PyString & PyString::operator=( const char *str )
 {
 	size_t len = strlen(str);
-	set(str, len);
+	if (!set(str, len))
+        sLog.Error("PyString", "unable to set pystring");
 	return *this;
 }
 
@@ -182,19 +186,6 @@ uint32 PyString::hash()
     }
     return mHashValue;
 }
-
-#if 0
-char &PyString::operator[]( const int index )
-{
-	if (mStr != NULL && (int)mStrLen > index)
-		return mStr[index];
-
-	/* @todo throw error*/
-	ASCENT_HARDWARE_BREAKPOINT;
-	/* not all routes return a char, this is a bug */
-}
-
-#endif
 
 PyString* PyString_FromStringAndSize(const char* str, size_t len)
 {

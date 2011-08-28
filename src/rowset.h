@@ -58,9 +58,16 @@ public:
         return true;
     }
 
-    /* this is a stub that needs to be implemented */
-    PyTuple* GetState()
+    bool setstate(PyObject* state)
     {
+        sLog.Warning("util.row", "stub setstate called");
+        return true;
+    }
+
+    /* this is a stub that needs to be implemented */
+    PyTuple* getstate()
+    {
+        sLog.Warning("utilRowset", "stub getstate called");
         return NULL;
     };
 
@@ -109,9 +116,16 @@ public:
         return true;
     }
 
-    /* this is a stub that needs to be implemented */
-    PyTuple* GetState()
+    bool setstate(PyObject* state)
     {
+        sLog.Warning("util.row", "stub setstate called");
+        return true;
+    }
+
+    /* this is a stub that needs to be implemented */
+    PyTuple* getstate()
+    {
+        sLog.Warning("utilRowset", "stub getstate called");
         return NULL;
     }
 

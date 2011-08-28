@@ -153,8 +153,8 @@ class CRandomMersenne {                // Encapsulate random number generator
 #define MERS_C   0xEFC60000
 #endif
 public:
-	CRandomMersenne(uint32 seed) {      // Constructor
-		RandomInit(seed); LastInterval = 0; Architecture = LITTLE_ENDIAN1;}
+    // Constructor
+    CRandomMersenne(uint32 seed);
 	void RandomInit(uint32 seed);       // Re-seed
 	void RandomInitByArray(uint32 seeds[], int length); // Seed by more than 32 bits
 	int IRandom (int min, int max);     // Output random integer

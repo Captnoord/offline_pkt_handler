@@ -94,7 +94,7 @@ public:
         case PyTypeInt:
         case PyTypeLong:
         case PyTypeReal:
-            return -1;
+            return (size_t)-1;
         case PyTypeString:
         case PyTypeUnicode:
         case PyTypeDict:
@@ -109,7 +109,7 @@ public:
             ASCENT_HARDWARE_BREAKPOINT;
             break;
         }
-        return -1;
+        return (size_t)-1;
     }; // most objects have a size function....
 
 	uint8 GetType();
@@ -251,7 +251,7 @@ public:
 	
 
 	// returns the element count
-	size_t size();
+	size_t size() const;
 
 	// clears the tuple from all objects
 	void clear();
@@ -278,7 +278,7 @@ public:
     bool init( PyObject* list );
     bool clear();
 
-	size_t size();
+	size_t size() const;
     bool resize(size_t new_size);
 	bool add(PyObject* obj);
     bool set_item( size_t index, PyObject* obj );
@@ -346,7 +346,7 @@ public:
     bool set_item(const char * keyName, const char* str);
     bool set_item(const char * keyName, bool check);
 
-    size_t size();
+    size_t size() const;
 
     /* atm only changing static mapped dict to hashed dict */
     void update();
@@ -374,7 +374,6 @@ private:
  * @date February 2009
  */
 
-static int SubStreamCounter = 0;
 class PySubStream : public PyObject
 {
 public:
@@ -383,7 +382,7 @@ public:
 	~PySubStream();
     uint32 hash();
 	uint8* content();
-	size_t size();
+	size_t size() const;
 	bool set(uint8 * data, size_t len);
 private:
 	void* mData;
@@ -425,8 +424,10 @@ public:
     virtual int UpdateDict(PyObject* bases){return -1;}
 
     // important for the inner workings of this all
-    virtual bool init(PyObject* state) = NULL;
-    virtual PyTuple* GetState() { return NULL; };
+    virtual bool init(PyObject* init) = NULL;
+    virtual bool setstate(PyObject* state) = NULL;
+    
+    virtual PyTuple* getstate() = NULL;
 
     /* method for dumping classes into the correct format... */
     virtual bool repr( FILE* fp ) = NULL;
@@ -442,49 +443,6 @@ protected:
 
     //ternaryfunc tp_call;
 };
-
-/**
-* \class PyInstance
-*
-* @brief
-*
-* blaat I dono what I am doing.... part 2. :D
-*
-* @author Captnoord
-* @date March 2009
-*/
-class PyInstance : public PyObject
-{
-public:
-	PyInstance();
-	~PyInstance();
-    uint32 hash();
-private:
-	PyClass* mClass;
-	PyDict* mDict;
-};
-
-/**
- * \class PyModule
- *
- * @brief
- *
- * blaat I dono what I am doing.... part 2. :D
- *
- * @author Captnoord
- * @date March 2009
- */
-class PyModule : public PyObject
-{
-public:
-	PyModule();
-	~PyModule();
-    uint32 hash();
-	PyString* mModuleName;
-private:
-};
-
-
 
 /**
  * \class PyPackedRow
@@ -516,7 +474,7 @@ public:
 	typedef PyList::iterator iterator;
 	iterator begin();
 	iterator end();
-	size_t size();
+	size_t size() const;
 
 	/* magical function */
 	bool init(PyObject* header);
@@ -634,20 +592,7 @@ static PyList* PyList_New(int elementCount)
 	return list;
 }
 
-/**
- * @brief 
- *
- * 
- *
- * @param[in]
- * @param[out]
- * @return
- */
-static PyDict* PyDict_New()
-{
-	PyDict * dict = new PyDict();
-	return dict;
-}
+#define PyDict_New() new PyDict()
 
 /**
  * @brief this function converts a PyLong into a ByteArray.
@@ -703,7 +648,21 @@ static bool _PyLong_AsByteArray(PyLong& number, const uint8* buffer, size_t* siz
  * @param[out]
  * @return
  */
-static PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t len);
+static PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t size)
+{
+    /* sanity checks */
+    if (buffer == NULL)
+        return NULL;
+
+    if (size == 0 || size > 8)
+        return NULL;
+
+    int64 intval = (1LL << (8 * size)) - 1;
+    intval &= *((const uint64 *) buffer);
+
+    PyLong * num = new PyLong(intval);
+    return num;
+}
 
 static PyLong* PyLong_FromLong(int64 number)
 {

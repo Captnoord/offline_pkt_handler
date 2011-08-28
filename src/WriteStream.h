@@ -70,7 +70,7 @@ public:
 	template<typename T>
 	bool write1(T value)
 	{
-		if (reserve(1) == false) return false;
+		if (!reserve(1)) return false;
 
 		uint8* raw = (uint8*)&value;
 		mBuffer[mWriteIndex++] = *raw;
@@ -84,7 +84,7 @@ public:
 	template<typename T>
 	bool write2(T value)
 	{
-		if (reserve(2) == false) return false;
+		if (!reserve(2)) return false;
 
 		uint16* raw = (uint16*)&value;
 		*((uint16*)(&mBuffer[mWriteIndex])) = *raw;
@@ -99,7 +99,7 @@ public:
 	template<typename T>
 	bool write4(T value)
 	{
-		if (reserve(4) == false) return false;
+		if (!reserve(4)) return false;
 
 		uint32* raw = (uint32*)&value;
 		*((uint32*)(&mBuffer[mWriteIndex])) = *raw;
@@ -114,7 +114,7 @@ public:
 	 */
 	bool write4(size_t value)
 	{
-		if (reserve(4) == false) return false;
+		if (!reserve(4)) return false;
 
 		uint32* raw = (uint32*)&value;
 		*((uint32*)(&mBuffer[mWriteIndex])) = *raw;
@@ -129,7 +129,7 @@ public:
 	template<typename T>
 	bool write8(T & value)
 	{
-		if (reserve(8) == false) return false;
+		if (!reserve(8)) return false;
 
 		uint64* raw = (uint64*)&value;
 		*((uint64*)(&mBuffer[mWriteIndex])) = *raw;

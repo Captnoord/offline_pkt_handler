@@ -27,7 +27,7 @@
 #include "ascent.h"
 #include "RleModule.h"
 
-bool RleModule::unpack( unsigned char* in, const int in_size, unsigned char* out, int* out_size )
+bool RleModule::unpack( const unsigned char* in, const int in_size, unsigned char* out, const int* out_size )
 {
     int in_ix = 0;
 	int out_ix = 0;
@@ -49,7 +49,7 @@ bool RleModule::unpack( unsigned char* in, const int in_size, unsigned char* out
 		if(count >= 0)
 		{
 			if (out_ix + count + 1 > *out_size)
-				return 0;
+				return false;
 
 			while(count-- >= 0)
 				out[out_ix++] = 0;
@@ -57,7 +57,7 @@ bool RleModule::unpack( unsigned char* in, const int in_size, unsigned char* out
 		else
 		{
 			if (out_ix - count > *out_size)
-				return 0;
+				return false;
 
 			while(count++ && in_ix < in_size)
 				out[out_ix++] = in[in_ix++];
@@ -67,10 +67,10 @@ bool RleModule::unpack( unsigned char* in, const int in_size, unsigned char* out
 	while(out_ix < *out_size)
 		out[out_ix++] = 0;
 
-	return 1;
+	return true;
 }
 
-void RleModule::pack( char *in, int in_size, char *out, int *out_size )
+void RleModule::pack( const char *in, int in_size, char *out, int *out_size )
 {
     int nibble = 0;
     int nibble_ix = 0;
@@ -98,14 +98,14 @@ void RleModule::pack( char *in, int in_size, char *out, int *out_size )
             do {
                 out[out_ix++] = in[in_ix++];
             } while(in_ix<end && in[in_ix]);
-            count = start - in_ix + 8;
+            count = (start - in_ix) + 8;
         }
         else
         {
             zerochains++;
             while(in_ix<end && !in[in_ix])
                 in_ix++;
-            count = in_ix - start + 7;
+            count = (in_ix - start) + 7;
         }
 
         if(nibble)

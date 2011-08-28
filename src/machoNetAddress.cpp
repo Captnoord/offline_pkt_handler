@@ -44,13 +44,13 @@ int MachoAddress::UpdateDict( PyObject* bases )
     return -1;
 }
 
-uint32 MachoAddress::get_addr_type()
+uint64 MachoAddress::get_addr_type()
 {
     PyObject* address_type = mDict->get_item("addressType");
     return PyNumberGetValue(address_type);
 }
 
-PyTuple* MachoAddress::GetState()
+PyTuple* MachoAddress::getstate()
 {
     PyTuple* state = NULL;
 
@@ -161,12 +161,12 @@ bool MachoAddress::repr( FILE* fp )
         if ( PyNone_Check(_clientID) )
             fprintf(fp, "clientID=\"None\",");
         else
-            fprintf(fp, "clientID=\"%u\",", clientID);
+            fprintf(fp, "clientID=\"I64u\",", clientID);
 
         if ( PyNone_Check(callID) )
             fprintf(fp, "callID=\"None\",");
         else
-            fprintf(fp, "callID=\"%u\",", callID->get_value());
+            fprintf(fp, "callID=\"I64\",", callID->get_value());
 
         if ( !service || PyNone_Check(service) )
             fprintf(fp, "service=\"None\")");
@@ -199,7 +199,7 @@ bool MachoAddress::repr( FILE* fp )
         if ( PyNone_Check(callID) )
             fprintf(fp, "callID=\"None\")");
         else
-            fprintf(fp, "callID=\"%u\")", callID->get_value());
+            fprintf(fp, "callID=\"I64\")", callID->get_value());
 
         return true;
     }
@@ -221,7 +221,7 @@ bool MachoAddress::repr( FILE* fp )
         if ( PyNone_Check(callID) )
             fprintf(fp, "callID=\"None\")");
         else
-            fprintf(fp, "callID=\"%u\")", callID->get_value());
+            fprintf(fp, "callID=\"I64\")", callID->get_value());
 
         return true;
     }

@@ -75,7 +75,7 @@ typedef uint16 digit;
 
 uint32 PyLong::hash()
 {
-	uint32 x;
+	int32 x;
 	int64 i;
 	int sign;
 	uint8 * henk = (uint8*)&mNumber;
@@ -166,7 +166,7 @@ PyTuple::PyTuple( size_t elementCount ) : PyObject(PyTypeTuple)
 		return;
 	}
 	
-	resize(elementCount);
+	(void)resize(elementCount);
 }
 
 PyTuple::~PyTuple()
@@ -174,7 +174,7 @@ PyTuple::~PyTuple()
 	clear();
 }
 
-size_t PyTuple::size()
+size_t PyTuple::size() const
 {
 	return mTuple.size();
 }
@@ -342,10 +342,10 @@ PyList::PyList( size_t count ) : PyObject( PyTypeList )
 
 PyList::~PyList()
 {
-    clear();	
+    (void)clear();
 }
 
-size_t PyList::size()
+size_t PyList::size() const
 {
 	return mList.size();
 }
@@ -399,12 +399,13 @@ bool PyList::init( PyObject* list )
 
     /* if we are already filled, clear us */
     if (size() != 0)
-        clear();
+        (void)clear();
 
     /* we're gonna steal references here... */
     size_t index = 0;
     for (PyList::iterator itr = plist->begin(); itr != plist->end(); itr++) {
-        set_item(index++, *itr);
+        if(!set_item(index++, *itr))
+            return false;
     }
 
     return true;
@@ -422,7 +423,7 @@ bool PyList::resize( size_t new_size )
     /* very ugly situation: if we resize to a size that is smaller than the current; we need to decref the
      * objects that are "disapearing" because of the resize.
      */
-        size_t new_end_index = new_size - mList.size();
+        int new_end_index = (int)new_size - (int)mList.size();
 
         if (new_end_index == 0)
             return true;
@@ -433,7 +434,7 @@ bool PyList::resize( size_t new_size )
         iterator Itr = mList.end();
         while (new_end_index--) {
             PyDecRef( *Itr );
-            mList.erase(Itr);
+            (void)mList.erase(Itr);
             Itr = mList.end();
         }
     }
@@ -468,7 +469,7 @@ bool PyList::set_item( size_t index, PyObject* obj )
 PyObject* PyList::get_item( size_t index )
 {
     /* return NULL because I don't want to  */
-    if (index > mList.size() || index < 0)
+    if (index > mList.size())
         return NULL;
 
     return mList[index];
@@ -481,25 +482,20 @@ PyDict::PyDict() : PyObject(PyTypeDict), mMappingMode(true), mMappingIndex(0) {}
 
 PyDict::~PyDict()
 {
-    int i = 0;
     iterator itr = mDict.begin();
     for (; itr != mDict.end(); itr++)
     {
         PyDictEntry * entry = itr->second;
-        //assert(entry);
-        //assert(entry->key);
-        //assert(entry->obj);
 
         PySafeDecRef(entry->key);
         PySafeDecRef(entry->obj);
         SafeFree(entry);
-        i++;
     }
 
     mDict.clear();
 }
 
-size_t PyDict::size()
+size_t PyDict::size() const
 {
     return mDict.size();
 }
@@ -778,7 +774,8 @@ PySubStream::PySubStream( uint8* data, size_t len ) : PyObject(PyTypeSubStream),
 
 	mLen = len;
 	mData = static_cast<void*>(ASCENT_MALLOC(mLen+1));
-	ASCENT_MEMCPY(mData, data, mLen);
+    if (mData != 0)
+	    ASCENT_MEMCPY(mData, data, mLen);
 }
 
 PySubStream::~PySubStream()
@@ -813,7 +810,7 @@ bool PySubStream::set( uint8 * data, size_t len )
 }
 
 
-size_t PySubStream::size()
+size_t PySubStream::size() const
 {
 	return mLen;
 }
@@ -1085,7 +1082,7 @@ PyClass* PyPackedRow::getheader()
 	return mHeader;
 }
 
-size_t PyPackedRow::size()
+size_t PyPackedRow::size() const
 {
 	return mFlowers->size();
 }
@@ -1103,6 +1100,8 @@ PyObject* PyPackedRow::getRawPayLoad()
 
 bool PyPackedRow::init( PyObject* header )
 {
+    /** @todo finish this function */
+
 	size_t argumentCount = 0;
 	if (PyTuple_Check(header))
 	{
@@ -1117,7 +1116,7 @@ bool PyPackedRow::init( PyObject* header )
 	else
 	{
 		argumentCount = 1;
-	}
+    }
 
 	//mHeader = header;
 
@@ -1169,22 +1168,10 @@ uint32 PySubStruct::hash()
 	ASCENT_HARDWARE_BREAKPOINT;
 }
 
-/************************************************************************/
-/* PyModule                                                             */
-/************************************************************************/
-PyModule::PyModule() : PyObject(PyTypeModule), mModuleName(NULL) {}
-
-PyModule::~PyModule() {}
-
-
-uint32 PyModule::hash()
-{
-	ASCENT_HARDWARE_BREAKPOINT;
-    return 0;
-}
-
 uint32 PyObject_Hash( PyObject* obj )
 {
+    if (obj == NULL)
+        return (uint32)-1;
 	return obj->hash();
 }
 
@@ -1201,7 +1188,10 @@ PyObject * PyObject_CallObject( PyObject *callable_object, PyObject *args )
     PyClass * pClass = (PyClass *)callable_object;
 
     PyClass * pNewClass = pClass->New();
-    pNewClass->init(args);
+    if (!pNewClass->init(args)) {
+        PyDecRef(pNewClass);
+        return NULL;
+    }
     return pNewClass;
 }
 
@@ -1214,20 +1204,4 @@ uint64 PyNumberGetValue(PyObject* obj)
     else if (PyLong_Check(obj))
         return ((PyLong*)obj)->get_value();
     return 0xDEADBEEF;
-}
-
-PyLong* _ByteArray_AsPyLong(const uint8* buffer, size_t size)
-{
-    /* sanity checks */
-    if (buffer == NULL)
-        return NULL;
-
-    if (size == 0 || size > 8)
-        return NULL;
-
-    int64 intval = (1LL << (8 * size)) - 1;
-    intval &= *((const uint64 *) buffer);
-
-    PyLong * num = new PyLong(intval);
-    return num;
 }

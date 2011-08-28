@@ -42,6 +42,9 @@ public:
 
 	Guard& operator=(Guard& src)
 	{
+        if( &src == this)
+            return *this;
+
 		this->target = src.target;
 		return *this;
 	}

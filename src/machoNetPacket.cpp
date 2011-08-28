@@ -98,8 +98,9 @@ bool MachoPacket::init( PyObject* state )
     return false;
 }
 
-PyTuple* MachoPacket::GetState()
+PyTuple* MachoPacket::getstate()
 {
+    sLog.Warning("utilRowset", "stub getstate called");
     return NULL;
 }
 

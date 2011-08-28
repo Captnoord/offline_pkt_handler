@@ -50,8 +50,14 @@ public:
 
     bool init(PyObject* state);
 
+    bool setstate(PyObject* state)
+    {
+        sLog.Warning("util.row", "stub setstate called");
+        return true;
+    }
+
     /* this is a stub that needs to be implemented */
-    PyTuple* GetState();
+    PyTuple* getstate();
 
     bool repr( FILE* fp );
 

@@ -53,7 +53,7 @@ public:
 		size_t c = 0;
 		size_t start;
 		size_t written;
-		uint8 byte;
+		uint8 byte_;
 		const unsigned char *pData = (const unsigned char *)pSource;
 
 		for( ; i < sourceLength; )
@@ -74,9 +74,9 @@ public:
 			fputc('|', dstFile);
 			for( c = 0; c < written; ++c )
 			{
-				byte = pData[start + c];
-				if( isprint((int)byte) )
-					fputc((char)byte, dstFile);
+				byte_ = pData[start + c];
+				if( isprint((int)byte_) )
+					fputc((char)byte_, dstFile);
 				else
 					fputc('.', dstFile);
 			}
@@ -95,13 +95,13 @@ public:
 	 */
 	static void hexlify(FILE * fd, const char* src, const size_t srclen, bool upper = false)
 	{
-		size_t i, j;
+		size_t i;
 		char ch = 'a';
 		if (upper == true)
 			ch = 'A';
 
 		/* make hex version of string, taken from shamodule.c */
-		for (i=j=0; i < srclen; i++) {
+		for (i=0; i < srclen; i++) {
 			char c;
 			c = (src[i] >> 4) & 0xf;
 			c = (c>9) ? c+ch-10 : c + '0';

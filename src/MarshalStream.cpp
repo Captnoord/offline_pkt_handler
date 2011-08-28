@@ -64,7 +64,7 @@
 #endif//_DEBUG
 
 MarshalStream::MarshalStream() : PyIntZero(0), PyIntOne(1), PyIntMinOne(-1), PyFloatZero(0.0),PyIntMinusOne(-1),
-	Py_TrueStruct(true), Py_ZeroStruct(false), PyStringEmpty(""), mReferencedObjectsMap() {}
+	Py_TrueStruct(true), Py_ZeroStruct(false), PyStringEmpty("") {}
 
 MarshalStream::~MarshalStream() {}
 
@@ -652,7 +652,7 @@ PyObject* MarshalStream::unmarshal( ReadStream & stream )
 
 			case Op_PyNewObj:
 				unmarshalState(Op_PyNewObj, stream);
-				MARSHALSTREAM_RETURN(ReadNewStyleClass(stream, (opcode >> 6) & 1));
+				MARSHALSTREAM_RETURN(ReadNewObj(stream, (opcode >> 6) & 1));
 
 			case Op_PyDBRow:
 				unmarshalState(Op_PyDBRow, stream);
@@ -972,57 +972,8 @@ PyObject* MarshalStream::ReadReducedClass( ReadStream & stream, BOOL shared )
 }
 
 // C style python classes...
-PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
+PyObject* MarshalStream::ReadNewObj( ReadStream & stream, BOOL shared )
 {
-    //ASCENT_HARDWARE_BREAKPOINT;
-    /* this crappy old code */
-	/*PyClass * classObj = NULL;//new PyClass();
-
-	if (shared != FALSE)
-	{
-		if (mReferencedObjectsMap.StoreReferencedObject(classObj) == -1)
-            ASCENT_HARDWARE_BREAKPOINT;
-	}
-
-    // here new code starts 
-	PyTuple * object_root = (PyTuple *)unmarshal(stream);
-
-    PyTuple* call_root = object_root->GetItem_asPyTuple(0);
-    if (call_root == NULL)
-    {
-        PyDecRef(object_root);
-        MARSHALSTREAM_RETURN_NULL;
-    }
-
-    PyClass* class_instance = call_root->GetItem_asPyClass(0);
-    if (class_instance == NULL)
-    {
-        PyDecRef(object_root);
-        MARSHALSTREAM_RETURN_NULL;
-    }*/
-
-    /*
-    PyObject* PyObject_GetAttr(PyObject *o, PyObject *attr_name)
-    Return value: New reference.
-    Retrieve an attribute named attr_name from object o. Returns the attribute value on success, or NULL on failure.
-    This is the equivalent of the Python expression o.attr_name
-    */
-
-    /*
-    PyObject* PyObject_CallObject(PyObject *method, PyObject *args)
-    Return value: New reference.
-    Call a callable Python object method, with arguments given by the tuple args. If no arguments are needed,
-    then args may be NULL. Returns the result of the call on success, or NULL on failure. This is the equivalent of the
-    Python expression apply(method, args) or method(*args).
-    */
-
-    /*
-    PyObject* PyObject_CallFunctionObjArgs(PyObject *callable, ..., NULL)
-        Return value: New reference.
-        Call a callable Python object callable, with a variable number of PyObject* arguments. The arguments are provided
-        as a variable number of parameters followed by NULL. Returns the result of the call on success, or NULL on failure.
-    */
-
     int shared_obj_index = 0;
 
     /* store a NULL so we can crash when we have recursive class calls */
@@ -1034,43 +985,62 @@ PyObject* MarshalStream::ReadNewStyleClass( ReadStream & stream, BOOL shared )
     }
 
     // here new code starts 
-    PyTuple * object_root = (PyTuple *)unmarshal(stream);
-    if (object_root == NULL)
+    PyTuple * obj = (PyTuple *)unmarshal(stream);
+    if (obj == NULL)
         MARSHALSTREAM_RETURN_NULL;
 
-    if (!PyTuple_Check(object_root))
+    if (!PyTuple_Check(obj))
         MARSHALSTREAM_RETURN_NULL;
 
-    PyTuple* call_root = object_root->GetItem_asPyTuple(0);
-    if (call_root == NULL)
+    PyTuple* args = obj->GetItem_asPyTuple(0);
+    if (args == NULL)
     {
-        PyDecRef(object_root);
+        PyDecRef(obj);
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    PyClass* class_instance = call_root->GetItem_asPyClass(0);
-    if (class_instance == NULL)
+    PyClass* cls = args->GetItem_asPyClass(0);
+    if (cls == NULL)
     {
-        PyDecRef(object_root);
+        PyDecRef(obj);
         MARSHALSTREAM_RETURN_NULL;
     }
 
-    // do get function stuff on call_root..... bla bla bla I dono...
+    // do get function stuff on args..... bla bla bla I dono...
 
     // its important for this to return something...
-    PyObject* call_result = PyObject_CallObject(class_instance, call_root);
+    PyClass* call_result = dynamic_cast<PyClass*>(PyObject_CallObject(cls, args));
 
+    /** this part needs more love, do we need a function called UpdateReferencedObject? */
     if(shared)
     {
-        mReferencedObjectsMap.UpdateReferencedObject(shared_obj_index, call_result);        
+        if (!mReferencedObjectsMap.UpdateReferencedObject(shared_obj_index, call_result))
+        {
+            sLog.Error("MarshalStream", "unable to update referenced object");
+        }
     }
+
+    if (obj->size() > 1)
+    {
+        PyObject* state = obj->get_item(1);
+        if (state == NULL)
+            MARSHALSTREAM_RETURN_NULL;
+
+        call_result->setstate(state);
+        /*state = PyTuple_GET_ITEM(obj, 1);
+        if(!set_state(container->obj, state))
+            goto cleanup;
+            */
+    }
+
+
 
     // need more love here...
 
     ReadNewObjList(stream, *(PyClass*)call_result);
     ReadNewObjDict(stream, *(PyClass*)call_result);
 
-    PyDecRef(object_root);
+    PyDecRef(obj);
 
     MARSHALSTREAM_RETURN(call_result);
 }
@@ -1122,7 +1092,7 @@ PyObject* MarshalStream::ReadPackedRow( ReadStream & stream )
 		outbuff = (uint8*)ASCENT_MALLOC(outsize);
 		assert(outbuff);
 
-		if (!RleModule::unpack(data, size, outbuff, (int*)&outsize))
+		if (!RleModule::unpack(data, (int)size, outbuff, (int*)&outsize))
 		{
 			SafeFree(outbuff);
 
@@ -1584,7 +1554,7 @@ bool MarshalStream::marshal( PyObject * object, WriteStream & stream )
 				return stream.write1(*str.content());
 			}
 
-			size_t str_index = sPyStringTable.LookupIndex(str.content());
+			int str_index = sPyStringTable.LookupIndex(str.content());
 			if (str_index != -1)
 			{
 				if (!stream.writeOpcode(Op_PyStringTableItem))

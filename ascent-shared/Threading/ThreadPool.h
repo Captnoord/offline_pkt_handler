@@ -25,6 +25,8 @@
 #ifndef __THREADPOOL_H
 #define __THREADPOOL_H
 
+#define ASSERT assert
+
 #ifdef WIN32
 
 class SERVER_DECL ThreadController

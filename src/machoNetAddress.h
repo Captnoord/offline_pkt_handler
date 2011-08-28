@@ -82,14 +82,20 @@ public:
     /* this is a stub that needs to be implemented */
     int UpdateDict(PyObject* bases);
 
-    uint32 get_addr_type();
+    uint64 get_addr_type();
 
     // bleh this code causes the object to be shared.... we need to make set_item increase the object ref... so this gets a bit cleaner..
 
     // serialize this class
-    PyTuple* GetState();
+    PyTuple* getstate();
 
     bool init(PyObject* state);
+
+    bool setstate(PyObject* state)
+    {
+        sLog.Warning("util.row", " stub setstate called");
+        return true;
+    }
 
     int RoutesTo( PyObject *otherAddress, PyObject* fromAddress = NULL);
 

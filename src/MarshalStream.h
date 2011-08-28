@@ -178,14 +178,14 @@ private:
 	ASCENT_INLINE PyObject* ReadReducedClass(ReadStream & stream, BOOL shared);
 
 	/**
-	 * \brief ReadNewStyleClass reads a new style python class and uses it to
+	 * \brief ReadNewObj reads a new style python class and uses it to
 	 * initiate a instance of that class.
 	 *
      * @param[in] stream the data stream.
      * @param[in] shared is the object this is true, meaning it should be saved.
 	 * @return the deserialized object and NULL if it failed.
 	 */
-	ASCENT_INLINE PyObject* ReadNewStyleClass(ReadStream & stream, BOOL shared);
+	ASCENT_INLINE PyObject* ReadNewObj(ReadStream & stream, BOOL shared);
 
 	/**
 	 * \brief ReadPackedRow reads a packed db row from the data stream.

@@ -114,7 +114,7 @@ bool WriteStream::seek( int32 offset, int origin )
 
 bool WriteStream::write( const char* buffer, const size_t len )
 {
-	if (buffer == NULL || len <= 0)
+	if (buffer == NULL || len == 0)
 		return false;
 
 	if (!reserve(len))
@@ -163,7 +163,10 @@ bool WriteStream::insert( const uint8* buff, size_t buff_len, size_t index )
     void* delta = static_cast<void*>(&mBuffer[index + buff_len]);
 
     /* check if the source and destination is valid */
-    if (begin == NULL || delta == NULL)
+    if (begin == NULL)
+        return false;
+
+    if (delta == NULL)
         return false;
 
     /* evil and dangerous part
