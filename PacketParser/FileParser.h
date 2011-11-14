@@ -280,6 +280,10 @@ void HandleFile(const char* in_file_path, const char* out_file_path)
 		//printf("Parsed packet nr: %u | offset: %u, size: %u\n", i, readstream.tell(), readstream.size());
 
 		i++;
+
+
+        if (i == 20)
+            break;
     }
 
 	fclose(fp_out);

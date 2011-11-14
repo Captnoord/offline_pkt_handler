@@ -54,6 +54,7 @@ MachoAddress* MachoPacket::get_src_addr()
     return result;
 }
 
+/* this isn't init but setstate... correct this and change the code around it to... */
 bool MachoPacket::init( PyObject* state )
 {
     /* check for obj */
